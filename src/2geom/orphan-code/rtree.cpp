@@ -636,7 +636,7 @@ std::pair<unsigned, enum_add_to_group> RTree::pick_next(    RTreeNode* group_a,
             std::cout<< " lala";
             bounding_box_b.unionWith( group_b->children_leaves[i].bounding_box );
         }
-
+        std::cout<< "" << std::endl;
 
         _RTREE_PRINT("      PN1");    // PN1
         for( unsigned i = 0; i < assigned_v.size(); i++ ){
