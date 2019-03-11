@@ -9,9 +9,8 @@ under either the LGPL or the MPL.
 
 See the following files in this directory for the precise terms and
 conditions of either license:
-
-	COPYING-LGPL-2.1
-	COPYING-MPL-1.1
+ - [COPYING-LGPL-2.1](COPYING-LGPL-2.1)
+ - [COPYING-MPL-1.1](COPYING-MPL-1.1)
 
 Please see each file in the implementation for Copyright and licensing
 information.

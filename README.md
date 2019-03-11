@@ -1,8 +1,6 @@
-2Geom: easy 2D graphics library
-===============================
+# 2Geom: easy 2D graphics library
 
-What is this?
--------------
+## What is this?
 
 2Geom is a C++ 2D geometry library geared towards robust processing of
 computational geometry data associated with vector graphics. The primary
@@ -20,8 +18,7 @@ something like libcairo or similar is employed for this.  2geom
 concentrates on higher level algorithms and geometric computations.
 
 
-Features List
--------------
+## Features List
 
 * C++ 11
 * Functional programming style.
@@ -55,8 +52,7 @@ Features List
 * PDoF constraint system for CAD/CAGD
 
 
-Dependencies
-------------
+## Dependencies
 
 To build 2Geom, you will need:
 
@@ -68,8 +64,7 @@ To build 2Geom, you will need:
 * [GTK+ 2](http://www.gtk.org/) (for demo programs)
 
 
-Building
---------
+## Building
 
 2Geom uses CMake as the build and configuration system. To build, type:
 
@@ -87,8 +82,7 @@ Run `doxygen` in the project root to generate documentation in
 `doc/html`.
 
 
-API / ABI Stability
--------------------
+## API / ABI Stability
 
 Version 1.0 of 2Geom marks its first official release.  With this
 release the library's API/ABI is considered stable:
@@ -110,8 +104,7 @@ Improvements that would break the API/ABI will be noted in our bug
 tracker, for a future Version 2.0 release.
 
 
-Further information
--------------------
+## Further information
 
 Communications related to 2Geom development happen on a
 [SourceForge mailing list](https://lists.sourceforge.net/lists/listinfo/lib2geom-devel).
