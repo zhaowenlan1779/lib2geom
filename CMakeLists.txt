@@ -34,7 +34,7 @@ include_directories(src src/googletest/googletest/include ${CMAKE_CURRENT_BINARY
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/2geom)
 
 check_cxx_source_compiles("#include <math.h>\nint main() { double a=0.5,b=0.5,c=0.5; sincos(a, &b, &c); return 0; }" HAVE_SINCOS)
-if(HAVE_SINCOS)
+if(HAVE_SINCOS AND NOT WIN32)  # results in internal compiler error with mingw-w64 (gcc 8.3.0)
 	add_definitions(-DHAVE_SINCOS)
 endif()
 if(GSL_FOUND)
