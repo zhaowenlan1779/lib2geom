@@ -68,12 +68,14 @@ To build 2Geom, you will need:
 
 2Geom uses CMake as the build and configuration system. To build, type:
 
-    cmake .
+    mkdir build && cd build
+    cmake ..
     make
 
-To run tests:
+To run tests and performance tests:
 
     make test
+    make perf
 
 Also check out some of the interactive programs in src/toys.
 
