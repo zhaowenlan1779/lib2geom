@@ -41,6 +41,10 @@
 
 #include "testing.h"
 
+#ifndef M_SQRT2
+#  define M_SQRT2 1.41421356237309504880 
+#endif
+
 using namespace Geom;
 
 TEST(EllipseTest, Arcs) {
