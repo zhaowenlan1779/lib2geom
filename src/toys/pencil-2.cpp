@@ -323,8 +323,8 @@ copy_without_nans_or_adjacent_duplicates(Point const src[], unsigned src_len, Po
         if ( si == src_len ) {
             return 0;
         }
-        if (!IS_NAN(src[si][X]) &&
-            !IS_NAN(src[si][Y])) {
+        if (!std::isnan(src[si][X]) &&
+            !std::isnan(src[si][Y])) {
             dest[0] = Point(src[si]);
             ++si;
             break;
@@ -335,8 +335,8 @@ copy_without_nans_or_adjacent_duplicates(Point const src[], unsigned src_len, Po
     for (; si < src_len; ++si) {
         Point const src_pt = Point(src[si]);
         if ( src_pt != dest[di]
-             && !IS_NAN(src_pt[X])
-             && !IS_NAN(src_pt[Y])) {
+             && !std::isnan(src_pt[X])
+             && !std::isnan(src_pt[Y])) {
             dest[++di] = src_pt;
         }
     }
@@ -375,7 +375,7 @@ bezier_fit_cubic_full(Point bezier[], int split_points[],
         bezier[0] = data[0];
         bezier[3] = data[len - 1];
         double const dist = distance(bezier[0], bezier[3]) / 3.0;
-        if (IS_NAN(dist)) {
+        if (std::isnan(dist)) {
             /* Numerical problem, fall back to straight line segment. */
             bezier[1] = bezier[0];
             bezier[2] = bezier[3];
