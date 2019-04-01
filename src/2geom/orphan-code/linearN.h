@@ -119,7 +119,7 @@ public:
     }
     inline bool isFinite() const {
         for (unsigned i=0; i < (1<<n); i++){
-            if ( !IS_FINITE(a[i]) ) return false;
+            if ( !std::isfinite(a[i]) ) return false;
         }
         return true; }
     //value if k-th variable is set to 0.
@@ -203,7 +203,7 @@ public:
     unsigned input_dim() const {return 0;}
     inline bool isZero() const { return d==0; }
     inline bool isConstant() const { return true; }
-    inline bool isFinite() const { return IS_FINITE(d); }
+    inline bool isFinite() const { return std::isfinite(d); }
 };
 
 //LinearN<1> are usual Linear. Allow conversion.

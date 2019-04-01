@@ -94,23 +94,6 @@ inline void sincos(double angle, double &sin_, double &cos_) {
 #endif
 }
 
-#if defined(__isfinite)
-# define IS_FINITE(_a) (__isfinite(_a))
-#elif defined(__APPLE__) && __GNUC__ == 3
-# define IS_FINITE(_a) (__isfinite(_a))	/* MacOSX/Darwin definition < 10.4 */
-#elif defined(__sgi)
-# define IS_FINITE(_a) (_isfinite(_a))
-#elif defined(isfinite)
-# define IS_FINITE(_a) (isfinite(_a))
-#elif defined(__osf__)
-# define IS_FINITE(_a) (finite(_a) && !std::isnan(_a))
-#elif defined (SOLARIS)
-#include  <ieeefp.h>
-#define IS_FINITE(_a) (finite(_a) && !std::isnan(_a))
-#else
-# define IS_FINITE(_a) (boost::math::isfinite(_a))
-#endif
-
 } // end namespace Geom
 
 #endif // LIB2GEOM_SEEN_MATH_UTILS_H

@@ -763,7 +763,7 @@ NewtonRaphsonRootFind(CubicBezier const &Q, Point const &P, double const u)
         }
     }
 
-    if (!IS_FINITE(improved_u)) {
+    if (!std::isfinite(improved_u)) {
         improved_u = u;
     } else if ( improved_u < 0.0 ) {
         improved_u = 0.0;
@@ -816,7 +816,7 @@ chord_length_parameterize(Point const d[], double u[], unsigned const len)
     double tot_len = u[len - 1];
     if(!( tot_len != 0 ))
         return;
-    if (IS_FINITE(tot_len)) {
+    if (std::isfinite(tot_len)) {
         for (unsigned i = 1; i < len; ++i) {
             u[i] /= tot_len;
         }

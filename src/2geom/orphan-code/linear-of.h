@@ -106,7 +106,7 @@ public:
     typedef T output_type;
     inline bool isZero() const { return a[0].isZero() && a[1].isZero(); }
     inline bool isConstant() const { return a[0] == a[1]; }
-    inline bool isFinite() const { return IS_FINITE(a[0]) && IS_FINITE(a[1]); }
+    inline bool isFinite() const { return std::isfinite(a[0]) && std::isfinite(a[1]); }
 
     inline T at0() const { return a[0]; }
     inline T at1() const { return a[1]; }
