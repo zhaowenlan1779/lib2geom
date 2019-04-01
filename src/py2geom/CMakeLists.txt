@@ -82,9 +82,9 @@ OPTION(2GEOM_BOOST_PYTHON
 IF(2GEOM_BOOST_PYTHON)
         FIND_PACKAGE(Boost REQUIRED)
         FIND_PACKAGE(Boost QUIET COMPONENTS python python27)
-        IF(Boost_PYTHON27_LIBRARIES)
-            set(Boost_PYTHON_LIBRARIES ${Boost_PYTHON27_LIBRARIES})
-        ELSEIF(Boost_PYTHON_LIBRARIES)
+        IF(Boost_PYTHON27_LIBRARY)
+            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON27_LIBRARY})
+        ELSEIF(Boost_PYTHON_LIBRARY)
             # pass
         ELSE()
             message(FATAL "Could not find Boost.Python")
