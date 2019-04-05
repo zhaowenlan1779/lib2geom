@@ -148,8 +148,8 @@ utils.h
 
 # make lib for 2geom
 add_library(2geom ${LIB_TYPE} ${2GEOM_SRC})
-target_include_directories(2geom PRIVATE ${GLIB_INCLUDE_DIRS} ${GSL_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS} ${DOUBLE_CONVERSION_INCLUDE_DIR})
-target_link_libraries(2geom ${GLIB_LIBRARIES} ${GSL_LIBRARIES} ${CAIRO_LIBRARIES} ${DOUBLE_CONVERSION_LIBRARIES})
+target_include_directories(2geom PRIVATE ${GLIB_INCLUDE_DIRS} ${GSL_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS} ${DoubleConversion_INCLUDE_DIRS})
+target_link_libraries(2geom ${GLIB_LIBRARIES} ${GSL_LIBRARIES} ${CAIRO_LIBRARIES} ${DoubleConversion_LIBRARIES})
 set_target_properties(2geom PROPERTIES SOVERSION "${2GEOM_ABI_VERSION}")
 
 install(TARGETS 2geom
