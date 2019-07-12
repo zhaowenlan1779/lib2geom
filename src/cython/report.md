@@ -52,7 +52,7 @@ C++ instance and creates new python object around it.
 
 ## `_common_decl`
 These files (.pxd/.pyx) include basic declarations, common to all files.
-Functions for creating and wrapping `vector[double]` should become  reduntant
+Functions for creating and wrapping `vector[double]` should become redundant
 in next cython release (0.17), since it should do this conversion
 automatically.
 

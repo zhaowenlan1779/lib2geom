@@ -33,14 +33,14 @@ using namespace std;
 // File: convert.h
 #include <sstream>
 #include <stdexcept>
- 
+
 class BadConversion : public std::runtime_error {
 public:
     BadConversion(const std::string& s)
         : std::runtime_error(s)
     { }
 };
- 
+
 template <typename T>
 inline std::string stringify(T x)
 {
@@ -56,7 +56,7 @@ void draw_hull(cairo_t*cr, RatQuad rq) {
     cairo_line_to(cr, rq.P[2]);
     cairo_stroke(cr);
 }
-  
+
 
 
 void draw(cairo_t* cr, xAx C, Rect bnd) {
@@ -75,7 +75,7 @@ void draw(cairo_t* cr, xAx C, Rect bnd) {
             }
         }
         rts.erase(rts.begin()+top, rts.end());
-        
+
         if(rts.size() == prev_rts.size()) {
             for(unsigned j = 0; j < rts.size(); j++) {
                 cairo_move_to(cr, prev_rts[j], py);
@@ -114,7 +114,7 @@ double xAx_descr(xAx const & C) {
     double mC[3][3] = {{C.c[0], (C.c[1])/2, (C.c[3])/2},
                        {(C.c[1])/2, C.c[2], (C.c[4])/2},
                        {(C.c[3])/2, (C.c[4])/2, C.c[5]}};
-    
+
     return det3(mC);
 }
 
@@ -144,13 +144,13 @@ class Conic5: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
-        
+
         if(0) {
             Path path;
             path = Path(path_handles.pts[0]);
             D2<SBasis> c = handles_to_sbasis(path_handles.pts.begin(), 2);
             path.append(c);
-	
+
             cairo_save(cr);
             cairo_path(cr, path);
             cairo_set_source_rgba (cr, 0., 1., 0, 0.3);
@@ -163,14 +163,14 @@ class Conic5: public Toy {
         Point A = path_handles.pts[0];
         Point B = path_handles.pts[1];
         Point C = path_handles.pts[2];
-      
+
         if(1) {
             QuadraticBezier qb(A, B, C);
             //double abt = qb.nearestTime(oncurve.pos);
             //oncurve.pos = qb.pointAt(abt);
-      
+
             RatQuad rq = RatQuad::fromPointsTangents(A, B-A, oncurve.pos, C, B -C); //( A, B, C, w);
-	
+
             cairo_save(cr);
             cairo_set_source_rgba (cr, 0., 0., 0, 1);
             cairo_set_line_width (cr, 1);
@@ -178,11 +178,11 @@ class Conic5: public Toy {
             //cairo_d2_sb(cr, rq.hermite());
             cairo_stroke(cr);
             cairo_restore(cr);
-        }      
+        }
 
         if(0) {
             RatQuad rq = RatQuad::circularArc(A, B, C);
-	
+
             cairo_save(cr);
             cairo_set_source_rgba (cr, 0., 0., 0, 1);
             cairo_set_line_width (cr, 1);
@@ -192,13 +192,13 @@ class Conic5: public Toy {
             cairo_curve(cr, b.toCubic());
             cairo_stroke(cr);
             cairo_restore(cr);
-        }      
+        }
 
         Rect screen_rect(Interval(10, width-10), Interval(10, height-10));
         Line cutLine(cutting_plane.pts[0], cutting_plane.pts[1]);
         //double dist;
         //Point norm = cutLine.normalAndDist(dist);
-      
+
         const unsigned N = 3;
         xAx sources[N] = {
             xAx::fromPoint(A)*(exp(-sliders[0].value())),
@@ -218,7 +218,7 @@ class Conic5: public Toy {
         {
             cairo_save(cr);
             cairo_set_source_rgba(cr, 0, 0, 1, 0.5);
-            
+
             ::draw(cr, (sources[0]-sources[1]), screen_rect);
             ::draw(cr, (sources[0]-sources[2]), screen_rect);
             ::draw(cr, (sources[1]-sources[2]), screen_rect);
@@ -242,17 +242,17 @@ class Conic5: public Toy {
                     }
                 }
             }
-            
-            draw_text(cr, rh.pos.midpoint(), 
+
+            draw_text(cr, rh.pos.midpoint(),
                       os);
         }
         if(1) {
             xAx oxo=sources[0] - sources[2];
             Timer tm;
-            
+
             tm.ask_for_timeslice();
             tm.start();
-                
+
             std::vector<Point> intrs = intersect(oxo, sources[0] - sources[1]);
             Timer::Time als_time = tm.lap();
             *notify << "intersect time = " << als_time << std::endl;
@@ -263,12 +263,12 @@ class Conic5: public Toy {
                 cairo_stroke(cr);
                 cairo_restore(cr);
             }
-      
+
             boost::optional<RatQuad> orq = oxo.toCurve(rh.pos);
             if(orq) {
                 RatQuad rq = *orq;
                 draw_hull(cr, rq);
-                vector<SBasis> hrq = rq.homogenous();
+                vector<SBasis> hrq = rq.homogeneous();
                 SBasis vertex_poly = (sources[0] - sources[1]).evaluate_at(hrq[0], hrq[1], hrq[2]);
                 //*notify << "\n0: " << hrq[0];
                 //*notify << "\n1: " << hrq[1];
@@ -289,20 +289,20 @@ class Conic5: public Toy {
                 cairo_stroke(cr);
                 cairo_restore(cr);
             }
-        }      
+        }
         if(0) {
             RatQuad a, b;
             //rq.split(a,b);
             //cairo_move_to(cr, rq.toCubic().pointAt(0.5));
             cairo_line_to(cr, a.P[2]);
             cairo_stroke(cr);
-	
+
             cairo_curve(cr, a.toCubic());
             cairo_curve(cr, b.toCubic());
-      
+
         }
         cairo_stroke(cr);
-	
+
         //*notify << "w = " << w << "; lambda = " << rq.lambda() << "\n";
         Toy::draw(cr, notify, width, height, save, timer_stream);
     }

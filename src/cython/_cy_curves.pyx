@@ -956,7 +956,7 @@ cdef class cy_Bezier:
         return wrap_Bezier(self.thisptr.reduce_degree())
 
     def elevate_to_degree(self, unsigned int new_degree):
-        """Incerase degree of Bezier to new_degree."""
+        """Increase degree of Bezier to new_degree."""
         return wrap_Bezier(self.thisptr.elevate_to_degree(new_degree))
 
     def deflate(self):
@@ -966,7 +966,7 @@ cdef class cy_Bezier:
 
     @classmethod
     def bezier_points(cls, cy_Bezier a, cy_Bezier b):
-        """Return control points of BezierCurve consiting of two beziers.
+        """Return control points of BezierCurve consisting of two beziers.
 
         Passed bezier must have same degree."""
         return wrap_vector_point(bezier_points( D2[Bezier]( deref(a.thisptr), deref(b.thisptr) ) ))
@@ -974,7 +974,7 @@ cdef class cy_Bezier:
     @classmethod
     def multiply(cls, cy_Bezier a, cy_Bezier b):
         """Multiply two Bezier functions."""
-        return wrap_Bezier(multiply(deref( (<cy_Bezier> a).thisptr ), 
+        return wrap_Bezier(multiply(deref( (<cy_Bezier> a).thisptr ),
                                     deref( (<cy_Bezier> b).thisptr )))
 
     @classmethod
@@ -1214,7 +1214,7 @@ cdef class cy_LineSegment(cy_BezierCurve):
 
     """Bezier curve with fixed order 1.
 
-    This class inheriths from BezierCurve.
+    This class inherits from BezierCurve.
 
     Corresponds to LineSegment in 2geom. BezierCurveN is not wrapped.
     """
@@ -1278,7 +1278,7 @@ cdef class cy_QuadraticBezier(cy_BezierCurve):
 
     """Bezier curve with fixed order 2.
 
-    This class inheriths from BezierCurve.
+    This class inherits from BezierCurve.
 
     Corresponds to QuadraticBezier in 2geom. BezierCurveN is not wrapped.
     """
@@ -1343,7 +1343,7 @@ cdef class cy_CubicBezier(cy_BezierCurve):
 
     """Bezier curve with fixed order 2.
 
-    This class inheriths from BezierCurve.
+    This class inherits from BezierCurve.
 
     Corresponds to QuadraticBezier in 2geom. BezierCurveN is not wrapped.
     """
@@ -1816,7 +1816,7 @@ cdef class cy_EllipticalArc:
         self.thisptr.setFinal(deref( p.thisptr ))
 
     def is_degenerate(self):
-        """Curve is degenerate if it's length is zero."""
+        """Curve is degenerate if its length is zero."""
         return self.thisptr.isDegenerate()
 
     def bounds_fast(self):

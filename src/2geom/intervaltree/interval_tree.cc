@@ -253,7 +253,7 @@ void IntervalTree::FixUpMaxHigh(IntervalTreeNode * x) {
 /*  INPUTS:  newInterval is the interval to insert*/
 /**/
 /*  OUTPUT:  This function returns a pointer to the newly inserted node */
-/*           which is guarunteed to be valid until this node is deleted. */
+/*           which is guaranteed to be valid until this node is deleted. */
 /*           What this means is if another data structure stores this */
 /*           pointer then the tree does not need to be searched when this */
 /*           is to be deleted. */

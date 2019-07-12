@@ -1,9 +1,9 @@
 /*
- * curve-curve distance 
+ * curve-curve distance
  *
  * Authors:
  * 		Marco Cecchetti <mrcekets at gmail.com>
- * 
+ *
  * Copyright 2008  authors
  *
  * This library is free software; you can redistribute it and/or
@@ -55,12 +55,12 @@ namespace detail
 {
 
 // this wrapper class is an helper to make up a curve portion and access it
-// in an homogenous way 
-template< typename Curve01T > 
+// in an homogeneous way 
+template< typename Curve01T >
 class CurvePortion
 {
   public:
-    CurvePortion(const Curve & curve, double from, double to) 
+    CurvePortion(const Curve & curve, double from, double to)
         : m_curve_ptr(curve.portion(from, to))
     {
     }
@@ -80,11 +80,11 @@ class CurvePortion
     Curve* m_curve_ptr;
 };
 
-template<> 
+template<>
 class CurvePortion< D2<SBasis> >
 {
   public:
-    CurvePortion< D2<SBasis> >(const D2<SBasis> & curve, double from, double to) 
+    CurvePortion< D2<SBasis> >(const D2<SBasis> & curve, double from, double to)
         : m_curve(portion(curve, from, to))
     {
     }
@@ -104,19 +104,19 @@ class distance_impl
 {
     typedef Curve01T curveA_type;
     typedef CurveT curveB_type;
-    // determine how near a distance sample and the value computed through 
+    // determine how near a distance sample and the value computed through
     // the interpolated function have to be
     double accuracy;
     // determine the recursion limit
     double adaptive_limit;
-    // pieces of the initial subdivision  
+    // pieces of the initial subdivision
     unsigned int piecees;
     // degree of the polynomial used to interpolate a piece
     unsigned int piece_degree;
     // number of coefficients = piece_degree + 1
     unsigned int piece_size;
     unsigned int samples_per_piece;
-    // total initial samples 
+    // total initial samples
     unsigned int N;
     // a junction is a part of the previous or of the next piece
     unsigned int samples_per_junction;
@@ -139,12 +139,12 @@ class distance_impl
     unsigned int evaluation_si;
     // index of the last sample to be evaluated for the current piece
     unsigned int evaluation_ei;
-    // index of the first sample to be used for interpolating the current piece 
+    // index of the first sample to be used for interpolating the current piece
     unsigned int interpolation_si;
-    // index of the last sample to be used for interpolating the current piece 
+    // index of the last sample to be used for interpolating the current piece
     unsigned int interpolation_ei;
     // number of total samples to be used for interpolating the current piece
-    // this is equal to samples_per_interpolation except for the first and last 
+    // this is equal to samples_per_interpolation except for the first and last
     // piece
     unsigned int interpolation_samples;
     // parameter value for the first sample related to the current piece
@@ -165,8 +165,8 @@ class distance_impl
     double rec_piece_step;
     double rec_piece_2steps;
     unsigned int rec_total_samples;
-	
-	
+
+
     void init()
     {
         piece_degree = 3;
@@ -175,7 +175,7 @@ class distance_impl
         N = piecees * samples_per_piece;
         samples_per_junction = 2;
         samples_per_2junctions = 2*samples_per_junction;
-        samples_per_interpolation 
+        samples_per_interpolation
             =  samples_per_piece + samples_per_2junctions;
         step = 1.0 / N;
         half_step = step / 2;
@@ -184,7 +184,7 @@ class distance_impl
         interval_si = samples_per_junction;
         interval_ei = interval_si + samples_per_piece;
         portion_st = (double)(samples_per_junction) / samples_per_interpolation;
-        portion_et = portion_st 
+        portion_et = portion_st
                      + (double)(samples_per_piece) / samples_per_interpolation;
 
         // recursive routine parameters
@@ -198,8 +198,8 @@ class distance_impl
         rec_piece_step = samples_per_piece * rec_step;
         rec_piece_2steps = 2 * rec_piece_step;
     }
-    
-    bool check_accuracy( SBasis const& piece, 
+
+    bool check_accuracy( SBasis const& piece,
                          NL::Vector const& sample_distances,
                          double step )
     {
@@ -216,7 +216,7 @@ class distance_impl
     }
 
 
-    void append( Piecewise<SBasis> & pwc, 
+    void append( Piecewise<SBasis> & pwc,
                  Piecewise<SBasis> const& spwc,
                  double interval_st,
                  double interval_length )
@@ -230,7 +230,7 @@ class distance_impl
     }
 
     void init_power_matrix(NL::Matrix & power_matrix)
-    {        
+    {
         double t = 0;
         double u0, u1, s;
         unsigned int half_rows = power_matrix.rows() / 2;
@@ -262,17 +262,17 @@ class distance_impl
             u1 *= s;
         }
     }
-    
-    void interpolate( SBasis & piece, 
+
+    void interpolate( SBasis & piece,
                       NL::Matrix & psdinv_matrix,
                       NL::Vector & sample_distances,
-                      double interpolation_si, double interpolation_samples, 
+                      double interpolation_si, double interpolation_samples,
                       double _portion_st, double _portion_et )
     {
         piece.resize(2);
-        
-        NL::VectorView v( sample_distances, 
-                          interpolation_samples, 
+
+        NL::VectorView v( sample_distances,
+                          interpolation_samples,
                           interpolation_si );
         NL::Vector coeff = psdinv_matrix * v;
         for (unsigned int i = 0, k = 0; i < piece_size; i+=2, ++k)
@@ -282,9 +282,9 @@ class distance_impl
         }
         piece = portion(piece, _portion_st, _portion_et);
     }
-    
-    void evaluate_samples( curveA_type const& A, 
-                           curveB_type const& B, 
+
+    void evaluate_samples( curveA_type const& A,
+                           curveB_type const& B,
                            NL::Vector & sample_distances,
                            double& t )
     {
@@ -298,9 +298,9 @@ class distance_impl
             t += step;
         }
     }
-    
-    void evaluate_piece_rec( Piecewise<SBasis> & pwc, 
-                             curveA_type const& A, 
+
+    void evaluate_piece_rec( Piecewise<SBasis> & pwc,
+                             curveA_type const& A,
                              curveB_type const& B,
                              NL::Matrix & psdinv_matrix,
                              NL::Matrix & fpi_matrix,
@@ -318,21 +318,21 @@ class distance_impl
         double _interpolation_samples = _interpolation_ei - _interpolation_si;
         interpolate( piece, psdinv_matrix, curr_vector,
                      _interpolation_si, _interpolation_samples,
-                     _interval_st, _interval_et );       
+                     _interval_st, _interval_et );
         if (adaptive)
         {
-            bool good 
+            bool good
                 = check_accuracy( piece, sample_distances, rec_step );
             if (!good)
             {
                 Piecewise<SBasis> spwc;
                 CurvePortion<curveA_type> cp(A, _interval_st, _interval_et);
-                evaluate_rec( spwc, 
-                              cp.get_curve(), 
-                              B, 
+                evaluate_rec( spwc,
+                              cp.get_curve(),
+                              B,
                               fpi_matrix,
                               lpi_matrix,
-                              sample_distances, 
+                              sample_distances,
                               half_real_step );
                 append(pwc, spwc, _interval_st, rec_piece_step);
             }
@@ -347,15 +347,15 @@ class distance_impl
         }
     }
 
-    
-    // recursive routine: if the interpolated piece is accurate enough 
-    // it's returned in the out-parameter pwc, otherwise the computation of 
-    // two new piecees is performed using half of the current step so the 
+
+    // recursive routine: if the interpolated piece is accurate enough
+    // it's returned in the out-parameter pwc, otherwise the computation of
+    // two new piecees is performed using half of the current step so the
     // number of samples per piece is always the same, while the interpolation
-    // of one piece is split into the computation of two new piecees when 
+    // of one piece is split into the computation of two new piecees when
     // needed.
-    void evaluate_rec( Piecewise<SBasis> & pwc, 
-                       curveA_type const& A, 
+    void evaluate_rec( Piecewise<SBasis> & pwc,
+                       curveA_type const& A,
                        curveB_type const& B,
                        NL::Matrix & fpi_matrix,
                        NL::Matrix & lpi_matrix,
@@ -365,33 +365,33 @@ class distance_impl
         const double half_real_step = real_step / 2;
         const bool adaptive = !(real_step < adaptive_limit);
         static const unsigned int middle_sample_index = samples_per_piece + 1;
-        
+
         pwc.clear();
         pwc.push_cut(0);
-        // sample_distances used to check accuracy and for the interpolation 
+        // sample_distances used to check accuracy and for the interpolation
         // of the two sub-pieces when needed
         NL::Vector sample_distances_1(rec_total_samples);
         NL::Vector sample_distances_2(rec_total_samples);
 
         // view of even indexes of sample_distances_1
-        NL::VectorView 
+        NL::VectorView
         sd1_view_0(sample_distances_1, middle_sample_index, 0, 2);
         // view of even indexes of sample_distances_2
-        NL::VectorView 
+        NL::VectorView
         sd2_view_0(sample_distances_2, middle_sample_index, 0, 2);
         // view of first half (+ 1) of sample_distances
-        NL::VectorView 
+        NL::VectorView
         sd_view_1(sample_distances, middle_sample_index, 0);
         // view of second half of sample_distances
-        NL::VectorView 
+        NL::VectorView
         sd_view_2(sample_distances, middle_sample_index, samples_per_piece);
 
         sd1_view_0 = sd_view_1;
         sd2_view_0 = sd_view_2;
 
         // if we have to check accuracy and go on with recursion
-        // we need to compute the distance samples of middle points 
-        // of all current samples, because the new step is half of 
+        // we need to compute the distance samples of middle points
+        // of all current samples, because the new step is half of
         // the current one
         if (adaptive)
         {
@@ -414,7 +414,7 @@ class distance_impl
         evaluate_piece_rec( pwc, A, B,
                             fpi_matrix,
                             fpi_matrix,
-                            lpi_matrix,                           
+                            lpi_matrix,
                             sample_distances,
                             sample_distances_1,
                             adaptive,
@@ -424,10 +424,10 @@ class distance_impl
                             rec_piece_step,     // portion_et
                             half_real_step );
 
-        // copy back junction parts because 
+        // copy back junction parts because
         // the interpolate routine modifies them
-        for ( unsigned int i = 0, j = samples_per_piece - 1; 
-              i < samples_per_junction; 
+        for ( unsigned int i = 0, j = samples_per_piece - 1;
+              i < samples_per_junction;
               ++i, --j )
         {
             sd_view_1[j] = sd1_view_0[j];
@@ -436,7 +436,7 @@ class distance_impl
 
 
         // last piece
-        evaluate_piece_rec( pwc, A, B, 
+        evaluate_piece_rec( pwc, A, B,
                             lpi_matrix,
                             fpi_matrix,
                             lpi_matrix,
@@ -450,22 +450,22 @@ class distance_impl
                             half_real_step );
     }
 
-    
-    void evaluate_piece( Piecewise<SBasis> & pwc, 
-                         curveA_type const& A, 
+
+    void evaluate_piece( Piecewise<SBasis> & pwc,
+                         curveA_type const& A,
                          curveB_type const& B,
                          NL::Matrix & psdinv_matrix,
                          NL::Matrix & fpi_matrix,
                          NL::Matrix & lpi_matrix,
                          NL::Vector & curr_vector,
-                         NL::Vector & sample_distances,		
+                         NL::Vector & sample_distances,
                          NL::Vector & end_junction,
                          NL::VectorView & start_junction_view,
                          NL::VectorView & end_junction_view,
                          double & t )
     {
         //static size_t index = 0;
-        //std::cerr << "index = " << index++ << std::endl;		
+        //std::cerr << "index = " << index++ << std::endl;
         bool good;
         SBasis piece;
         Piecewise<SBasis> spwc;
@@ -475,8 +475,8 @@ class distance_impl
         //std::cerr << "interpolation samples = " <<  interpolation_samples << std::endl;
         evaluate_samples( A, B, curr_vector, t );
         //std::cerr << "current vector: " << curr_vector << std::endl;
-        for ( unsigned int i = 0, k = interval_si; 
-              i < sample_distances.size(); 
+        for ( unsigned int i = 0, k = interval_si;
+              i < sample_distances.size();
               i+=2, ++k )
         {
             sample_distances[i] = curr_vector[k];
@@ -493,8 +493,8 @@ class distance_impl
         }
         //std::cerr << "sample_distances: " << sample_distances << std::endl;
         end_junction = end_junction_view;
-        interpolate( piece, psdinv_matrix, curr_vector, 
-                     interpolation_si, interpolation_samples, 
+        interpolate( piece, psdinv_matrix, curr_vector,
+                     interpolation_si, interpolation_samples,
                      portion_st, portion_et );
         good = check_accuracy( piece, sample_distances, rec_step );
         //std::cerr << "good: " << good << std::endl;
@@ -502,12 +502,12 @@ class distance_impl
         if (!good)
         {
             CurvePortion<curveA_type> cp(A, interval_st, interval_et);
-            evaluate_rec( spwc, 
-                          cp.get_curve(), 
+            evaluate_rec( spwc,
+                          cp.get_curve(),
                           B,
                           fpi_matrix,
                           lpi_matrix,
-                          sample_distances, 
+                          sample_distances,
                           half_step );
             append(pwc, spwc, interval_st, piece_step);
         }
@@ -522,11 +522,11 @@ class distance_impl
             curr_vector[samples_per_junction + i] =  end_junction[i];
         }
     }
-	
+
   public:
-    void evaluate( Piecewise<SBasis> & pwc, 
-                   curveA_type const& A, 
-                   curveB_type const& B, 
+    void evaluate( Piecewise<SBasis> & pwc,
+                   curveA_type const& A,
+                   curveB_type const& B,
                    unsigned int _piecees )
     {
         piecees = _piecees;
@@ -538,29 +538,29 @@ class distance_impl
         pwc.push_cut(0);
         NL::Matrix power_matrix(rec_total_samples, piece_size);
         init_power_matrix(power_matrix);
-        
-        NL::MatrixView rec_fmv( power_matrix, 
-                                0, 0, 
+
+        NL::MatrixView rec_fmv( power_matrix,
+                                0, 0,
                                 shared_ei, piece_size );
         NL::Matrix rec_fpim = NL::pseudo_inverse(rec_fmv);
-        NL::MatrixView rec_lmv( power_matrix, 
-                                shared_si, 0, 
+        NL::MatrixView rec_lmv( power_matrix,
+                                shared_si, 0,
                                 rec_total_samples - shared_si, piece_size );
         NL::Matrix rec_lpim = NL::pseudo_inverse(rec_lmv);
-        
 
-        
+
+
         NL::Vector curr_vector(samples_per_interpolation);
         NL::Vector sample_distances(rec_total_samples);
         NL::Vector end_junction(samples_per_junction);
-        NL::VectorView start_junction_view( 
-                           sample_distances, 
-                           samples_per_junction, 
-                           rec_total_samples - 1 - samples_per_2junctions, 
+        NL::VectorView start_junction_view(
+                           sample_distances,
+                           samples_per_junction,
+                           rec_total_samples - 1 - samples_per_2junctions,
                            2 );
-        NL::VectorView end_junction_view( 
-                           curr_vector, 
-                           samples_per_junction, 
+        NL::VectorView end_junction_view(
+                           curr_vector,
+                           samples_per_junction,
                            samples_per_junction + samples_per_piece );
 
         double t = 0;
@@ -573,13 +573,13 @@ class distance_impl
         interpolation_samples = interpolation_ei - interpolation_si;
         interval_st = 0;
         interval_et = 0;
-        NL::MatrixView fmv( power_matrix, 
-                            interpolation_si, 0, 
+        NL::MatrixView fmv( power_matrix,
+                            interpolation_si, 0,
                             interpolation_samples, piece_size );
         NL::Matrix fpim = NL::pseudo_inverse(fmv);
 
         evaluate_piece( pwc, A, B, fpim,
-                        rec_fpim, rec_lpim, 
+                        rec_fpim, rec_lpim,
                         curr_vector, sample_distances, end_junction,
                         start_junction_view, end_junction_view,
                         t );
@@ -590,19 +590,19 @@ class distance_impl
         interpolation_si = 0;
         interpolation_ei = evaluation_ei;
         interpolation_samples = interpolation_ei - interpolation_si;
-        NL::MatrixView gmv( power_matrix, 
-                            interpolation_si, 0, 
+        NL::MatrixView gmv( power_matrix,
+                            interpolation_si, 0,
                             interpolation_samples, piece_size );
         NL::Matrix gpim = NL::pseudo_inverse(gmv);
 
-        for ( unsigned int piece_index = 1; 
-              piece_index < piecees - 1; 
+        for ( unsigned int piece_index = 1;
+              piece_index < piecees - 1;
               ++piece_index )
         {
             evaluate_piece( pwc, A, B, gpim,
-                            rec_fpim, rec_lpim, 
+                            rec_fpim, rec_lpim,
                             curr_vector, sample_distances, end_junction,
-                            start_junction_view, end_junction_view,					
+                            start_junction_view, end_junction_view,
                             t );
         }
 
@@ -612,15 +612,15 @@ class distance_impl
         interpolation_si = 0;
         interpolation_ei = evaluation_ei;
         interpolation_samples = interpolation_ei -interpolation_si;
-        NL::MatrixView lmv( power_matrix, 
-                            interpolation_si, 0, 
+        NL::MatrixView lmv( power_matrix,
+                            interpolation_si, 0,
                             interpolation_samples, piece_size );
         NL::Matrix lpim = NL::pseudo_inverse(lmv);
-        
+
         evaluate_piece( pwc, A, B, lpim,
-                        rec_fpim, rec_lpim, 
+                        rec_fpim, rec_lpim,
                         curr_vector, sample_distances, end_junction,
-                        start_junction_view, end_junction_view,			
+                        start_junction_view, end_junction_view,
                         t );
     }
 
@@ -645,9 +645,9 @@ class distance_impl
 
 template < typename Curve01T, typename CurveT >
 inline
-Piecewise<SBasis> 
-distance( Curve01T const& A, 
-          CurveT const& B, 
+Piecewise<SBasis>
+distance( Curve01T const& A,
+          CurveT const& B,
           unsigned int pieces = 40,
           double adaptive_limit = 1e-5,
           double accuracy = 1e-3 )
@@ -663,8 +663,8 @@ distance( Curve01T const& A,
 
 template < typename CurveT >
 inline
-Piecewise<SBasis> 
-distance( Piecewise< D2<SBasis> > const& A, 
+Piecewise<SBasis>
+distance( Piecewise< D2<SBasis> > const& A,
           CurveT const& B,
           unsigned int pieces = 40,
           double adaptive_limit = 1e-5,
@@ -684,8 +684,8 @@ distance( Piecewise< D2<SBasis> > const& A,
 
 template < typename CurveT >
 inline
-Piecewise<SBasis> 
-distance( Path const& A, 
+Piecewise<SBasis>
+distance( Path const& A,
           CurveT const& B,
           unsigned int pieces = 40,
           double adaptive_limit = 1e-5,
@@ -706,18 +706,18 @@ distance( Path const& A,
 
 
 template < typename Curve01T, typename CurveT >
-unsigned int dist_test( Piecewise<SBasis> const& pwc, 
-                        Curve01T const& A, 
-                        CurveT const& B, 
+unsigned int dist_test( Piecewise<SBasis> const& pwc,
+                        Curve01T const& A,
+                        CurveT const& B,
                         double step )
 {
     std::cerr << "======= inside dist test =======" << std::endl;
-    unsigned int total_checked_values = 0; 
+    unsigned int total_checked_values = 0;
     unsigned int total_error = 0;
     double nptime, sample_distance;
     Point At;
     for (double t = 0; t <= 1; t += step)
-    {	
+    {
         At = A(t);
         nptime = nearest_time(At, B);
         sample_distance = distance(At, B(nptime));
@@ -741,8 +741,8 @@ using namespace Geom;
 class DCCToy : public Toy
 {
   private:
-    void draw( cairo_t *cr, std::ostringstream *notify, 
-               int width, int height, bool save, std::ostringstream *timer_stream) 
+    void draw( cairo_t *cr, std::ostringstream *notify,
+               int width, int height, bool save, std::ostringstream *timer_stream)
     {
         Point ulc(width - 300, height - 60 );
         toggles[0].bounds = Rect(ulc, ulc + Point(160,25) );
@@ -754,10 +754,10 @@ class DCCToy : public Toy
             using std::swap;
             swap(sliders[0], sliders[1]);
         }
-        
+
         cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
         cairo_set_line_width (cr, 0.3);
-        
+
         if (choice == 0)
         {
             A = single_curve_psh.asBezier();
@@ -783,43 +783,43 @@ class DCCToy : public Toy
         {
             for (unsigned int i = 0; i < pwc_curves; ++i)
             {
-                pwA.segs[i] = pwc_psh[i].asBezier(); 
+                pwA.segs[i] = pwc_psh[i].asBezier();
             }
             cairo_pw_d2_sb(cr, pwA);
         }
-        
+
         D2<SBasis> B = B_psh.asBezier();
         cairo_d2_sb(cr, B);
-        
+
         double t = sliders[0].value();
         Piecewise<SBasis> d;
         unsigned int total_error = 0;
         Point cursor;
-        
+
         if (!toggles[0].on)
         {
             if (choice == 0)
             {
                 cursor = A(t);
                 d = distance(A, B, 40);
-                // uncomment following lines to view errors in computing the distance 
+                // uncomment following lines to view errors in computing the distance
                 //total_error = dist_test(d, A, B, 0.0004);
             }
             else if (choice == 1)
             {
                 cursor = pA(t);
                 d = distance(pA, B, 40);
-                // uncomment following lines to view errors in computing the distance 
-                //total_error = dist_test(d, pA, B, 0.0004);                
+                // uncomment following lines to view errors in computing the distance
+                //total_error = dist_test(d, pA, B, 0.0004);
             }
             else if (choice == 2)
             {
                 cursor = pwA(t);
                 d = distance(pwA, B, 40);
-                // uncomment following lines to view errors in computing the distance 
-                //total_error = dist_test(d, pwA, B, 0.0004);                
+                // uncomment following lines to view errors in computing the distance
+                //total_error = dist_test(d, pwA, B, 0.0004);
             }
-            
+
             double nptB = nearest_time(cursor, B);
             draw_circ(cr, cursor);
             cairo_move_to(cr, cursor);
@@ -831,31 +831,31 @@ class DCCToy : public Toy
             Point np(0,0);
             cursor = B(t);
             if (choice == 0)
-            {        
+            {
                 double nptA = nearest_time(cursor, A);
                 np = A(nptA);
                 d = distance(B, A, 40);
-                // uncomment following lines to view errors in computing the distance 
-                //total_error = dist_test(d, B, A, 0.0004);            
+                // uncomment following lines to view errors in computing the distance
+                //total_error = dist_test(d, B, A, 0.0004);
             }
             else if (choice == 1)
             {
                 double nptA = nearest_time(cursor, pA);
                 np = pA(nptA);
                 d = distance(B, pA, 40);
-                // uncomment following lines to view errors in computing the distance 
-                //total_error = dist_test(d, B, pA, 0.0004);                
+                // uncomment following lines to view errors in computing the distance
+                //total_error = dist_test(d, B, pA, 0.0004);
             }
             draw_circ(cr, cursor);
             cairo_move_to(cr, cursor);
             cairo_line_to(cr, np);
             cairo_stroke(cr);
         }
-        
+
         if (total_error != 0)
             *notify << "total error: " << total_error << "   ";
-        
-        
+
+
         // draw distance function
         Piecewise< D2<SBasis> > pwc;
         pwc.cuts = d.cuts;
@@ -864,7 +864,7 @@ class DCCToy : public Toy
         double domain_length = 800 / d.domain().extent();
         for ( unsigned int i = 0; i < d.size(); ++i )
         {
-            piece[X] = SBasis(Linear(20,20) 
+            piece[X] = SBasis(Linear(20,20)
                               + domain_length * Linear(d.cuts[i], d.cuts[i+1]));
             piece[Y] = 3 * d.segs[i];
             pwc.segs[i] = piece;
@@ -892,13 +892,13 @@ class DCCToy : public Toy
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
-    
+
   public:
     DCCToy()
     {
         toggle0_status = false;
         choice = 0;
-        
+
         single_curve_handles = 6;
         path_curves = 3;
         path_handles_per_curve = 4;
@@ -907,7 +907,7 @@ class DCCToy : public Toy
         pwc_handles_per_curve = 4;
         pwc_total_handles = pwc_curves * pwc_handles_per_curve;
         B_handles = 4;
-        
+
         if (choice == 0)
         {
             for (unsigned int i = 0; i < single_curve_handles; ++i)
@@ -932,7 +932,7 @@ class DCCToy : public Toy
             pwA.segs.resize(pwc_curves);
             pwA.cuts.resize(pwc_curves+1);
             pwA.cuts[0] = 0;
-            double length = 1.0 / pwc_curves; 
+            double length = 1.0 / pwc_curves;
             for (unsigned int i = 0; i < pwc_curves; ++i)
             {
                 for (unsigned int j = 0; j < pwc_handles_per_curve; ++j)
@@ -944,23 +944,23 @@ class DCCToy : public Toy
             }
             sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
         }
-        
+
         for (unsigned int i = 0; i < B_handles; ++i)
         {
             B_psh.push_back(700*uniform(), 500*uniform());
         }
         handles.push_back(&B_psh);
         sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
-        
+
         toggles.push_back(Toggle("d(A,B) <-> d(B,A)", false));
         toggles.push_back(Toggle("Show/Hide cuts", false));
-        
+
         handles.push_back(&(toggles[0]));
         handles.push_back(&(toggles[1]));
         handles.push_back(&(sliders[0]));
 
     }
-    
+
   private:
     bool toggle0_status;
     unsigned int choice;
@@ -981,8 +981,8 @@ class DCCToy : public Toy
 
 
 
-int main(int argc, char **argv) 
-{	
+int main(int argc, char **argv)
+{
     init( argc, argv, new DCCToy(), 840, 600 );
     return 0;
 }

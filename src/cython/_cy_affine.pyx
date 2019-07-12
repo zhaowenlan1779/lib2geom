@@ -199,14 +199,14 @@ cdef class cy_Affine:
         return self.thisptr.isNonzeroRotation(eps)
 
     def is_nonzero_HShear(self, Coord eps=EPSILON):
-        """Return true if self is close to horizontal shear and is not indentity.
+        """Return true if self is close to horizontal shear and is not identity.
 
         Use second argument eps to specify tolerance.
         """
         return self.thisptr.isNonzeroHShear(eps)
 
     def is_nonzero_VShear(self, Coord eps=EPSILON):
-        """Return true if self is close to vertical shear and is not indentit.
+        """Return true if self is close to vertical shear and is not identity.
 
         Use second argument eps to specify tolerance.
         """

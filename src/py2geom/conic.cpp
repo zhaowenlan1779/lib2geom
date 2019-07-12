@@ -156,7 +156,7 @@ void wrap_conic() {
 
         .def("split", &wrap_rq_split)
         .def("hermite", &Geom::RatQuad::hermite)
-        .def("homogenous", &Geom::RatQuad::homogenous)
+        .def("homogeneous", &Geom::RatQuad::homogeneous)
         .def("fromPointsTangents", &Geom::RatQuad::fromPointsTangents)
         .staticmethod("fromPointsTangents")
         ;
