@@ -35,11 +35,11 @@ include_directories(src src/googletest/googletest/include ${CMAKE_CURRENT_BINARY
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/2geom)
 
 check_cxx_source_compiles("#include <math.h>\nint main() { double a=0.5,b=0.5,c=0.5; sincos(a, &b, &c); return 0; }" HAVE_SINCOS)
-if(HAVE_SINCOS AND NOT WIN32)  # results in internal compiler error with mingw-w64 (gcc 8.3.0)
-	add_definitions(-DHAVE_SINCOS)
+if(HAVE_SINCOS)
+    add_definitions(-DHAVE_SINCOS)
 endif()
 if(GSL_FOUND)
-	add_definitions(-DHAVE_GSL)
+    add_definitions(-DHAVE_GSL)
 endif()
 if(PYCAIRO_FOUND)
     add_definitions(-DHAVE_PYCAIRO)
@@ -59,7 +59,7 @@ add_compile_options(-O2)
 # suppress the very annoying "#pragma ms_struct" Clang warning, caused by -mms-bitfield required for GTK
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     if(WIN32)
-    	add_compile_options(-Wno-ignored-attributes)
+        add_compile_options(-Wno-ignored-attributes)
     endif()
     add_compile_options(-Wno-unused-local-typedef)
 endif()
@@ -67,7 +67,7 @@ endif()
 option(WITH_PROFILING
     "Build lib2geom with profiling enabled"
     OFF)
-  
+
 if(WITH_PROFILING)
     add_compile_options(-pg)
     set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -pg")
