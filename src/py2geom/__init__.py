@@ -23,4 +23,4 @@
 # OF ANY KIND, either express or implied. See the LGPL or the MPL for
 # the specific language governing rights and limitations.
 
-from _py2geom import *
+from py2geom._py2geom import *
