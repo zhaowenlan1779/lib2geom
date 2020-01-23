@@ -26,6 +26,7 @@ nl-vector-test
 path-test
 point-test
 polynomial-test
+rotated-rect-test
 rect-test
 sbasis-test
 )

@@ -109,6 +109,8 @@ polynomial.cpp
 polynomial.h
 
 ray.h
+rotated-rect.cpp
+rotated-rect.h
 rect.h
 rect.cpp
 recursive-bezier-intersection.cpp
