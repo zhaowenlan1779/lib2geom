@@ -1,12 +1,22 @@
 cmake_minimum_required(VERSION 3.1)
 cmake_policy(SET CMP0054 NEW)
 
-project(lib2geom CXX C) # C is required by CHECK_SYMBOL_EXISTS
+
 set(2GEOM_MAJOR_VERSION 1)
 set(2GEOM_MINOR_VERSION 0)
 set(2GEOM_PATCH_VERSION 0)
 set(2GEOM_VERSION ${2GEOM_MAJOR_VERSION}.${2GEOM_MINOR_VERSION}.${2GEOM_PATCH_VERSION})
 set(2GEOM_ABI_VERSION ${2GEOM_MAJOR_VERSION}.${2GEOM_MINOR_VERSION}.0)
+
+project(libb2geom
+    VERSION
+        ${2GEOM_VERSION}
+    LANGUAGES
+        CXX
+        C     # C is required by CHECK_SYMBOL_EXISTS
+    )
+
+set(2GEOM_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/include" CACHE INTERNAL "")
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,6 +26,7 @@ set(CMAKE_SKIP_RPATH:BOOL OFF)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
+include(GNUInstallDirs)
 include(CheckCXXSourceCompiles)
 
 # Find dependencies
@@ -36,9 +47,6 @@ if (2GEOM_TESTING)
     add_subdirectory(tests)
 endif()
 
-# Add global include and link directories
-include_directories(src src/googletest/googletest/include ${CMAKE_CURRENT_BINARY_DIR})
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/2geom)
 
 check_cxx_source_compiles("#include <math.h>\nint main() { double a=0.5,b=0.5,c=0.5; sincos(a, &b, &c); return 0; }" HAVE_SINCOS)
 if(HAVE_SINCOS)
@@ -110,6 +118,26 @@ add_custom_target(uninstall
 
 add_subdirectory(src)
 
-# install headers
-file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-install(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom)
+
+install(EXPORT 2geom_targets
+    FILE 2GeomTargets.cmake
+    NAMESPACE 2Geom::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/2Geom"
+    )
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("2GeomConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion)
+
+message("${CMAKE_INSTALL_LIBDIR}/cmake/2Geom")
+
+install(FILES "2GeomConfig.cmake" "${CMAKE_BINARY_DIR}/2GeomConfigVersion.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/2Geom"
+    )
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/2geom DESTINATION include)
+
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/2geom.pc.in
+                ${CMAKE_BINARY_DIR}/2geom.pc @ONLY IMMEDIATE )
+install(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)

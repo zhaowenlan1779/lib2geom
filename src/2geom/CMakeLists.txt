@@ -21,152 +21,179 @@ if(RAGEL_PROGRAM AND (GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER))
                        COMMENT "Generating svg_path_parser.cpp with ragel")
 endif()
 
-SET(2GEOM_SRC
 
-affine.cpp
-affine.h
-angle.h
+add_library(2geom ${LIB_TYPE}
+    # sources
+    affine.cpp
 
-basic-intersection.cpp
-basic-intersection.h
-bezier.cpp
-bezier.h
-bezier-clipping.cpp
-bezier-curve.cpp
-bezier-curve.h
-bezier-to-sbasis.h
-bezier-utils.cpp
-bezier-utils.h
+    basic-intersection.cpp
+    bezier.cpp
+    bezier-clipping.cpp
+    bezier-curve.cpp
+    bezier-utils.cpp
 
-cairo-path-sink.h
-cairo-path-sink.cpp
-choose.h
-circle.cpp
-circle.h
-concepts.cpp
-concepts.h
-conicsec.cpp
-conicsec.h
-conic_section_clipper.h
-conic_section_clipper_cr.h
-conic_section_clipper_impl.cpp
-conic_section_clipper_impl.h
-convex-hull.cpp
-convex-hull.h
-coord.cpp
-coord.h
-crossing.cpp
-crossing.h
-curve.cpp
-curve.h
-curves.h
+    cairo-path-sink.cpp
+    circle.cpp
+    concepts.cpp
+    conicsec.cpp
+    conic_section_clipper_impl.cpp
+    convex-hull.cpp
+    coord.cpp
+    crossing.cpp
+    curve.cpp
 
-d2-sbasis.cpp
-d2.h
+    d2-sbasis.cpp
 
-ellipse.cpp
-ellipse.h
-elliptical-arc.cpp
-elliptical-arc.h
-elliptical-arc-from-sbasis.cpp
-exception.h
+    ellipse.cpp
+    elliptical-arc.cpp
+    elliptical-arc-from-sbasis.cpp
 
-forward.h
+    geom.cpp
 
-geom.cpp
-geom.h
+    intersection-graph.cpp
 
-intersection.h
-intersection-graph.cpp
-intersection-graph.h
+    line.cpp
 
-line.cpp
-line.h
-linear.h
+    nearest-time.cpp
 
-math-utils.h
+    numeric/matrix.cpp
 
-nearest-time.cpp
-nearest-time.h
+    parallelogram.cpp
+    path-intersection.cpp
+    path-sink.cpp
+    path.cpp
+    pathvector.cpp
+    piecewise.cpp
+    point.cpp
+    polynomial.cpp
 
-numeric/matrix.cpp
+    rotated-rect.cpp
+    rect.cpp
+    recursive-bezier-intersection.cpp
 
-ord.h
+    sbasis-2d.cpp
+    sbasis-geometric.cpp
+    sbasis-math.cpp
+    sbasis-poly.cpp
+    sbasis-roots.cpp
+    sbasis-to-bezier.cpp
+    sbasis.cpp
+    solve-bezier.cpp
+    solve-bezier-one-d.cpp
+    solve-bezier-parametric.cpp
+    svg-path-parser.cpp
+    svg-path-writer.cpp
+    sweep-bounds.cpp
 
-parallelogram.cpp
-parallelogram.h
-path-intersection.cpp
-path-intersection.h
-path-sink.cpp
-path-sink.h
-path.cpp
-path.h
-pathvector.cpp
-pathvector.h
-piecewise.cpp
-piecewise.h
-point.cpp
-point.h
-polynomial.cpp
-polynomial.h
+    transforms.cpp
 
-ray.h
-rotated-rect.cpp
-rotated-rect.h
-rect.h
-rect.cpp
-recursive-bezier-intersection.cpp
+    utils.cpp
 
-sbasis-2d.cpp
-sbasis-2d.h
-sbasis-curve.h
-sbasis-geometric.cpp
-sbasis-geometric.h
-sbasis-math.cpp
-sbasis-math.h
-sbasis-poly.cpp
-sbasis-poly.h
-sbasis-roots.cpp
-sbasis-to-bezier.cpp
-sbasis-to-bezier.h
-sbasis.cpp
-sbasis.h
-solve-bezier.cpp
-solve-bezier-one-d.cpp
-solve-bezier-parametric.cpp
-solver.h
-svg-path-parser.cpp
-svg-path-parser.h
-svg-path-writer.cpp
-svg-path-writer.h
-sweeper.h
-sweep-bounds.cpp
-sweep-bounds.h
+    # headers (for IDE support only)
+    ${2GEOM_INCLUDE_DIR}/2geom/affine.h
+    ${2GEOM_INCLUDE_DIR}/2geom/angle.h
 
-transforms.cpp
-transforms.h
+    ${2GEOM_INCLUDE_DIR}/2geom/basic-intersection.h
+    ${2GEOM_INCLUDE_DIR}/2geom/bezier.h
+    ${2GEOM_INCLUDE_DIR}/2geom/bezier-curve.h
+    ${2GEOM_INCLUDE_DIR}/2geom/bezier-to-sbasis.h
+    ${2GEOM_INCLUDE_DIR}/2geom/bezier-utils.h
 
-utils.cpp
-utils.h
+    ${2GEOM_INCLUDE_DIR}/2geom/cairo-path-sink.h
+    ${2GEOM_INCLUDE_DIR}/2geom/choose.h
+    ${2GEOM_INCLUDE_DIR}/2geom/circle.h
+    ${2GEOM_INCLUDE_DIR}/2geom/concepts.h
+    ${2GEOM_INCLUDE_DIR}/2geom/conicsec.h
+    ${2GEOM_INCLUDE_DIR}/2geom/conic_section_clipper.h
+    ${2GEOM_INCLUDE_DIR}/2geom/conic_section_clipper_cr.h
+    ${2GEOM_INCLUDE_DIR}/2geom/conic_section_clipper_impl.h
+    ${2GEOM_INCLUDE_DIR}/2geom/convex-hull.h
+    ${2GEOM_INCLUDE_DIR}/2geom/coord.h
+    ${2GEOM_INCLUDE_DIR}/2geom/crossing.h
+    ${2GEOM_INCLUDE_DIR}/2geom/curve.h
+    ${2GEOM_INCLUDE_DIR}/2geom/curves.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/d2.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/ellipse.h
+    ${2GEOM_INCLUDE_DIR}/2geom/elliptical-arc.h
+    ${2GEOM_INCLUDE_DIR}/2geom/exception.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/forward.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/geom.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/intersection.h
+    ${2GEOM_INCLUDE_DIR}/2geom/intersection-graph.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/line.h
+    ${2GEOM_INCLUDE_DIR}/2geom/linear.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/math-utils.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/nearest-time.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/ord.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/parallelogram.h
+    ${2GEOM_INCLUDE_DIR}/2geom/path-intersection.h
+    ${2GEOM_INCLUDE_DIR}/2geom/path-sink.h
+    ${2GEOM_INCLUDE_DIR}/2geom/path.h
+    ${2GEOM_INCLUDE_DIR}/2geom/pathvector.h
+    ${2GEOM_INCLUDE_DIR}/2geom/piecewise.h
+    ${2GEOM_INCLUDE_DIR}/2geom/point.h
+    ${2GEOM_INCLUDE_DIR}/2geom/polynomial.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/ray.h
+    ${2GEOM_INCLUDE_DIR}/2geom/rotated-rect.h
+    ${2GEOM_INCLUDE_DIR}/2geom/rect.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/sbasis-2d.h
+    ${2GEOM_INCLUDE_DIR}/2geom/sbasis-curve.h
+    ${2GEOM_INCLUDE_DIR}/2geom/sbasis-geometric.h
+    ${2GEOM_INCLUDE_DIR}/2geom/sbasis-math.h
+    ${2GEOM_INCLUDE_DIR}/2geom/sbasis-poly.h
+    ${2GEOM_INCLUDE_DIR}/2geom/sbasis-to-bezier.h
+    ${2GEOM_INCLUDE_DIR}/2geom/sbasis.h
+    ${2GEOM_INCLUDE_DIR}/2geom/solver.h
+    ${2GEOM_INCLUDE_DIR}/2geom/svg-path-parser.h
+    ${2GEOM_INCLUDE_DIR}/2geom/svg-path-writer.h
+    ${2GEOM_INCLUDE_DIR}/2geom/sweeper.h
+    ${2GEOM_INCLUDE_DIR}/2geom/sweep-bounds.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/transforms.h
+
+    ${2GEOM_INCLUDE_DIR}/2geom/utils.h
 )
 
 # make lib for 2geom
-add_library(2geom ${LIB_TYPE} ${2GEOM_SRC})
-target_include_directories(2geom PRIVATE ${GLIB_INCLUDE_DIRS} ${GSL_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS} ${DoubleConversion_INCLUDE_DIRS})
-target_link_libraries(2geom ${GLIB_LIBRARIES} ${GSL_LIBRARIES} ${CAIRO_LIBRARIES} ${DoubleConversion_LIBRARIES})
+target_include_directories(2geom
+    PRIVATE
+        ${GLIB_INCLUDE_DIRS}
+        ${GSL_INCLUDE_DIRS}
+        ${CAIRO_INCLUDE_DIRS}
+        ${DoubleConversion_INCLUDE_DIRS}
+    PUBLIC
+        $<BUILD_INTERFACE:${2GEOM_INCLUDE_DIR}>
+        $<BUILD_INTERFACE:${2GEOM_INCLUDE_DIR}/2geom>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/2geom-${2GEOM_VERSION}>
+    )
+
+target_link_libraries(2geom
+    PUBLIC
+        ${GLIB_LIBRARIES}
+        ${GSL_LIBRARIES}
+        ${CAIRO_LIBRARIES}
+        ${DoubleConversion_LIBRARIES}
+    )
+
 set_target_properties(2geom PROPERTIES SOVERSION "${2GEOM_ABI_VERSION}")
 
 install(TARGETS 2geom
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    EXPORT 2geom_targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-install(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom)
-file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/numeric/*.h")
-install(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom/numeric)
-
-configure_file( ${CMAKE_SOURCE_DIR}/2geom.pc.in
-                ${CMAKE_BINARY_DIR}/2geom.pc @ONLY IMMEDIATE )
-install(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)
+add_library(2Geom::2geom ALIAS 2geom)
