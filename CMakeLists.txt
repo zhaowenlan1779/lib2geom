@@ -136,7 +136,7 @@ install(FILES "2GeomConfig.cmake" "${CMAKE_BINARY_DIR}/2GeomConfigVersion.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/2Geom"
     )
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/2geom DESTINATION include)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/2geom" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/2geom-${2GEOM_VERSION}")
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/2geom.pc.in
                 ${CMAKE_BINARY_DIR}/2geom.pc @ONLY IMMEDIATE )
