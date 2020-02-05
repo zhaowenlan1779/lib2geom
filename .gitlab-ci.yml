@@ -10,6 +10,7 @@ variables:
 2geom:
   stage: build
   before_script:
+    - bash tools/download-gtest.sh
     - mkdir -p ccache
     - export CCACHE_BASEDIR=${PWD}
     - export CCACHE_DIR=${PWD}/ccache
@@ -18,6 +19,7 @@ variables:
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
               -D2GEOM_BOOST_PYTHON=ON
               -D2GEOM_TESTING=ON
+              -DGTest_DIR=gtest
     - make -j3
     - make -j3 test
     - make -j3 perf
