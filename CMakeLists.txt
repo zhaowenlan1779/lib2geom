@@ -15,7 +15,6 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 set(CMAKE_SKIP_RPATH:BOOL OFF)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-enable_testing()
 
 include(CheckCXXSourceCompiles)
 
@@ -29,6 +28,12 @@ pkg_check_modules(GTK3 gtk+-3.0)
 pkg_check_modules(GLIB glib-2.0)
 pkg_check_modules(CAIRO cairo)
 pkg_check_modules(GSL gsl)
+
+option(2GEOM_TESTING "Build tests" OFF)
+
+if (2GEOM_TESTING)
+    enable_testing()
+endif()
 
 # Add global include and link directories
 include_directories(src src/googletest/googletest/include ${CMAKE_CURRENT_BINARY_DIR})

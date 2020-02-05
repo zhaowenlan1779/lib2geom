@@ -1,10 +1,4 @@
-add_library(gtest SHARED googletest/googletest/src/gtest-all.cc)
-target_include_directories(gtest PRIVATE googletest/googletest)
-target_link_libraries(gtest Threads::Threads)
-add_library(gtest_main STATIC googletest/googletest/src/gtest_main.cc)
-
 add_subdirectory(2geom)
-add_subdirectory(tests)
 add_subdirectory(performance-tests)
 if(GTK3_FOUND)
   add_subdirectory(toys)
@@ -14,3 +8,10 @@ endif()
 
 add_subdirectory(cython)
 add_subdirectory(py2geom)
+
+if (2GEOM_TESTING)
+    add_subdirectory(tests)
+else()
+    message("tests are disabled")
+endif()
+
