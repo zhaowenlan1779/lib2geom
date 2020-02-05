@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 mkdir -p build-as-subproject
 (cd build-as-subproject; cmake ..  -D2GEOM_AS_SUBPROJECT=ON)
 (cd build-as-subproject; make main -j 2)
