@@ -39,7 +39,7 @@
 #include <getopt.h>
 
 #include <2geom/orphan-code/rtree.h>
-#include <2geom/orphan-code/rtree.cpp>
+#include "../2geom/orphan-code/rtree.cpp"
 
 
 //using std::vector;

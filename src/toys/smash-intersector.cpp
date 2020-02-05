@@ -53,7 +53,7 @@
 #include <algorithm>
 
 #include <2geom/orphan-code/intersection-by-smashing.h>
-#include <2geom/orphan-code/intersection-by-smashing.cpp>
+#include "../2geom/orphan-code/intersection-by-smashing.cpp"
 
 using namespace Geom;
 

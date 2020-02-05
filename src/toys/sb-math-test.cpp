@@ -50,7 +50,7 @@ using namespace std;
 #include <stdio.h>
 #include <math.h>
 
-#include <toys/pwsbhandle.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
+#include "pwsbhandle.cpp"  // FIXME: This looks like it may give problems later, (including a .cpp file)
 
 //-Plot---------------------------------------------------------------
 static void plot(cairo_t* cr, double (*f)(double), Piecewise<SBasis> const &x, double vscale=1){

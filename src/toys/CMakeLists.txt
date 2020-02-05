@@ -1,13 +1,13 @@
 SET(2GEOM_TOY-FRAMEWORK-2_SRC
 toy-framework-2.cpp
-toy-framework-2.h
+${2GEOM_INCLUDE_DIR}/toys/toy-framework-2.h
 path-cairo.cpp
-path-cairo.h
+${2GEOM_INCLUDE_DIR}/toys/path-cairo.h
 )
 SET(2GEOM_LPE_TOY_FRAMEWORK_SRC
 ${2GEOM_TOY-FRAMEWORK-2_SRC}
 lpe-framework.cpp
-lpe-framework.h
+${2GEOM_INCLUDE_DIR}/toys/lpe-framework.h
 )
 
 SET(2GEOM_TOYS-2_SRC
@@ -125,15 +125,15 @@ OPTION(2GEOM_TOYS_LPE
 IF(2GEOM_TOYS_LPE)
     # make lib for lpetoy
     add_library(lpetoy ${LIB_TYPE} ${2GEOM_LPE_TOY_FRAMEWORK_SRC})
-    target_include_directories(lpetoy PUBLIC ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS})
-    target_link_libraries(lpetoy 2geom ${GTK3_LIBRARIES} ${CAIRO_LIBRARIES})
+    target_include_directories(lpetoy PUBLIC ${GTK3_INCLUDE_DIRS})
+    target_link_libraries(lpetoy 2Geom::2geom ${GTK3_LIBRARIES})
     if(NOT WIN32 AND NOT APPLE)
     	target_link_libraries(lpetoy -lrt)
     endif()
 
     FOREACH(source ${2GEOM_LPE_TOYS_SRC})
         add_executable(${source} ${source}.cpp)
-        target_link_libraries(${source} lpetoy ${GSL_LIBRARIES} 2geom ${GTK3_LIBRARIES} ${CAIRO_LIBRARIES})
+        target_link_libraries(${source} lpetoy 2Geom::2geom)
     ENDFOREACH(source)
 
 ENDIF(2GEOM_TOYS_LPE)
@@ -144,8 +144,8 @@ OPTION(2GEOM_TOYS
 IF(2GEOM_TOYS)
     # make lib for toy
     ADD_LIBRARY(toy-2 ${LIB_TYPE} ${2GEOM_TOY-FRAMEWORK-2_SRC})
-    target_include_directories(toy-2 PUBLIC ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS})
-    TARGET_LINK_LIBRARIES(toy-2 2geom ${GTK3_LIBRARIES} ${CAIRO_LIBRARIES})
+    target_include_directories(toy-2 PUBLIC ${GTK3_INCLUDE_DIRS})
+    TARGET_LINK_LIBRARIES(toy-2 2Geom::2geom ${GTK3_LIBRARIES})
     if(NOT WIN32 AND NOT APPLE)
     	target_link_libraries(toy-2 -lrt)
     endif()
@@ -165,7 +165,7 @@ IF(2GEOM_TOYS)
         ELSE(${source} STREQUAL aa)
             ADD_EXECUTABLE(${source} ${source}.cpp)
         ENDIF(${source} STREQUAL aa)
-        TARGET_LINK_LIBRARIES(${source} toy-2 ${GSL_LIBRARIES} 2geom ${GTK3_LIBRARIES} ${CAIRO_LIBRARIES})
+        TARGET_LINK_LIBRARIES(${source} toy-2  2Geom::2geom ${GTK3_LIBRARIES} )
     ENDFOREACH(source)
 ENDIF(2GEOM_TOYS)
 

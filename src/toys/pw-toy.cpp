@@ -33,7 +33,7 @@ void cairo_vert(cairo_t *cr, double x, vector<double> p) {
     }
 }
 
-#include <toys/pwsbhandle.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
+#include "pwsbhandle.cpp"  // FIXME: This looks like it may give problems later, (including a .cpp file)
 
 class PwToy: public Toy {
     unsigned segs, handles_per_curve, curves;
