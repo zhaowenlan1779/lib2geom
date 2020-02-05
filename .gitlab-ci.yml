@@ -15,14 +15,17 @@ variables:
     - export CCACHE_BASEDIR=${PWD}
     - export CCACHE_DIR=${PWD}/ccache
   script:
+    - mkdir -p opt
     - cmake . -DCMAKE_C_COMPILER_LAUNCHER=ccache
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+              -DCMAKE_INSTALL_PREFIX=./opt
               -D2GEOM_BOOST_PYTHON=ON
               -D2GEOM_TESTING=ON
               -DGTest_DIR=${PWD}/gtest/opt/lib/cmake/GTest
     - make -j3
     - make -j3 test
     - make -j3 perf
+    - make install
     - ( cd tests/dependent-project ; bash build-and-run.sh )
   cache:
     paths:
