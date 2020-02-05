@@ -23,6 +23,7 @@ variables:
     - make -j3
     - make -j3 test
     - make -j3 perf
+    - ( cd tests/dependent-project ; bash build.sh )
   cache:
     paths:
       - ccache/
