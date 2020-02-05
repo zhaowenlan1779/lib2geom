@@ -9,9 +9,3 @@ endif()
 add_subdirectory(cython)
 add_subdirectory(py2geom)
 
-if (2GEOM_TESTING)
-    add_subdirectory(tests)
-else()
-    message("tests are disabled")
-endif()
-

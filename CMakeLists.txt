@@ -33,6 +33,7 @@ option(2GEOM_TESTING "Build tests" OFF)
 
 if (2GEOM_TESTING)
     enable_testing()
+    add_subdirectory(tests)
 endif()
 
 # Add global include and link directories
