@@ -168,12 +168,11 @@ add_library(2geom ${LIB_TYPE}
 
 # make lib for 2geom
 target_include_directories(2geom
-    PRIVATE
+    PUBLIC
         ${GLIB_INCLUDE_DIRS}
         ${GSL_INCLUDE_DIRS}
         ${CAIRO_INCLUDE_DIRS}
         ${DoubleConversion_INCLUDE_DIRS}
-    PUBLIC
         $<BUILD_INTERFACE:${2GEOM_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${2GEOM_INCLUDE_DIR}/2geom>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/2geom-${2GEOM_VERSION}>
