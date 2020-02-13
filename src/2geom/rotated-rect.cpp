@@ -31,23 +31,8 @@
  *
  */
 
+#include <2geom/basic-intersection.h>
 #include <2geom/rotated-rect.h>
-
-namespace {
-
-/// Returns: true if line segments AB and CD intersects
-/// Precondition: AB and CD must be not collinear
-bool non_collinear_segments_intersect(const Geom::Point &A, const Geom::Point &B,
-                                      const Geom::Point &C, const Geom::Point &D) {
-    double signC = cross(B - A, C - A);
-    double signD = cross(B - A, D - A);
-
-    double signA = cross(D - C, A - C);
-    double signB = cross(D - C, B - C);
-
-    return signA * signB < 0 && signC * signD < 0;
-}
-}
 
 namespace Geom {
 

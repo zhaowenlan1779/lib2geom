@@ -23,6 +23,7 @@ elliptical-arc-test
 intersection-graph-test
 line-test
 nl-vector-test
+parallelogram-test
 path-test
 point-test
 polynomial-test

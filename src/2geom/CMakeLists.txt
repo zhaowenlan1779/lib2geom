@@ -93,6 +93,8 @@ numeric/matrix.cpp
 
 ord.h
 
+parallelogram.cpp
+parallelogram.h
 path-intersection.cpp
 path-intersection.h
 path-sink.cpp
