@@ -130,8 +130,6 @@ write_basic_package_version_file("2GeomConfigVersion.cmake"
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMajorVersion)
 
-message("${CMAKE_INSTALL_LIBDIR}/cmake/2Geom")
-
 install(FILES "2GeomConfig.cmake" "${CMAKE_CURRENT_BINARY_DIR}/2GeomConfigVersion.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/2Geom"
     )
