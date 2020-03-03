@@ -37,14 +37,14 @@ sbasis-test
 foreach(source ${2GEOM_GTESTS_SRC})
 	add_executable(${source} ${source}.cpp)
 	target_include_directories(${source} PRIVATE ${GSL_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS})
-	target_link_libraries(${source} 2geom GTest::gtest_main Threads::Threads ${GSL_LIBRARIES} ${GTK3_LIBRARIES})
+	target_link_libraries(${source} 2geom GTest::gtest_main ${GSL_LIBRARIES} ${GTK3_LIBRARIES})
 	add_test(NAME ${source} COMMAND ${source})
 endforeach()
 
 foreach(source ${2GEOM_TESTS_SRC})
     add_executable(${source} ${source}.cpp)
     target_include_directories(${source} PRIVATE ${GSL_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS})
-    target_link_libraries(${source} 2geom GTest::gtest Threads::Threads ${GSL_LIBRARIES} ${GTK3_LIBRARIES})
+    target_link_libraries(${source} 2geom GTest::gtest ${GSL_LIBRARIES} ${GTK3_LIBRARIES})
     add_test(NAME ${source} COMMAND ${source})
 endforeach(source)
 
