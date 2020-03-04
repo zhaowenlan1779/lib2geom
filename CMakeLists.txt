@@ -105,7 +105,10 @@ if(2GEOM_USE_GPL_CODE)
     add_definitions(-DGPL_TAINT)
 endif()
 
-include(CMakeScripts/Dist.cmake)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    # 2GEOM is standalone project
+    include(CMakeScripts/Dist.cmake)
+endif()
 
 # make unistall target
 configure_file(
