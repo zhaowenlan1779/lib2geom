@@ -1,5 +1,4 @@
 CMakeCache.txt
-gtest
 **/CMakeFiles
 **/__pycache__
 cmake_uninstall.cmake
