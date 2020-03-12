@@ -40,7 +40,11 @@ pkg_check_modules(GLIB glib-2.0)
 pkg_check_modules(CAIRO cairo)
 pkg_check_modules(GSL gsl)
 
-option(2GEOM_TESTING "Build tests" OFF)
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    set(2GEOM_STANDALONE TRUE)
+endif()
+
+option(2GEOM_TESTING "Build tests" "${2GEOM_STANDALONE}")
 
 if (2GEOM_TESTING)
     enable_testing()
@@ -105,8 +109,7 @@ if(2GEOM_USE_GPL_CODE)
     add_definitions(-DGPL_TAINT)
 endif()
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    # 2GEOM is standalone project
+if(2GEOM_STANDALONE)
     include(CMakeScripts/Dist.cmake)
 endif()
 

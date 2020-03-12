@@ -19,7 +19,6 @@ variables:
               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
               -DCMAKE_INSTALL_PREFIX=./opt
               -D2GEOM_BOOST_PYTHON=ON
-              -D2GEOM_TESTING=ON
     - make -j3
     - make -j3 test
     - make -j3 perf
