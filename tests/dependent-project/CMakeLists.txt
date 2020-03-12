@@ -5,9 +5,8 @@ option(2GEOM_AS_SUBPROJECT "include 2geom as subproject" OFF)
 
 if (2GEOM_AS_SUBPROJECT)
     message("Using 2geom as subdirectory")
-    set(2GEOM_LIB 2geom)
-    set(2GEOM_BUILD_SHARED ON)
-    add_subdirectory("../../" 2geom EXCLUDE_FROM_ALL)
+    set(2GEOM_BUILD_SHARED ON CACHE BOOL "Build 2geom shared version")
+    add_subdirectory("../../" 2geom)
 else()
     message("Using installed 2geom")
     find_package(2Geom REQUIRED)
@@ -21,7 +20,6 @@ target_link_libraries(my_lib PUBLIC 2Geom::2geom)
 install(TARGETS
         main
         my_lib
-        ${2GEOM_LIB}
     RUNTIME DESTINATION bin
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
