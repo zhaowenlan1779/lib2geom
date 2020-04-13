@@ -141,7 +141,7 @@ RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
 //    std::cout << "RatQuad::fromPointsTangents: tau2 = " << tau2 << std::endl;
 //    std::cout << "RatQuad::fromPointsTangents: w = " << w << std::endl;
     return  RatQuad(P0, P1, P2, w);
-  } catch(Geom::InfiniteSolutions) {
+  } catch(Geom::InfiniteSolutions const&) {
     return RatQuad(P0, 0.5*(P0+P2), P2, 1);
   }
   return RatQuad(Point(), Point(), Point(), 0); // need opt really
