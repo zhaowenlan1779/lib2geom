@@ -33,6 +33,7 @@
 #ifndef LIB2GEOM_SEEN_ROTATED_RECT_H
 #define LIB2GEOM_SEEN_ROTATED_RECT_H
 
+#include <array>
 #include <2geom/rect.h>
 
 namespace Geom{
