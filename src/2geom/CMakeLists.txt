@@ -67,7 +67,6 @@ add_library(2geom ${LIB_TYPE}
     point.cpp
     polynomial.cpp
 
-    rotated-rect.cpp
     rect.cpp
     recursive-bezier-intersection.cpp
 
@@ -145,7 +144,6 @@ add_library(2geom ${LIB_TYPE}
     ${2GEOM_INCLUDE_DIR}/2geom/polynomial.h
 
     ${2GEOM_INCLUDE_DIR}/2geom/ray.h
-    ${2GEOM_INCLUDE_DIR}/2geom/rotated-rect.h
     ${2GEOM_INCLUDE_DIR}/2geom/rect.h
 
     ${2GEOM_INCLUDE_DIR}/2geom/sbasis-2d.h
