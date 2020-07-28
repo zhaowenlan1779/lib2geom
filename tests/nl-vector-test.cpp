@@ -105,6 +105,7 @@ TEST_F(VectorTest, VectorAssignment) {
 	EXPECT_EQ(v1, v2);
 }
 
+#ifndef NDEBUG
 TEST_F(VectorTest, AssignedVectorMustBeSameSize) {
 	NL::Vector v2(5);
 	// On Linux, the assertion message is:
@@ -114,6 +115,7 @@ TEST_F(VectorTest, AssignedVectorMustBeSameSize) {
 	// Thus we just look for the word "Assertion".
 	EXPECT_DEATH({v2 = v1;}, "Assertion");
 }
+#endif
 
 TEST_F(VectorTest, VectorScalesInplace) {
 	v1.scale(2);
@@ -263,10 +265,12 @@ TEST_F(VectorViewTest, AssignmentFromVectorAvailableForViews) {
 	EXPECT_EQ(vv.str(), v1.str());
 }
 
+#ifndef NDEBUG
 TEST_F(VectorViewTest, AssignmentFromVectorMustBeSameSize) {
 	NL::VectorView vv(v1, 5);
 	EXPECT_DEATH({vv = v1;}, "Assertion");
 }
+#endif
 
 TEST_F(VectorViewTest, AssignmentFromViewAvailableForViews) {
 	NL::VectorView view1(v1, v1.size());
@@ -276,11 +280,13 @@ TEST_F(VectorViewTest, AssignmentFromViewAvailableForViews) {
 	EXPECT_EQ(view1.str(), view2.str());
 }
 
+#ifndef NDEBUG
 TEST_F(VectorViewTest, AssignmentFromViewMustBeSameSize) {
 	NL::VectorView view1(v1, v1.size());
 	NL::VectorView view2(view1, view1.size() - 1);
 	EXPECT_DEATH({view2 = view1;}, "Assertion");
 }
+#endif
 
 // Add- and subtract assignment
 
@@ -315,11 +321,13 @@ TEST_F(VectorViewTest, SwappingFromSameSourceVectorModifiesViews) {
 	EXPECT_EQ(viewEnd.str(), "[0, 1]");
 }
 
+#ifndef NDEBUG
 TEST_F(VectorViewTest, SwappingDifferentLengthViewFails) {
 	NL::VectorView vv1(v1, 4);
 	NL::VectorView vv2(v1, 3);
 	EXPECT_DEATH({NL::swap_view(vv1, vv2);}, "Assertion");
 }
+#endif
 
 
 } // namespace Geom
