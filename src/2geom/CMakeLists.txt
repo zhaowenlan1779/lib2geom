@@ -1,24 +1,20 @@
-#generate parser file with ragel
-SET(SVG_PARSER_CPP "${CMAKE_CURRENT_SOURCE_DIR}/svg-path-parser.cpp")
-SET(SVG_PARSER_TMP "${CMAKE_CURRENT_SOURCE_DIR}/svg-path-parser.tmp")
-SET(SVG_PARSER_RL "${CMAKE_CURRENT_SOURCE_DIR}/svg-path-parser.rl")
-SET(GENERATE_SVG_PARSER NOT EXISTS "${SVG_PARSER_CPP}")
-SET(REGENERATE_SVG_PARSER "${SVG_PARSER_CPP}" IS_NEWER_THAN "${SVG_PARSER_RL}")
+# (re-)generate parser file with ragel if it's available
+SET(SVG_PARSER_CPP "svg-path-parser.cpp")
+SET(SVG_PARSER_RL  "svg-path-parser.rl")
 find_program(RAGEL_PROGRAM
    NAMES ragel
-         ragel.exe
-   DOC "Find ragel program"
    HINTS /usr/bin
          /usr/local/bin
-         ${RAGEL_BIN}
-         ${MINGW_BIN}
 )
-if(RAGEL_PROGRAM AND (GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER))
-    add_custom_command(OUTPUT "${SVG_PARSER_CPP}"
-                       COMMAND ${RAGEL_PROGRAM} -C -T0 -o "${SVG_PARSER_CPP}" "${SVG_PARSER_RL}"
+if(RAGEL_PROGRAM)
+    message(STATUS "Found Ragel in ${RAGEL_PROGRAM}. ${SVG_PARSER_CPP} will be recreated from ${SVG_PARSER_RL}.")
+    add_custom_command(OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${SVG_PARSER_CPP}"
+                       COMMAND ${RAGEL_PROGRAM} -o "${SVG_PARSER_CPP}" "${SVG_PARSER_RL}"
                        DEPENDS "${SVG_PARSER_RL}"
-                       WORKING_DIRECTORY "${CURRENT_SOURCE_DIR}"
-                       COMMENT "Generating svg_path_parser.cpp with ragel")
+                       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                       COMMENT "Generating ${SVG_PARSER_CPP} with ragel")
+else()
+    message(STATUS "Ragel NOT found. Using stale ${SVG_PARSER_CPP}.")
 endif()
 
 

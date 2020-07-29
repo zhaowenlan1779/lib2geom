@@ -1,5 +1,5 @@
 
-#line 1 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 1 "svg-path-parser.rl"
 /**
  * \file
  * \brief parse SVG path specifications
@@ -44,7 +44,7 @@
 namespace Geom {
 
 
-#line 48 "/home/mc/lib2geom/src/2geom/svg-path-parser.cpp"
+#line 48 "svg-path-parser.cpp"
 static const char _svg_path_actions[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
 	3, 1, 4, 1, 5, 1, 15, 2, 
@@ -1083,7 +1083,7 @@ static const int svg_path_first_final = 234;
 static const int svg_path_en_main = 234;
 
 
-#line 47 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 47 "svg-path-parser.rl"
 
 
 SVGPathParser::SVGPathParser(PathSink &sink)
@@ -1109,12 +1109,12 @@ void SVGPathParser::reset() {
     _curve = NULL;
 
     
-#line 1113 "/home/mc/lib2geom/src/2geom/svg-path-parser.cpp"
+#line 1113 "svg-path-parser.cpp"
 	{
 	cs = svg_path_start;
 	}
 
-#line 73 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 73 "svg-path-parser.rl"
 
 }
 
@@ -1251,7 +1251,7 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
     char const *start = NULL;
 
     
-#line 1255 "/home/mc/lib2geom/src/2geom/svg-path-parser.cpp"
+#line 1255 "svg-path-parser.cpp"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -1326,13 +1326,13 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 209 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 209 "svg-path-parser.rl"
 	{
             start = p;
         }
 	break;
 	case 1:
-#line 213 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 213 "svg-path-parser.rl"
 	{
             if (start) {
                 std::string buf(start, p);
@@ -1346,56 +1346,56 @@ _match:
         }
 	break;
 	case 2:
-#line 225 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 225 "svg-path-parser.rl"
 	{
             _push(1.0);
         }
 	break;
 	case 3:
-#line 229 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 229 "svg-path-parser.rl"
 	{
             _push(0.0);
         }
 	break;
 	case 4:
-#line 233 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 233 "svg-path-parser.rl"
 	{
             _absolute = true;
         }
 	break;
 	case 5:
-#line 237 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 237 "svg-path-parser.rl"
 	{
             _absolute = false;
         }
 	break;
 	case 6:
-#line 241 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 241 "svg-path-parser.rl"
 	{
             _moveto_was_absolute = _absolute;
             _moveTo(_pop_point());
         }
 	break;
 	case 7:
-#line 246 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 246 "svg-path-parser.rl"
 	{
             _lineTo(_pop_point());
         }
 	break;
 	case 8:
-#line 250 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 250 "svg-path-parser.rl"
 	{
             _lineTo(Point(_pop_coord(X), _current[Y]));
         }
 	break;
 	case 9:
-#line 254 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 254 "svg-path-parser.rl"
 	{
             _lineTo(Point(_current[X], _pop_coord(Y)));
         }
 	break;
 	case 10:
-#line 258 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 258 "svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1404,7 +1404,7 @@ _match:
         }
 	break;
 	case 11:
-#line 265 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 265 "svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1412,7 +1412,7 @@ _match:
         }
 	break;
 	case 12:
-#line 271 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 271 "svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c = _pop_point();
@@ -1420,14 +1420,14 @@ _match:
         }
 	break;
 	case 13:
-#line 277 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 277 "svg-path-parser.rl"
 	{
             Point p = _pop_point();
             _quadTo(_quad_tangent, p);
         }
 	break;
 	case 14:
-#line 282 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 282 "svg-path-parser.rl"
 	{
             Point point = _pop_point();
             bool sweep = _pop_flag();
@@ -1440,12 +1440,12 @@ _match:
         }
 	break;
 	case 15:
-#line 293 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 293 "svg-path-parser.rl"
 	{
             _closePath();
         }
 	break;
-#line 1449 "/home/mc/lib2geom/src/2geom/svg-path-parser.cpp"
+#line 1449 "svg-path-parser.cpp"
 		}
 	}
 
@@ -1462,7 +1462,7 @@ _again:
 	while ( __nacts-- > 0 ) {
 		switch ( *__acts++ ) {
 	case 1:
-#line 213 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 213 "svg-path-parser.rl"
 	{
             if (start) {
                 std::string buf(start, p);
@@ -1476,32 +1476,32 @@ _again:
         }
 	break;
 	case 6:
-#line 241 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 241 "svg-path-parser.rl"
 	{
             _moveto_was_absolute = _absolute;
             _moveTo(_pop_point());
         }
 	break;
 	case 7:
-#line 246 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 246 "svg-path-parser.rl"
 	{
             _lineTo(_pop_point());
         }
 	break;
 	case 8:
-#line 250 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 250 "svg-path-parser.rl"
 	{
             _lineTo(Point(_pop_coord(X), _current[Y]));
         }
 	break;
 	case 9:
-#line 254 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 254 "svg-path-parser.rl"
 	{
             _lineTo(Point(_current[X], _pop_coord(Y)));
         }
 	break;
 	case 10:
-#line 258 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 258 "svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1510,7 +1510,7 @@ _again:
         }
 	break;
 	case 11:
-#line 265 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 265 "svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1518,7 +1518,7 @@ _again:
         }
 	break;
 	case 12:
-#line 271 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 271 "svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c = _pop_point();
@@ -1526,14 +1526,14 @@ _again:
         }
 	break;
 	case 13:
-#line 277 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 277 "svg-path-parser.rl"
 	{
             Point p = _pop_point();
             _quadTo(_quad_tangent, p);
         }
 	break;
 	case 14:
-#line 282 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 282 "svg-path-parser.rl"
 	{
             Point point = _pop_point();
             bool sweep = _pop_flag();
@@ -1546,12 +1546,12 @@ _again:
         }
 	break;
 	case 15:
-#line 293 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 293 "svg-path-parser.rl"
 	{
             _closePath();
         }
 	break;
-#line 1555 "/home/mc/lib2geom/src/2geom/svg-path-parser.cpp"
+#line 1555 "svg-path-parser.cpp"
 		}
 	}
 	}
@@ -1559,7 +1559,7 @@ _again:
 	_out: {}
 	}
 
-#line 435 "/home/mc/lib2geom/src/2geom/svg-path-parser.rl"
+#line 435 "svg-path-parser.rl"
 
 
     if (finish) {
@@ -1612,4 +1612,4 @@ void parse_svg_path_file(FILE *fi, PathSink &sink)
   fill-column:99
   End:
 */
-// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
