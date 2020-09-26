@@ -126,6 +126,14 @@ public:
     }
 //TODO: what if _in_path = false?
 
+    /** @brief Detect if the builder is in a path and thus will NOT
+               create a new moveTo command when given the next line
+        @return true if the builder is inside a subpath.
+     */
+    bool inPath() const {
+        return _in_path;
+    }
+
     void lineTo(Point const &p) {
         // check for implicit moveto, like in: "M 1,1 L 2,2 z l 2,2 z"
         if (!_in_path) {
