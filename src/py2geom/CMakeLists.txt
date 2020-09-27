@@ -80,52 +80,38 @@ OPTION(2GEOM_BOOST_PYTHON
   "Build a python binding with Boost.Python"
   OFF)
 IF(2GEOM_BOOST_PYTHON)
-        FIND_PACKAGE(Boost REQUIRED)
-        FIND_PACKAGE(Boost QUIET COMPONENTS python python27)
-        IF(Boost_PYTHON27_LIBRARY)
-            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON27_LIBRARY})
-        ELSEIF(Boost_PYTHON_LIBRARY)
-            # pass
-        ELSE()
-            message(FATAL "Could not find Boost.Python")
-        ENDIF()
+	FIND_PACKAGE(Python3 COMPONENTS Development Interpreter REQUIRED)
 
-        set(Python_ADDITIONAL_VERSIONS 2.7)
-        FIND_PACKAGE(PythonLibs REQUIRED)
-        SET(PYDEXTENSION FALSE)
+	SET(Boost_DEBUG TRUE)
+        SET(Boost_REALPATH FALSE)
+        FIND_PACKAGE(Boost 1.42.0 REQUIRED)
+	FIND_PACKAGE(Boost REQUIRED COMPONENTS python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR})
+
         IF (WIN32)
-            GET_FILENAME_COMPONENT(PYTHON_LIB_INSTALL "${PYTHON_LIBRARY}" PATH)
-            GET_FILENAME_COMPONENT(SITEPACKAGE "${PYTHON_LIB_INSTALL}/../Lib/site-packages" ABSOLUTE)
-            SET(PYDEXTENSION TRUE)
-        ELSE (WIN32)
-            SET(PYTHON_LIB_INSTALL "/usr/local/lib/python2.7/dist-packages" CACHE STRING "Where to install the py2geom module?")
-            SET(SITEPACKAGE ${PYTHON_LIB_INSTALL})
+            SET_TARGET_PROPERTIES(py2geom PROPERTIES SUFFIX ".pyd")
+        ELSEIF (APPLE)
+	    SET(CMAKE_MACOSX_RPATH FALSE)
+	    SET(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
         ENDIF(WIN32)
 
-        INCLUDE_DIRECTORIES( src/ ${PYTHON_INCLUDE_PATH}
-                             ${BOOST_INCLUDE_DIR} )
-
+	INCLUDE_DIRECTORIES( src/ ${Python3_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} )
         ADD_LIBRARY(py2geom SHARED ${2GEOM_BOOST_PYTHON_SRC})
-
         SET_TARGET_PROPERTIES(py2geom PROPERTIES PREFIX "_")
-        IF(PYDEXTENSION)
-            SET_TARGET_PROPERTIES(py2geom PROPERTIES SUFFIX ".pyd")
-        ENDIF(PYDEXTENSION)
 
         IF (BUILD_BOOST_PYTHON_STATIC)
-            TARGET_LINK_LIBRARIES(py2geom 2geom ${PYTHON_LIBRARIES})
+            TARGET_LINK_LIBRARIES(py2geom 2geom ${Python3_LIBRARIES})
         ELSE (BUILD_BOOST_PYTHON_STATIC)
-            TARGET_LINK_LIBRARIES(py2geom 2geom ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARIES})
+	    TARGET_LINK_LIBRARIES(py2geom 2geom ${Boost_LIBRARIES} ${Python3_LIBRARIES})
         ENDIF (BUILD_BOOST_PYTHON_STATIC)
 
         set_property(TARGET 2geom PROPERTY POSITION_INDEPENDENT_CODE ON)  # we need -fPIC to link py2geom against 2geom
 
         IF(PYCAIRO_FOUND)
-            TARGET_LINK_LIBRARIES(py2geom ${CAIRO_LIBRARIES})
+            TARGET_LINK_LIBRARIES(py2geom ${Cairo_LIBRARIES})
         ENDIF(PYCAIRO_FOUND)
 
-        INSTALL(TARGETS py2geom DESTINATION "${SITEPACKAGE}/py2geom")
-        INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" DESTINATION "${SITEPACKAGE}/py2geom")
+	INSTALL(TARGETS py2geom DESTINATION "${Python3_SITEARCH}/py2geom")
+        INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" DESTINATION "${Python3_SITEARCH}/py2geom")
 ENDIF(2GEOM_BOOST_PYTHON)
 
 
