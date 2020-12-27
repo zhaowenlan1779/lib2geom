@@ -386,6 +386,11 @@ inline bool are_near(Point const &a, Point const &b, double eps = EPSILON) {
     return are_near((a - b).length(), 0, eps);
 }
 
+/// Test whether the relative distance between two points is less than some threshold.
+inline bool are_near_rel(Point const &a, Point const &b, double eps = EPSILON) {
+    return (a - b).length() <= eps * (a.length() + b.length()) / 2;
+}
+
 /// Test whether three points lie approximately on the same line.
 /// @relates Point
 inline bool are_collinear(Point const& p1, Point const& p2, Point const& p3,

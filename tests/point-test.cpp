@@ -66,6 +66,14 @@ TEST(PointTest, Rounding) {
     EXPECT_TRUE(a.round() == around);
 }
 
+TEST(PointTest, Near) {
+    EXPECT_TRUE(are_near(Point(), Point(0, 1e-6)));
+    EXPECT_FALSE(are_near(Point(), Point(0, 1e-4)));
+
+    EXPECT_TRUE(are_near_rel(Point(100, 0), Point(100, 1e-4)));
+    EXPECT_FALSE(are_near_rel(Point(100, 0), Point(100, 1e-2)));
+}
+
 } // end namespace Geom
 
 /*
