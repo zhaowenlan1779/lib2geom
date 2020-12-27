@@ -37,7 +37,7 @@
 #include <2geom/symbolic/unity-builder.h>
 #include <2geom/symbolic/mvpoly-tools.h>
 
-#include <boost/bind.hpp> // needed for generating for_each operator argument
+#include <boost/bind/bind.hpp> // needed for generating for_each operator argument
 
 
 
@@ -314,14 +314,14 @@ public:
     MultiPoly& operator*=(CoeffT const& c)
     {
         mvpoly<N, CoeffT>::template
-        for_each<0>(m_poly, boost::bind(mvpoly<0, CoeffT>::multiply_to, _1, c));
+        for_each<0>(m_poly, boost::bind(mvpoly<0, CoeffT>::multiply_to, boost::placeholders::_1, c));
         return (*this);
     }
 
     MultiPoly& operator/=(CoeffT const& c)
     {
         mvpoly<N, CoeffT>::template
-        for_each<0>(m_poly, boost::bind(mvpoly<0, CoeffT>::divide_to, _1, c));
+        for_each<0>(m_poly, boost::bind(mvpoly<0, CoeffT>::divide_to, boost::placeholders::_1, c));
         return (*this);
     }
 
@@ -376,7 +376,7 @@ public:
     operator*= (MultiPoly<M, CoeffT> const& p)
     {
         mvpoly<N, CoeffT>::template
-        for_each<M>(m_poly, boost::bind(mvpoly<M, CoeffT>::multiply_to, _1, p.m_poly));
+        for_each<M>(m_poly, boost::bind(mvpoly<M, CoeffT>::multiply_to, boost::placeholders::_1, p.m_poly));
         return (*this);
     }
 
