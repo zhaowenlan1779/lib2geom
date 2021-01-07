@@ -235,14 +235,14 @@ class Conic6: public Toy {
             
             cairo_set_source_rgb(cr, 1, 0., 0.);
             rts = C1.roots(L0);
-            for(unsigned i = 0; i < rts.size(); i++) {
-                Point P = L0.pointAt(rts[i]);
+            for(double rt : rts) {
+                Point P = L0.pointAt(rt);
                 draw_cross(cr, P);
                 *notify << C1.valueAt(P) << "; " << C2.valueAt(P) << "\n";
             }
             rts = C1.roots(L1);
-            for(unsigned i = 0; i < rts.size(); i++) {
-                Point P = L1.pointAt(rts[i]);
+            for(double rt : rts) {
+                Point P = L1.pointAt(rt);
                 draw_cross(cr, P);
                 *notify << C1.valueAt(P) << "; "<< C2.valueAt(P) << "\n";
             }
@@ -253,8 +253,8 @@ class Conic6: public Toy {
         ::draw(cr, C1*sliders[0].value() + C2*sliders[1].value(), screen_rect);
         
         std::vector<Point> res = intersect(C1, C2);
-        for(unsigned i = 0; i < res.size(); i++) {
-            draw_circ(cr, res[i]);
+        for(auto & re : res) {
+            draw_circ(cr, re);
         }
         
         cairo_stroke(cr);

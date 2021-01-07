@@ -85,8 +85,8 @@ class InnerProductClip: public Toy {
             }
             vector<double> lr = roots(inner);
             all_roots.insert(all_roots.end(), lr.begin(), lr.end());
-            for(unsigned i = 0; i < lr.size(); i++)
-                draw_handle(cr, curpw(lr[i]));
+            for(double i : lr)
+                draw_handle(cr, curpw(i));
             sort(lr.begin(), lr.end());
             lr.insert(lr.begin(), 0);
             lr.insert(lr.end(), 1);

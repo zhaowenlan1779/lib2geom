@@ -74,10 +74,10 @@ class BoundsTester: public Toy {
         levels.push_back( Interval(300-(hand.pts[2*size+1][Y]-vtol), 300-(hand.pts[2*size+1][Y]+vtol)) );
         levels.push_back( Interval(300-(hand.pts[2*size+2][Y]-vtol), 300-(hand.pts[2*size+2][Y]+vtol)) );
 
-        for (unsigned i=0;i<levels.size();i++) plot_bar(cr,levels[i].middle());
+        for (auto & level : levels) plot_bar(cr,level.middle());
         cairo_set_source_rgba( cr, 1., 0., 0., 1);
         cairo_stroke(cr);
-        for (unsigned i=0;i<levels.size();i++) plot_bar(cr,levels[i]);
+        for (auto & level : levels) plot_bar(cr,level);
         cairo_set_source_rgba( cr, 1., 0., 0., .2);
         cairo_fill(cr);
 

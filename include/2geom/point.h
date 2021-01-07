@@ -153,12 +153,12 @@ public:
         return *this;
     }
     Point &operator*=(Coord s) {
-        for ( unsigned i = 0 ; i < 2 ; ++i ) _pt[i] *= s;
+        for (double & i : _pt) i *= s;
         return *this;
     }
     Point &operator/=(Coord s) {
         //TODO: s == 0?
-        for ( unsigned i = 0 ; i < 2 ; ++i ) _pt[i] /= s;
+        for (double & i : _pt) i /= s;
         return *this;
     }
     /// @}
@@ -198,8 +198,8 @@ public:
     /// @{
     /** @brief Check whether both coordinates are finite. */
     bool isFinite() const {
-        for ( unsigned i = 0 ; i < 2 ; ++i ) {
-            if(!std::isfinite(_pt[i])) return false;
+        for (double i : _pt) {
+            if(!std::isfinite(i)) return false;
         }
         return true;
     }

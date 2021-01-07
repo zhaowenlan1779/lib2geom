@@ -105,8 +105,8 @@ class IntersectDataTester: public Toy {
         }else{
             bndary =  boundaryToPath(topo.areas[a].boundary);
         }
-        for (unsigned j = 0; j < topo.areas[a].inner_boundaries.size(); j++){
-            bndary.append( boundaryToPath(topo.areas[a].inner_boundaries[j]));
+        for (auto & inner_boundarie : topo.areas[a].inner_boundaries){
+            bndary.append( boundaryToPath(inner_boundarie));
             bndary.appendNew<LineSegment>( bndary.initialPoint() );
         }
         bndary.close();
@@ -125,8 +125,8 @@ class IntersectDataTester: public Toy {
         double r,g,b;
 
         int winding = 0;
-        for (unsigned k=0; k<topo.areas[a].windings.size(); k++){
-            winding += topo.areas[a].windings[k];
+        for (int k : topo.areas[a].windings){
+            winding += k;
         }
 
         //convertHSVtoRGB(0, 1., .5 + winding/10, r,g,b);

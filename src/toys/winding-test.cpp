@@ -21,9 +21,9 @@ void draw_rect(cairo_t *cr, Point tl, Point br) {
 void draw_bounds(cairo_t *cr, PathVector ps) {
     srand(0); 
     vector<Rect> bnds;
-    for(unsigned i = 0; i < ps.size(); i++) {
-        for(Path::iterator it = ps[i].begin(); it != ps[i].end(); ++it) {
-            Rect bounds = (it->boundsFast());
+    for(auto & p : ps) {
+        for(const auto & it : p) {
+            Rect bounds = (it.boundsFast());
             bnds.push_back(bounds);
             cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
             //draw_rect(cr, bounds.min(), bounds.max());
@@ -46,15 +46,15 @@ void draw_bounds(cairo_t *cr, PathVector ps) {
 }
 
 void mark_verts(cairo_t *cr, PathVector ps) {
-    for(unsigned i = 0; i < ps.size(); i++)
-        for(Path::iterator it = ps[i].begin(); it != ps[i].end(); ++it)
-            draw_cross(cr, it->initialPoint());
+    for(auto & p : ps)
+        for(const auto & it : p)
+            draw_cross(cr, it.initialPoint());
 }
 
 int winding(PathVector ps, Point p) {
     int wind = 0;
-    for(unsigned i = 0; i < ps.size(); i++)
-        wind += winding(ps[i],p);
+    for(const auto & i : ps)
+        wind += winding(i,p);
     return wind;
 }
 

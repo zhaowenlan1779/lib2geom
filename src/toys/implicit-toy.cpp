@@ -207,9 +207,9 @@ double max_modulus (SL::MVPoly2 const& p)
     double a, m = 1;
 
     for (size_t i = 0; i < p.get_poly().size(); ++i)
-        for (size_t j = 0; j < p[i].size(); ++j)
+        for (double j : p)
         {
-            a = std::abs(p[i][j]);
+            a = std::abs(j);
             if (m < a) m = a;
         }
     return m;

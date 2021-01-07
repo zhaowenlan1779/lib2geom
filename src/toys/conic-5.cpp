@@ -236,8 +236,8 @@ class Conic5: public Toy {
 
                         Q.toCurve(rh.pos);
                         vector<Point> crs = Q.crossings(rh.pos);
-                        for(unsigned ei = 0; ei < crs.size(); ei++) {
-                            draw_cross(cr, crs[ei]);
+                        for(auto & ei : crs) {
+                            draw_cross(cr, ei);
                         }
 
                     }
@@ -257,10 +257,10 @@ class Conic5: public Toy {
             std::vector<Point> intrs = intersect(oxo, sources[0] - sources[1]);
             Timer::Time als_time = tm.lap();
             *notify << "intersect time = " << als_time << std::endl;
-            for(unsigned i = 0; i < intrs.size(); i++) {
+            for(auto & intr : intrs) {
                 cairo_save(cr);
                 cairo_set_source_rgb(cr, 1, 0,0);
-                draw_cross(cr, intrs[i]);
+                draw_cross(cr, intr);
                 cairo_stroke(cr);
                 cairo_restore(cr);
             }

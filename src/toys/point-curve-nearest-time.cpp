@@ -119,8 +119,8 @@ private:
                     if ( toggles[0].on )
                     {
                         std::vector<double> t = earc.allNearestTimes(p);
-                        for ( unsigned int i = 0; i < t.size(); ++i )
-                            nps.push_back(earc.pointAt(t[i]));
+                        for (double i : t)
+                            nps.push_back(earc.pointAt(i));
                     }
                     else
                     {
@@ -137,8 +137,8 @@ private:
     	        if ( toggles[0].on )
     	        {
                     std::vector<double> t = Geom::all_nearest_times(p, A);
-                    for ( unsigned int i = 0; i < t.size(); ++i )
-                        nps.push_back(A(t[i]));
+                    for (double i : t)
+                        nps.push_back(A(i));
     	        }
     	        else
     	        {
@@ -170,8 +170,8 @@ private:
     	        if ( toggles[0].on )
     	        {
                     std::vector<double> t = Geom::all_nearest_times(p, pwc);
-                    for ( unsigned int i = 0; i < t.size(); ++i )
-                        nps.push_back(pwc(t[i]));
+                    for (double i : t)
+                        nps.push_back(pwc(i));
     	        }
     	        else
     	        {
@@ -208,8 +208,8 @@ private:
     	        if ( toggles[0].on )
     	        {
                     std::vector<double> t = path.allNearestTimes(p);
-                    for ( unsigned int i = 0; i < t.size(); ++i )
-                        nps.push_back(path.pointAt(t[i]));
+                    for (double i : t)
+                        nps.push_back(path.pointAt(i));
     	        }
     	        else
     	        {
@@ -233,8 +233,8 @@ private:
     	        if ( toggles[0].on )
     	        {
                     std::vector<PathVectorTime> t = pathv.allNearestTimes(p);
-                    for ( unsigned int i = 0; i < t.size(); ++i )
-                        nps.push_back(pathv.pointAt(t[i]));
+                    for (auto & i : t)
+                        nps.push_back(pathv.pointAt(i));
     	        }
     	        else
     	        {
@@ -265,10 +265,10 @@ private:
 
     	if ( toggles[0].on )
     	{
-            for ( unsigned int i = 0; i < nps.size(); ++i )
+            for (auto & np : nps)
             {
                 cairo_move_to(cr, p);
-                cairo_line_to(cr, nps[i]);
+                cairo_line_to(cr, np);
             }
     	}
     	else
