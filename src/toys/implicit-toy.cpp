@@ -439,7 +439,7 @@ class ImplicitToy : public Toy
     }  // end recursive_implicit
 
     void draw( cairo_t *cr, std::ostringstream *notify,
-               int width, int height, bool save, std::ostringstream *timer_stream)
+               int width, int height, bool save, std::ostringstream *timer_stream) override
     {
         iters = 0;
         d1 = d2 = 0;
