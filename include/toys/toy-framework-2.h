@@ -4,12 +4,13 @@
 
 
 
+#include <cairo.h>
+#include <gtk/gtk.h>
 #include <iostream>
 #include <sstream>
-#include <gtk/gtk.h>
-#include <cairo.h>
-#include <vector>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <assert.h>
 #include <2geom/exception.h>
@@ -231,10 +232,10 @@ class Slider : public Handle
 
     // pass step = 0 for having a continuos value variation
     Slider( value_type _min, value_type _max, value_type _step,
-            value_type _value, const std::string& _label = "" )
+            value_type _value, std::string  _label = "" )
         : m_handle(),m_pos(Geom::Point(0,0)), m_length(1),
           m_min(_min), m_max(_max), m_step(_step), m_dir(Geom::X),
-          m_label(_label), m_formatter(&default_formatter)
+          m_label(std::move(_label)), m_formatter(&default_formatter)
     {
         value(_value);
     }
