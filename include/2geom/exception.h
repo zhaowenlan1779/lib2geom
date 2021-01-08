@@ -58,9 +58,9 @@ public:
         msgstr = os.str();
     }
 
-    ~Exception() throw() override {} // necessary to destroy the string object!!!
+    ~Exception() noexcept override {} // necessary to destroy the string object!!!
 
-    const char* what() const throw () override {
+    const char* what() const noexcept override {
         return msgstr.c_str();
     }
 protected:
@@ -124,7 +124,7 @@ public:
 #define THROW_CONTINUITYERROR(i) throw(ContinuityError(__FILE__, __LINE__))
 
 struct SVGPathParseError : public std::exception {
-    char const *what() const throw() override { return "parse error"; }
+    char const *what() const noexcept override { return "parse error"; }
 };
 
 
