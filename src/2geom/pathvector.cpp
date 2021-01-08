@@ -162,10 +162,10 @@ public:
     {
         _records.reserve(a.size() + b.size());
         for (std::size_t i = 0; i < a.size(); ++i) {
-            _records.push_back(PathRecord(a[i], i, 0));
+            _records.emplace_back(a[i], i, 0);
         }
         for (std::size_t i = 0; i < b.size(); ++i) {
-            _records.push_back(PathRecord(b[i], i, 1));
+            _records.emplace_back(b[i], i, 1);
         }
     }
 
@@ -186,10 +186,10 @@ public:
             std::vector<PathIntersection> px = ii->path->intersect(*i.path, _precision);
             for (auto & k : px) {
                 PathVectorTime tw(ii->index, k.first), tow(i.index, k.second);
-                _result.push_back(PVIntersection(
+                _result.emplace_back(
                     w == 0 ? tw : tow,
                     w == 0 ? tow : tw,
-                    k.point()));
+                    k.point());
             }
         }
         _active[w].push_back(*ii);
@@ -272,7 +272,7 @@ std::vector<PathVectorTime> PathVector::allNearestTimes(Point const &p, Coord *d
             retval.clear();
         }
         if (d <= mindist) {
-            retval.push_back(PathVectorTime(i, pos.curve_index, pos.t));
+            retval.emplace_back(i, pos.curve_index, pos.t);
         }
     }
 

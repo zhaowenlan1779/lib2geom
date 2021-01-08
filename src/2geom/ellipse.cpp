@@ -437,7 +437,7 @@ std::vector<ShapeIntersection> Ellipse::intersect(Line const &line) const
 
         for (double x : xs) {
             Point p(x, q*x + r);
-            result.push_back(ShapeIntersection(atan2(p * iuct), line.timeAt(p), p));
+            result.emplace_back(atan2(p * iuct), line.timeAt(p), p);
         }
     } else {
         Coord q = -b/a;
@@ -450,7 +450,7 @@ std::vector<ShapeIntersection> Ellipse::intersect(Line const &line) const
 
         for (double x : xs) {
             Point p(q*x + r, x);
-            result.push_back(ShapeIntersection(atan2(p * iuct), line.timeAt(p), p));
+            result.emplace_back(atan2(p * iuct), line.timeAt(p), p);
         }
     }
     return result;
@@ -600,7 +600,7 @@ std::vector<ShapeIntersection> Ellipse::intersect(D2<Bezier> const &b) const
     std::vector<ShapeIntersection> result;
     for (double & i : r) {
         Point p = b.valueAt(i);
-        result.push_back(ShapeIntersection(timeAt(p), i, p));
+        result.emplace_back(timeAt(p), i, p);
     }
     return result;
 }

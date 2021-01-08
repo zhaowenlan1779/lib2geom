@@ -398,8 +398,7 @@ bool CLIPPER_CLASS::clip (std::vector<RatQuad> & arcs)
             else
             {
                 Point M = middle_point (*ls1);
-                arcs.push_back
-                    (RatQuad (ls1->initialPoint(), M, ls1->finalPoint(), 1));
+                arcs.emplace_back(ls1->initialPoint(), M, ls1->finalPoint(), 1);
                 inner_empty = false;
             }
         }
@@ -414,8 +413,7 @@ bool CLIPPER_CLASS::clip (std::vector<RatQuad> & arcs)
             else
             {
                 Point M = middle_point (*ls2);
-                arcs.push_back
-                    (RatQuad (ls2->initialPoint(), M, ls2->finalPoint(), 1));
+                arcs.emplace_back(ls2->initialPoint(), M, ls2->finalPoint(), 1);
                 inner_empty = false;
             }
         }

@@ -459,7 +459,7 @@ std::vector<PathTime> Path::roots(Coord v, Dim2 d) const
     for (unsigned i = 0; i < size(); i++) {
         std::vector<Coord> temp = (*this)[i].roots(v, d);
         for (double j : temp)
-            res.push_back(PathTime(i, j));
+            res.emplace_back(i, j);
     }
     return res;
 }
@@ -499,10 +499,10 @@ public:
         _records.reserve(asz + bsz);
 
         for (std::size_t i = 0; i < asz; ++i) {
-            _records.push_back(CurveRecord(&a[i], i, 0));
+            _records.emplace_back(&a[i], i, 0);
         }
         for (std::size_t i = 0; i < bsz; ++i) {
-            _records.push_back(CurveRecord(&b[i], i, 1));
+            _records.emplace_back(&b[i], i, 1);
         }
 
         OptRect abb = a.boundsFast() | b.boundsFast();
@@ -527,10 +527,10 @@ public:
             std::vector<CurveIntersection> cx = ii->curve->intersect(*i.curve, _precision);
             for (auto & k : cx) {
                 PathTime tw(ii->index, k.first), tow(i.index, k.second);
-                _result.push_back(PathIntersection(
+                _result.emplace_back(
                     w == 0 ? tw : tow,
                     w == 0 ? tow : tw,
-                    k.point()));
+                    k.point());
             }
         }
     }
