@@ -40,6 +40,7 @@
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <utility>
 #include <boost/operators.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <2geom/intersection.h>
@@ -738,60 +739,10 @@ public:
      * It is important to note that the coordinates passed to appendNew should be finite!
      * If one of the coordinates is infinite, 2geom will throw a ContinuityError exception.
      */
-    template <typename CurveType, typename A>
-    void appendNew(A a) {
+    template <typename CurveType, typename... Args>
+    void appendNew(Args&&... args) {
         _unshare();
-        do_append(new CurveType(finalPoint(), a));
-    }
-
-    template <typename CurveType, typename A, typename B>
-    void appendNew(A a, B b) {
-        _unshare();
-        do_append(new CurveType(finalPoint(), a, b));
-    }
-
-    template <typename CurveType, typename A, typename B, typename C>
-    void appendNew(A a, B b, C c) {
-        _unshare();
-        do_append(new CurveType(finalPoint(), a, b, c));
-    }
-
-    template <typename CurveType, typename A, typename B, typename C, typename D>
-    void appendNew(A a, B b, C c, D d) {
-        _unshare();
-        do_append(new CurveType(finalPoint(), a, b, c, d));
-    }
-
-    template <typename CurveType, typename A, typename B, typename C, typename D, typename E>
-    void appendNew(A a, B b, C c, D d, E e) {
-        _unshare();
-        do_append(new CurveType(finalPoint(), a, b, c, d, e));
-    }
-
-    template <typename CurveType, typename A, typename B, typename C, typename D, typename E, typename F>
-    void appendNew(A a, B b, C c, D d, E e, F f) {
-        _unshare();
-        do_append(new CurveType(finalPoint(), a, b, c, d, e, f));
-    }
-
-    template <typename CurveType, typename A, typename B, typename C, typename D, typename E, typename F, typename G>
-    void appendNew(A a, B b, C c, D d, E e, F f, G g) {
-        _unshare();
-        do_append(new CurveType(finalPoint(), a, b, c, d, e, f, g));
-    }
-
-    template <typename CurveType, typename A, typename B, typename C, typename D, typename E, typename F, typename G,
-              typename H>
-    void appendNew(A a, B b, C c, D d, E e, F f, G g, H h) {
-        _unshare();
-        do_append(new CurveType(finalPoint(), a, b, c, d, e, f, g, h));
-    }
-
-    template <typename CurveType, typename A, typename B, typename C, typename D, typename E, typename F, typename G,
-              typename H, typename I>
-    void appendNew(A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        _unshare();
-        do_append(new CurveType(finalPoint(), a, b, c, d, e, f, g, h, i));
+        do_append(new CurveType(finalPoint(), std::forward<Args>(args)...));
     }
 
     /** @brief Reduce the closing segment to a point if it's shorter than precision.
