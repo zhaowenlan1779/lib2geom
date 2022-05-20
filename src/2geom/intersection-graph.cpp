@@ -59,10 +59,10 @@ struct PathIntersectionGraph::IntersectionVertexLess {
 PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector const &b, Coord precision)
     : _graph_valid(true)
 {
-    if (a.empty() || b.empty()) return;
-
     _pv[0] = a;
     _pv[1] = b;
+
+    if (a.empty() || b.empty()) return;
 
     _prepareArguments();
     bool has_intersections = _prepareIntersectionLists(precision);
