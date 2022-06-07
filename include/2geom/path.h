@@ -35,14 +35,18 @@
 #ifndef LIB2GEOM_SEEN_PATH_H
 #define LIB2GEOM_SEEN_PATH_H
 
+#include <cstddef>
 #include <iterator>
 #include <algorithm>
 #include <iostream>
 #include <memory>
 #include <optional>
 #include <utility>
+#include <vector>
+
 #include <boost/operators.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+
 #include <2geom/intersection.h>
 #include <2geom/curve.h>
 #include <2geom/bezier-curve.h>
@@ -105,6 +109,10 @@ class BaseIterator
     Self &operator-=(std::ptrdiff_t d) {
         index -= d;
         return *this;
+    }
+    std::ptrdiff_t operator-(Self const &other) const {
+        assert(path == other.path);
+        return (std::ptrdiff_t)index - (std::ptrdiff_t)other.index;
     }
 
   private:
@@ -558,6 +566,9 @@ public:
 
     /// Compute intersections with another path.
     std::vector<PathIntersection> intersect(Path const &other, Coord precision = EPSILON) const;
+
+    /// Compute intersections of the path with itself.
+    std::vector<PathIntersection> intersectSelf(Coord precision = EPSILON) const;
 
     /** @brief Determine the winding number at the specified point.
      *

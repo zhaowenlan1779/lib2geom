@@ -74,6 +74,7 @@ add_library(2geom ${LIB_TYPE}
     sbasis-roots.cpp
     sbasis-to-bezier.cpp
     sbasis.cpp
+    self-intersect.cpp
     solve-bezier.cpp
     solve-bezier-one-d.cpp
     solve-bezier-parametric.cpp
