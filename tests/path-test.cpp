@@ -495,6 +495,175 @@ TEST_F(PathTest, Roots) {
     EXPECT_EQ(roots.size(), 2u);
 }
 
+TEST_F(PathTest, PartingPoint)
+{
+    // === Test complete overlaps between identical curves ===
+    // Line segment
+    auto line = string_to_path("M 0,0 L 3.33, 7.77");
+    auto pt = parting_point(line, line);
+    EXPECT_TRUE(are_near(pt.point(), line.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.t, 1.0));
+
+    // Cubic Bézier
+    auto bezier = string_to_path("M 0,0 C 1,1 14,1 15,0");
+    pt = parting_point(bezier, bezier);
+    EXPECT_TRUE(are_near(pt.point(), bezier.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.t, 1.0));
+
+    // Eliptical arc
+    auto const arc = string_to_path("M 0,0 A 100,20 0,0,0 200,0");
+    pt = parting_point(arc, arc);
+    EXPECT_TRUE(are_near(pt.point(), arc.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.t, 1.0));
+
+    // === Test complete overlap between degree-elevated and degree-shrunk Béziers ===
+    auto artificially_cubic = string_to_path("M 0,0 C 10,10 20,10 30,0");
+    auto really_quadratic = string_to_path("M 0,0 Q 15,15 30,0");
+    pt = parting_point(artificially_cubic, really_quadratic);
+    EXPECT_TRUE(are_near(pt.point(), artificially_cubic.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.asFlatTime(), 1.0));
+    EXPECT_TRUE(are_near(pt.second.asFlatTime(), 1.0));
+
+    // === Test complete overlaps between a curve and its subdivision ===
+    // Straight line
+    line = string_to_path("M 0,0 L 15,15");
+    auto subdivided_line = string_to_path("M 0,0 L 3,3 L 4,4 L 9,9 L 15,15");
+    pt = parting_point(line, subdivided_line);
+    EXPECT_TRUE(are_near(pt.point(), line.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.t, 1.0));
+
+    // Cubic Bézier
+    bezier = string_to_path("M 0,0 C 0,40 50,40 50,0");
+    auto de_casteljau = string_to_path("M 0,0 C 0,10 3.125,17.5 7.8125,22.5 12.5,27.5 18.75,30 25,30"
+                                       " 31.25,30 37.5,27.5 42.1875,22.5 46.875,17.5 50,10 50,0");
+    pt = parting_point(bezier, de_casteljau);
+    EXPECT_TRUE(are_near(pt.point(), bezier.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.t, 1.0));
+
+    // Eliptical arc
+    auto subdivided_arc = string_to_path("M 0,0 A 100,20, 0,0,0 100,20 A 100,20 0,0,0 200,0");
+    pt = parting_point(arc, subdivided_arc);
+    EXPECT_TRUE(are_near(pt.point(), arc.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.t, 1.0));
+
+    // === Test complete overlap between different subdivisions ===
+    auto line1 = string_to_path("M 0,0 L 3,3 L 5,5 L 10,10");
+    auto line2 = string_to_path("M 0,0 L 2,2 L 4.2,4.2 L 4.5,4.5 L 6,6 L 10,10");
+    pt = parting_point(line1, line2);
+    EXPECT_TRUE(are_near(pt.point(), line1.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.asFlatTime(),  line1.timeRange().max()));
+    EXPECT_TRUE(are_near(pt.second.asFlatTime(), line2.timeRange().max()));
+
+    // === Test complete overlaps in the presence of degenerate segments ===
+    // Straight line
+    line = string_to_path("M 0,0 L 15,15");
+    subdivided_line = string_to_path("M 0,0 L 3,3 H 3 V 3 L 3,3 L 4,4 H 4 V 4 L 4,4 L 9,9 H 9 L 15,15");
+    pt = parting_point(line, subdivided_line);
+    EXPECT_TRUE(are_near(pt.point(), line.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.asFlatTime(), 1.0));
+
+    // Eliptical arc
+    auto arc_degen = string_to_path("M 0,0 A 100,20, 0,0,0 100,20 H 100 V 20 L 100,20 A 100,20 0,0,0 200,0");
+    pt = parting_point(arc, arc_degen);
+    EXPECT_TRUE(are_near(pt.point(), arc.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.asFlatTime(), 1.0));
+
+    // === Paths that overlap but one is shorter than the other ===
+    // Straight lines
+    auto long_line = string_to_path("M 0,0 L 20,10");
+    auto short_line = string_to_path("M 0,0 L 4,2");
+    pt = parting_point(long_line, short_line);
+    EXPECT_TRUE(are_near(pt.point(), short_line.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.t, 0.2));
+    EXPECT_TRUE(are_near(pt.second.t, 1.0));
+
+    // Cubic Bézier
+    auto const s_shape = string_to_path("M 0,0 C 10, 0 0,10 10,10");
+    auto half_s = string_to_path("M 0,0 C 5,0 5,2.5 5,5");
+    pt = parting_point(s_shape, half_s);
+    EXPECT_TRUE(are_near(pt.first.t, 0.5));
+    EXPECT_TRUE(are_near(pt.second.t, 1.0));
+
+    // Elliptical arc
+    auto quarter_ellipse = string_to_path("M 0,0 A 100,20, 0,0,0 100,20");
+    pt = parting_point(arc, quarter_ellipse);
+    EXPECT_TRUE(are_near(pt.point(), quarter_ellipse.finalPoint()));
+    EXPECT_TRUE(are_near(pt.first.t, 0.5));
+    EXPECT_TRUE(are_near(pt.second.t, 1.0));
+
+    // === Paths that overlap initially but then they split ===
+    // Straight lines
+    auto boring_line = string_to_path("M 0,0 L 50,10");
+    auto line_then_arc = string_to_path("M 0,0 L 5,1 A 1,1 0,0,0 7,1");
+    pt = parting_point(boring_line, line_then_arc);
+    EXPECT_TRUE(are_near(pt.point(), Point(5, 1)));
+    EXPECT_TRUE(are_near(pt.first.t, 0.1));
+    EXPECT_TRUE(are_near(pt.second.asFlatTime(), 1.0));
+
+    // Cubic Bézier
+    auto half_s_then_line = string_to_path("M 0,0 C 5,0 5,2.5 5,5 L 10,10");
+    pt = parting_point(s_shape, half_s_then_line);
+    EXPECT_TRUE(are_near(pt.point(), Point(5, 5)));
+    EXPECT_TRUE(are_near(pt.first.t, 0.5));
+    EXPECT_TRUE(are_near(pt.second.asFlatTime(), 1.0));
+
+    // Elliptical arc
+    auto quarter_ellipse_then_quadratic = string_to_path("M 0,0 A 100,20, 0,0,0 100,20 Q 120,40 140,60");
+    pt = parting_point(arc, quarter_ellipse_then_quadratic);
+    EXPECT_TRUE(are_near(pt.point(), Point(100, 20)));
+    EXPECT_TRUE(are_near(pt.first.t, 0.5));
+    EXPECT_TRUE(are_near(pt.second.asFlatTime(), 1.0));
+
+    // === Paths that split at a common node ===
+    // Polylines
+    auto branch_90 = string_to_path("M 0,0 H 3 H 6 V 7");
+    auto branch_45 = string_to_path("M 0,0 H 2 H 6 L 7,7");
+    pt = parting_point(branch_90, branch_45);
+    EXPECT_TRUE(are_near(pt.point(), Point(6, 0)));
+    EXPECT_TRUE(are_near(pt.first.asFlatTime(), 2.0));
+    EXPECT_TRUE(are_near(pt.second.asFlatTime(), 2.0));
+
+    // Arcs
+    auto quarter_circle_then_horiz = string_to_path("M 0,0 A 1,1 0,0,0 1,1 H 10");
+    auto quarter_circle_then_slant = string_to_path("M 0,0 A 1,1 0,0,0 1,1 L 10, 1.1");
+    pt = parting_point(quarter_circle_then_horiz, quarter_circle_then_slant);
+    EXPECT_TRUE(are_near(pt.point(), Point(1, 1)));
+    EXPECT_TRUE(are_near(pt.first.asFlatTime(), 1.0));
+    EXPECT_TRUE(are_near(pt.second.asFlatTime(), 1.0));
+
+    // Last common nodes followed by degenerates
+    auto degen_horiz = string_to_path("M 0,0 A 1,1 0,0,0 1,1 V 1 H 1 L 1,1 H 10");
+    auto degen_slant = string_to_path("M 0,0 A 1,1 0,0,0 1,1 V 1 H 1 L 1,1 L 10, 1.1");
+    pt = parting_point(quarter_circle_then_horiz, quarter_circle_then_slant);
+    EXPECT_TRUE(are_near(pt.point(), Point(1, 1)));
+
+    // === Paths that split at the starting point ===
+    auto vertical = string_to_path("M 0,0 V 1");
+    auto quarter = string_to_path("M 0,0 A 1,1 0,0,0, 1,1");
+    pt = parting_point(vertical, quarter);
+    EXPECT_TRUE(are_near(pt.point(), Point(0, 0)));
+    EXPECT_TRUE(are_near(pt.first.asFlatTime(), 0.0));
+    EXPECT_TRUE(are_near(pt.second.asFlatTime(), 0.0));
+
+    // === Symmetric split (both legs of the same length) ===
+    auto left_leg = string_to_path("M 1,0 L 0,10");
+    auto right_leg = string_to_path("M 1,0 L 2,10");
+    pt = parting_point(left_leg, right_leg);
+    EXPECT_TRUE(are_near(pt.point(), Point(1, 0)));
+    EXPECT_TRUE(are_near(pt.first.asFlatTime(), 0.0));
+    EXPECT_TRUE(are_near(pt.second.asFlatTime(), 0.0));
+
+    // === Different starting points ===
+    auto start_at_0_0 = string_to_path("M 0,0 C 1,0 0,1 1,1");
+    auto start_at_10_10 = string_to_path("M 10,10 L 50,50");
+    pt = parting_point(start_at_0_0, start_at_10_10);
+    EXPECT_TRUE(are_near(pt.point(), Point (5,5)));
+    EXPECT_DOUBLE_EQ(pt.first.t, -1.0);
+    EXPECT_DOUBLE_EQ(pt.second.t, -1.0);
+    EXPECT_EQ(pt.first.curve_index, 0);
+    EXPECT_EQ(pt.second.curve_index, 0);
+}
+
 /*
   Local Variables:
   mode:c++

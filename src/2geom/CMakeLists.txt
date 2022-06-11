@@ -55,6 +55,7 @@ add_library(2geom ${LIB_TYPE}
     numeric/matrix.cpp
 
     parallelogram.cpp
+    parting-point.cpp
     path-intersection.cpp
     path-sink.cpp
     path.cpp

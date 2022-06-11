@@ -807,6 +807,32 @@ inline Coord nearest_time(Point const &p, Path const &c) {
 
 bool are_near(Path const &a, Path const &b, Coord precision = EPSILON);
 
+/**
+ * @brief Find the first point where two paths diverge away from one another.
+ *
+ * If the two paths have a common starting point, the algorithm follows them for as long as the
+ * images of the paths coincide and finds the first point where they stop coinciding. Note that
+ * only the images of paths in the plane are compared, and not their parametrizations, so this
+ * is not a functional (parametric) coincidence. If you want to test parametric coincidence, use
+ * bool are_near(Path const&, Path const&, Coord) instead.
+ *
+ * The function returns the point where the traces of the two paths finally diverge up to the
+ * specified precision. If the traces (images) of the paths are nearly identical until the end,
+ * the returned point is their (almost) common endpoint. If however the image of one of the paths
+ * is completely contained in the image of the other path, the returned point is the endpoint of
+ * the shorter path.
+ *
+ * If the paths have different starting points, then the returned intersection has the special
+ * time values of -1.0 on both paths and the returned intersection point is the midpoint of the
+ * line segment connecting the two starting points.
+ *
+ * @param first     The first path to follow; corresponds to .first in the return value.
+ * @param second    The second path to follow; corresponds to .second in the return value.
+ * @param precision How close the paths' images need to be in order to be considered as overlapping.
+ * @return A path intersection specifying the point and path times where the two paths part ways.
+ */
+PathIntersection parting_point(Path const &first, Path const &second, Coord precision = EPSILON);
+
 std::ostream &operator<<(std::ostream &out, Path const &path);
 
 } // end namespace Geom
