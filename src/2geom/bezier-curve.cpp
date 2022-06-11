@@ -198,8 +198,28 @@ bool BezierCurve::isNear(Curve const &c, Coord precision) const
         }
         return true;
     } else {
-        // TODO: comparison after degree elevation
-        return false;
+        // Must equalize the degrees before comparing
+        BezierCurve elevated_this, elevated_other;
+        for (size_t dim = 0; dim < 2; dim++) {
+            unsigned const our_degree = inner[dim].degree();
+            unsigned const other_degree = other->inner[dim].degree();
+
+            if (our_degree < other_degree) {
+                // Elevate our degree
+                elevated_this.inner[dim] = inner[dim].elevate_to_degree(other_degree);
+                elevated_other.inner[dim] = other->inner[dim];
+            } else if (our_degree > other_degree) {
+                // Elevate the other's degree
+                elevated_this.inner[dim] = inner[dim];
+                elevated_other.inner[dim] = other->inner[dim].elevate_to_degree(our_degree);
+            } else {
+                // Equal degrees: just copy
+                elevated_this.inner[dim] = inner[dim];
+                elevated_other.inner[dim] = other->inner[dim];
+            }
+        }
+        assert(elevated_other.size() == elevated_this.size());
+        return elevated_this.isNear(elevated_other, precision);
     }
 }
 
