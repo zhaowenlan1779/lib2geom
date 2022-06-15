@@ -1,4 +1,6 @@
-#include "testing.h"
+#include <cmath>
+#include <vector>
+#include <iterator>
 #include <iostream>
 
 #include <2geom/bezier.h>
@@ -7,8 +9,8 @@
 #include <2geom/path-intersection.h>
 #include <2geom/svg-path-parser.h>
 #include <2geom/svg-path-writer.h>
-#include <vector>
-#include <iterator>
+
+#include "testing.h"
 
 using namespace std;
 using namespace Geom;
@@ -662,6 +664,37 @@ TEST_F(PathTest, PartingPoint)
     EXPECT_DOUBLE_EQ(pt.second.t, -1.0);
     EXPECT_EQ(pt.first.curve_index, 0);
     EXPECT_EQ(pt.second.curve_index, 0);
+}
+
+TEST_F(PathTest, InitialFinalTangents) {
+    // Test tangents for an open path
+    auto L_shape = string_to_path("M 1,1 H 0 V 0");
+    EXPECT_EQ(L_shape.initialUnitTangent(), Point(-1.0, 0.0));
+    EXPECT_EQ(L_shape.finalUnitTangent(), Point(0.0, -1.0));
+
+    // Closed path with non-degenerate closing segment
+    auto triangle = string_to_path("M 0,0 H 2 L 0,3 Z");
+    EXPECT_EQ(triangle.initialUnitTangent(), Point(1.0, 0.0));
+    EXPECT_EQ(triangle.finalUnitTangent(), Point(0.0, -1.0));
+
+    // Closed path with a degenerate closing segment
+    auto full360 = string_to_path("M 0,0 A 1,1, 0,1,1, 0,2 A 1,1 0,1,1 0,0 Z");
+    EXPECT_EQ(full360.initialUnitTangent(), Point(1.0, 0.0));
+    EXPECT_EQ(full360.finalUnitTangent(), Point(1.0, 0.0));
+
+    // Test multiple degenerate segments at the start
+    auto start_degen = string_to_path("M 0,0 L 0,0 H 0 V 0 Q 1,0 1,1");
+    EXPECT_EQ(start_degen.initialUnitTangent(), Point(1.0, 0.0));
+
+    // Test multiple degenerate segments at the end
+    auto end_degen = string_to_path("M 0,0 L 1,1 H 1 V 1 L 1,1");
+    double comp = 1.0 / sqrt(2.0);
+    EXPECT_EQ(end_degen.finalUnitTangent(), Point(comp, comp));
+
+    // Test a long and complicated path with both tangents along the positive x-axis.
+    auto complicated = string_to_path("M 0,0 H 0 L 1,0 C 2,1 3,2 1,0 L 1,0 H 1 Q 2,3 0,5 H 2");
+    EXPECT_EQ(complicated.initialUnitTangent(), Point(1.0, 0.0));
+    EXPECT_EQ(complicated.finalUnitTangent(), Point(1.0, 0.0));
 }
 
 /*

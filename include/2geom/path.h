@@ -124,7 +124,7 @@ class BaseIterator
  * in long paths, either use this class and related methods instead of the standard methods
  * pointAt(), nearestTime() and so on, or use curveAt() to first obtain the curve, then
  * call the method again to obtain a high precision result.
- * 
+ *
  * @ingroup Paths */
 struct PathTime
     : boost::totally_ordered<PathTime>
@@ -536,7 +536,7 @@ public:
      * Note that this method has reduced precision with respect to calling pointAt()
      * directly on the curve. If you want high precision results, use the version
      * that takes a PathTime parameter.
-     * 
+     *
      * Allowed time values range from zero to the number of curves; you can retrieve
      * the allowed range of values with timeRange(). */
     Point pointAt(Coord t) const;
@@ -560,7 +560,7 @@ public:
     std::vector<PathIntersection> intersect(Path const &other, Coord precision = EPSILON) const;
 
     /** @brief Determine the winding number at the specified point.
-     * 
+     *
      * The winding number is the number of full turns made by a ray that connects the passed
      * point and the path's value (i.e. the result of the pointAt() method) as the time increases
      * from 0 to the maximum valid value. Positive numbers indicate turns in the direction
@@ -643,7 +643,7 @@ public:
     Path reversed() const;
 
     void insert(iterator pos, Curve const &curve);
-    
+
     template <typename Iter>
     void insert(iterator pos, Iter first, Iter last) {
         _unshare();
@@ -669,6 +669,29 @@ public:
     /** @brief Get the last point in the path.
      * If the path is closed, this is always the same as the initial point. */
     Point finalPoint() const { return (*_closing_seg)[_closed ? 1 : 0]; }
+
+    /** @brief Get the unit tangent vector at the start of the path,
+     * or the zero vector if undefined. */
+    Point initialUnitTangent() const {
+        for (auto const &curve : *this) {
+            if (!curve.isDegenerate()) {
+                return curve.unitTangentAt(0.0);
+            }
+        }
+        return Point();
+    }
+
+    /** @brief Get the unit tangent vector at the end of the path,
+     * or the zero vector if undefined. */
+    Point finalUnitTangent() const {
+        for (auto it = end(); it != begin();) {
+            --it;
+            if (!it->isDegenerate()) {
+                return it->unitTangentAt(1.0);
+            }
+        }
+        return Point();
+    }
 
     void setInitial(Point const &p) {
         _unshare();
