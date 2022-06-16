@@ -960,6 +960,23 @@ void Path::snapEnds(Coord precision)
     }
 }
 
+Path Path::withoutDegenerateCurves() const
+{
+    Sequence cleaned;
+    cleaned.reserve(size());
+
+    for (auto it = begin(); it != end_open(); ++it) {
+        if (!it->isDegenerate()) {
+            cleaned.push_back(it->duplicate());
+        }
+    }
+
+    Path result;
+    result._closed = _closed;
+    result.do_update(result._data->curves.begin(), result._data->curves.end(), cleaned);
+    return result;
+}
+
 // replace curves between first and last with contents of source,
 // 
 void Path::do_update(Sequence::iterator first, Sequence::iterator last, Sequence &source)

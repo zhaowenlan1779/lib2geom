@@ -775,6 +775,10 @@ public:
     /// Append a stitching segment ending at the specified point.
     void stitchTo(Point const &p);
 
+    /** @brief Return a copy of the path without degenerate curves, except possibly for a
+      * degenerate closing segment. */
+    Path withoutDegenerateCurves() const;
+
     /** @brief Verify the continuity invariant.
      * If the path is not contiguous, this will throw a CountinuityError. */
     void checkContinuity() const;

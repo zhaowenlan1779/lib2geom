@@ -697,6 +697,50 @@ TEST_F(PathTest, InitialFinalTangents) {
     EXPECT_EQ(complicated.finalUnitTangent(), Point(1.0, 0.0));
 }
 
+TEST_F(PathTest, WithoutDegenerates) {
+    // Ensure nothing changes when there are no degenerate segments to remove.
+    auto plain_open = string_to_path("M 0,0 Q 5,5 10,10");
+    EXPECT_EQ(plain_open, plain_open.withoutDegenerateCurves());
+
+    auto closed_nondegen_closing = string_to_path("M 0,0 L 5,5 H 0 Z");
+    EXPECT_EQ(closed_nondegen_closing,closed_nondegen_closing.withoutDegenerateCurves());
+
+    // Ensure that a degenerate closing segment is left alone.
+    auto closed_degen_closing = string_to_path("M 0,0 L 2,4 H 0 L 0,0 Z");
+    EXPECT_EQ(closed_degen_closing, closed_degen_closing.withoutDegenerateCurves());
+
+    // Ensure that a trivial path is left alone (both open and closed).
+    auto trivial_open = string_to_path("M 0,0");
+    EXPECT_EQ(trivial_open, trivial_open.withoutDegenerateCurves());
+
+    auto trivial_closed = string_to_path("M 0,0 Z");
+    EXPECT_EQ(trivial_closed, trivial_closed.withoutDegenerateCurves());
+
+    // Ensure that initial degenerate segments are removed
+    auto degen_start = string_to_path("M 0,0 L 0,0 H 0 V 0 Q 5,5 10,10");
+    auto degen_start_cleaned = degen_start.withoutDegenerateCurves();
+    EXPECT_EQ(degen_start_cleaned, string_to_path("M 0,0 Q 5,5 10,10"));
+    EXPECT_NE(degen_start.size(), degen_start_cleaned.size());
+
+    // Ensure that degenerate segments are removed from the middle
+    auto degen_middle = string_to_path("M 0,0 L 1,1 H 1 V 1 L 1,1 Q 6,6 10,10");
+    auto degen_middle_cleaned = degen_middle.withoutDegenerateCurves();
+    EXPECT_EQ(degen_middle_cleaned, string_to_path("M 0,0 L 1,1 Q 6,6 10,10"));
+    EXPECT_NE(degen_middle.size(), degen_middle_cleaned.size());
+
+    // Ensure that degenerate segment are removed from the end of an open path
+    auto end_open = string_to_path("M 0,0 L 1,1 H 1 V 1 L 1,1");
+    auto end_open_cleaned = end_open.withoutDegenerateCurves();
+    EXPECT_EQ(end_open_cleaned, string_to_path("M 0,0 L 1,1"));
+    EXPECT_NE(end_open.size(), end_open_cleaned.size());
+
+    // Ensure removal of degenerates just before the closing segment
+    auto end_nondegen = string_to_path("M 0,0 L 1,1 L 0,1 H 0 V 1 Z");
+    auto end_nondegen_cleaned = end_nondegen.withoutDegenerateCurves();
+    EXPECT_EQ(end_nondegen_cleaned, string_to_path("M 0,0 L 1,1 L 0,1 Z"));
+    EXPECT_NE(end_nondegen.size(), end_nondegen_cleaned.size());
+}
+
 /*
   Local Variables:
   mode:c++
