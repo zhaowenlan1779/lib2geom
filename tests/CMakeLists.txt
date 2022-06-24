@@ -28,6 +28,7 @@ line-test
 nl-vector-test
 parallelogram-test
 path-test
+planar-graph-test
 point-test
 polynomial-test
 rect-test

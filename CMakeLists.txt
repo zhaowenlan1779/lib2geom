@@ -17,6 +17,7 @@ project(lib2geom
     )
 
 set(2GEOM_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/include" CACHE INTERNAL "")
+include_directories("${CMAKE_CURRENT_LIST_DIR}/src/2geom") # for private headers/template support.
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -126,7 +127,6 @@ add_custom_target(uninstall_${PROJECT_NAME}
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
 add_subdirectory(src)
-
 
 install(EXPORT 2geom_targets
     FILE 2GeomTargets.cmake

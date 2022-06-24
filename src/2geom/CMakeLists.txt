@@ -87,6 +87,10 @@ add_library(2geom ${LIB_TYPE}
     utils.cpp
 
     # headers (for IDE support only)
+    # private:
+    planar-graph.h
+
+    # public:
     ${2GEOM_INCLUDE_DIR}/2geom/affine.h
     ${2GEOM_INCLUDE_DIR}/2geom/angle.h
 
