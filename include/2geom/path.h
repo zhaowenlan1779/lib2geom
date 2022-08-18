@@ -285,6 +285,26 @@ struct ShapeTraits<Path> {
     typedef PathIntersection IntersectionType;
 };
 
+/** @brief Stores information about the extremum points on a path, with respect
+ *         to one of the coordinate axes.
+ *  @relates Path::extrema()
+ */
+struct PathExtrema {
+    /** Points with the minimum and maximum value of a coordinate. */
+    Point min_point, max_point;
+
+    /** Directions in which the OTHER coordinates change at the extremum points.
+     *
+     * - equals +1.0 if the other coordinate increases,
+     * - equals  0.0 if the other coordinate is constant (e.g., for an axis-aligned segment),
+     * - equals -1.0 if the other coordinate decreases.
+     */
+    float glance_direction_at_min, glance_direction_at_max;
+
+    /** Path times corresponding to minimum and maximum points. */
+    PathTime min_time, max_time;
+};
+
 /** @brief Sequence of contiguous curves, aka spline.
  *
  * Path represents a sequence of contiguous curves, also known as a spline.
@@ -560,6 +580,13 @@ public:
     Coord valueAt(PathTime const &pos, Dim2 d) const;
 
     Point operator()(Coord t) const { return pointAt(t); }
+
+    /** @brief Find the extrema of the specified coordinate.
+     *
+     * Returns a PathExtrema struct describing "witness" points on the path
+     * where the specified coordinate attains its minimum and maximum values.
+     */
+    PathExtrema extrema(Dim2 d) const;
 
     /// Compute intersections with axis-aligned line.
     std::vector<PathTime> roots(Coord v, Dim2 d) const;

@@ -741,6 +741,120 @@ TEST_F(PathTest, WithoutDegenerates) {
     EXPECT_NE(end_nondegen.size(), end_nondegen_cleaned.size());
 }
 
+/** Test Path::extrema() */
+TEST_F(PathTest, GetExtrema) {
+
+    // Circle of radius 4.5 centered at (-4.5, 0).
+    auto extrema_x = circle.extrema(X);
+    EXPECT_EQ(extrema_x.min_point, Point(-9, 0));
+    EXPECT_EQ(extrema_x.max_point, Point( 0, 0));
+    EXPECT_DOUBLE_EQ(extrema_x.min_time.asFlatTime(), 1.0);
+    EXPECT_DOUBLE_EQ(extrema_x.max_time.asFlatTime(), 0.0);
+    EXPECT_EQ(extrema_x.glance_direction_at_min, -1.0);
+    EXPECT_EQ(extrema_x.glance_direction_at_max, 1.0);
+
+    auto extrema_y = circle.extrema(Y);
+    EXPECT_EQ(extrema_y.min_point, Point(-4.5, -4.5));
+    EXPECT_EQ(extrema_y.max_point, Point(-4.5,  4.5));
+    EXPECT_DOUBLE_EQ(extrema_y.min_time.asFlatTime(), 1.5);
+    EXPECT_DOUBLE_EQ(extrema_y.max_time.asFlatTime(), 0.5);
+    EXPECT_FLOAT_EQ(extrema_y.glance_direction_at_min,  1.0);
+    EXPECT_FLOAT_EQ(extrema_y.glance_direction_at_max, -1.0);
+
+    // Positively oriented unit square
+    extrema_x = square.extrema(X);
+    EXPECT_DOUBLE_EQ(extrema_x.min_point[X], 0.0);
+    EXPECT_DOUBLE_EQ(extrema_x.max_point[X], 1.0);
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, -1.0);
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_max,  1.0);
+
+    extrema_y = square.extrema(Y);
+    EXPECT_DOUBLE_EQ(extrema_y.min_point[Y], 0.0);
+    EXPECT_DOUBLE_EQ(extrema_y.max_point[Y], 1.0);
+    EXPECT_FLOAT_EQ(extrema_y.glance_direction_at_min, 1.0);
+    EXPECT_FLOAT_EQ(extrema_y.glance_direction_at_max, -1.0);
+
+    // Path glancing its min X line while going towards negative Y
+    auto down_glance = string_to_path("M 1,18 L 0,0 1,-20");
+    extrema_x = down_glance.extrema(X);
+    EXPECT_EQ(extrema_x.min_point, Point(0, 0));
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, -1.0);
+    EXPECT_DOUBLE_EQ(extrema_x.min_time.asFlatTime(), 1.0);
+
+    // Similar but not at a node
+    auto down_glance_smooth = string_to_path("M 1,20 C 0,20 0,-20 1,-20");
+    extrema_x = down_glance_smooth.extrema(X);
+    EXPECT_TRUE(are_near(extrema_x.min_point[Y], 0.0));
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, -1.0);
+    EXPECT_DOUBLE_EQ(extrema_x.min_time.asFlatTime(), 0.5);
+
+    // Path coming down to the min X and then retreating horizontally
+    auto retreat = string_to_path("M 1,20 L 0,0 H 5 L 4,-20");
+    extrema_x = retreat.extrema(X);
+    EXPECT_EQ(extrema_x.min_point, Point(0, 0));
+    EXPECT_EQ(extrema_x.max_point, Point(5, 0));
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, -1.0);
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_max, -1.0);
+    EXPECT_DOUBLE_EQ(extrema_x.min_time.asFlatTime(), 1.0);
+    EXPECT_DOUBLE_EQ(extrema_x.max_time.asFlatTime(), 2.0);
+
+    // Perfectly horizontal path
+    auto horizontal = string_to_path("M 0,0 H 12");
+    extrema_x = horizontal.extrema(X);
+    extrema_y = horizontal.extrema(Y);
+    EXPECT_EQ(extrema_x.min_point, Point(0, 0));
+    EXPECT_EQ(extrema_x.max_point, Point(12, 0));
+    EXPECT_DOUBLE_EQ(extrema_y.min_point[Y], 0.0);
+    EXPECT_DOUBLE_EQ(extrema_y.max_point[Y], 0.0);
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, 0.0);
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_max, 0.0);
+    EXPECT_FLOAT_EQ(extrema_y.glance_direction_at_min, 1.0);
+    EXPECT_FLOAT_EQ(extrema_y.glance_direction_at_max, 1.0);
+    EXPECT_DOUBLE_EQ(extrema_x.min_time.asFlatTime(), 0.0);
+    EXPECT_DOUBLE_EQ(extrema_x.max_time.asFlatTime(), 1.0);
+
+    // Perfectly vertical path
+    auto vertical = string_to_path("M 0,0 V 42");
+    extrema_y = vertical.extrema(Y);
+    extrema_x = vertical.extrema(X);
+    EXPECT_DOUBLE_EQ(extrema_x.min_point[Y], 0.0);
+    EXPECT_DOUBLE_EQ(extrema_x.max_point[Y], 0.0);
+    EXPECT_EQ(extrema_y.min_point, Point(0, 0));
+    EXPECT_EQ(extrema_y.max_point, Point(0, 42));
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, 1.0);
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_max, 1.0);
+    EXPECT_FLOAT_EQ(extrema_y.glance_direction_at_min, 0.0);
+    EXPECT_FLOAT_EQ(extrema_y.glance_direction_at_max, 0.0);
+    EXPECT_DOUBLE_EQ(extrema_y.min_time.asFlatTime(), 0.0);
+    EXPECT_DOUBLE_EQ(extrema_y.max_time.asFlatTime(), 1.0);
+
+    // Detect downward glance at the closing point (degenerate closing segment)
+    auto closed = string_to_path("M 0,0 L 1,-2 H 3 V 5 H 1 L 0,0 Z");
+    extrema_x = closed.extrema(X);
+    EXPECT_EQ(extrema_x.min_point, Point(0, 0));
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, -1.0);
+
+    // Same but with a non-degenerate closing segment
+    auto closed_nondegen = string_to_path("M 0,0 L 1,-2 H 3 V 5 H 1 Z");
+    extrema_x = closed_nondegen.extrema(X);
+    EXPECT_EQ(extrema_x.min_point, Point(0, 0));
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, -1.0);
+
+    // Collapsed Bezier not glancing up nor down
+    auto collapsed = string_to_path("M 10, 0 Q -10 0 10, 0");
+    extrema_x = collapsed.extrema(X);
+    EXPECT_EQ(extrema_x.min_point, Point(0, 0));
+    EXPECT_EQ(extrema_x.max_point, Point(10, 0));
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, 0.0);
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_max, 0.0);
+
+    // Degenerate segments at min X
+    auto degen = string_to_path("M 0.01,20 L 0, 0 H 0 V 0 L 0,0 V 0 L 0.02 -30");
+    extrema_x = degen.extrema(X);
+    EXPECT_EQ(extrema_x.min_point, Point(0, 0));
+    EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, -1.0);
+}
+
 /*
   Local Variables:
   mode:c++
