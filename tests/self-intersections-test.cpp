@@ -38,6 +38,7 @@
 using namespace Geom;
 
 #define PV(d) (parse_svg_path(d))
+#define PTH(d) (PV(d)[0])
 
 class PVSelfIntersections : public testing::Test
 {
@@ -97,6 +98,9 @@ TEST_F(PVSelfIntersections, NoSpurious)
 
     auto dm = _degenerate_multiple.intersectSelf();
     EXPECT_EQ(dm.size(), 0u);
+
+    auto cusp_node = PTH("M 1 3 C 12 8 42 101 86 133 C 78 168 136 83 80 64");
+    EXPECT_EQ(cusp_node.intersectSelf().size(), 0u);
 }
 
 /* Test figure-eight shaped paths */
@@ -160,6 +164,37 @@ TEST_F(PVSelfIntersections, Regression33)
     auto const curve = CubicBezier(c, c, d, d);
 
     EXPECT_EQ(curve.intersect(line).size(), 1);
+}
+
+/* Regression test for issue https://gitlab.com/inkscape/lib2geom/-/issues/46 */
+TEST_F(PVSelfIntersections, NumericalInstability)
+{
+    // Test examples provided by M.B. Fraga in the issue report.
+    auto missing_intersection = PTH("M 138 237 C 293 207 129 12 167 106 Q 205 200 309 198 z");
+    auto missing_xings = missing_intersection.intersectSelf();
+    EXPECT_EQ(missing_xings.size(), 2);
+
+    auto duplicate_intersection = PTH("M 60 280 C 60 213 236 227 158 178 S 174 306 127 310 Q 80 314 60 280 z");
+    auto const only_expected = Point(130.9693916417836, 224.587385497877);
+    auto duplicate_xings = duplicate_intersection.intersectSelf();
+    ASSERT_EQ(duplicate_xings.size(), 1);
+    EXPECT_TRUE(are_near(duplicate_xings[0].point(), only_expected));
+}
+
+/* Check various numerically challenging paths consisting of 2 cubic Béziers. */
+TEST_F(PVSelfIntersections, NumericallyChallenging)
+{
+    auto two_kinks = PTH("M 85 88 C 4 425 19 6 72 426 C 128 6 122 456 68 96");
+    EXPECT_EQ(two_kinks.intersectSelf().size(), 3);
+
+    auto omega = PTH("M 47 132 C 179 343 0 78 106 74 C 187 74 0 358 174 106");
+    EXPECT_EQ(omega.intersectSelf().size(), 0);
+
+    auto spider = PTH("M 47 132 C 203 339 0 78 106 74 C 187 74 0 358 174 106");
+    EXPECT_EQ(spider.intersectSelf().size(), 4);
+
+    auto egret = PTH("M 38 340 C 183 141 16 76 255 311 C 10 79 116 228 261 398");
+    EXPECT_EQ(egret.intersectSelf().size(), 0);
 }
 
 /*

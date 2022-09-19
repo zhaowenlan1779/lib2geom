@@ -113,34 +113,33 @@ private:
             }
 
             size_t const other_index = std::distance(_path.begin(), other);
+            auto const &[smaller, larger] = std::minmax(index, other_index);
+            bool consecutive = smaller + 1 == larger;
+            bool wraparound = false;
+            if (_path.closed()) {
+                wraparound = !smaller && larger + 1 == _path.size();
+                consecutive = consecutive || wraparound;
+            }
             for (auto &&xing : curve->intersect(*other, _precision)) {
-                _appendCurveCrossing(std::move(xing), index, other_index);
+                _appendCurveCrossing(std::move(xing), index, other_index, consecutive, wraparound);
             }
         }
     }
 
     /** Append a curve crossing to the store as long as it satisfies nondegeneracy criteria. */
-    void _appendCurveCrossing(CurveIntersection &&xing, size_t first_index, size_t second_index)
+    void _appendCurveCrossing(CurveIntersection &&xing, size_t first_index, size_t second_index,
+                              bool consecutive = false, bool wraparound = false)
     {
-        auto const cyclically_consecutive = [=](size_t i, size_t j) -> bool {
-            return (i + 1 == j) || (_path.closed() && (i + 1 == j + _path.size()));
-        };
-
-        if ((cyclically_consecutive(first_index, second_index) &&
-            are_near(xing.point(), _path[first_index].finalPoint(), _precision))
-            ||
-            (cyclically_consecutive(second_index, first_index) &&
-            are_near(xing.point(), _path[first_index].initialPoint(), _precision)))
-        {   // This isn't a "real" crossing but rather just the equality between the final
-            // and initial points of subsequent curves – a consequence of the path's continuity.
-            return;
-        }
-
-        // Ensure that the curve evaluations are numerically within the stipulated precision.
-        if (!are_near(_path[first_index].pointAt(xing.first),
-                      _path[second_index].pointAt(xing.second), _precision))
-        {
-            return;
+        // Filter out crossings that aren't real but rather represent the agreement of final
+        // and initial points of consecutive curves – a consequence of the path's continuity.
+        if (consecutive) {
+            bool const first_is_first = (first_index < second_index) ^ wraparound;
+            // Filter out spurious self-intersections by using squared geometric average.
+            double const quadrance = first_is_first ? (1.0 - xing.first) * xing.second
+                                                    : (1.0 - xing.second) * xing.first;
+            if (quadrance < EPSILON) {
+                return;
+            }
         }
 
         // Convert curve indices to the original ones (before the removal of degenerate curves).
@@ -230,12 +229,6 @@ private:
     /// Append a path crossing to the store.
     void _appendPathCrossing(PathIntersection const &xing, size_t first_index, size_t second_index)
     {
-        // Validate the path crossing relative to the required precision
-        if (!are_near(_pathvector.at(first_index).pointAt(xing.first),
-                      _pathvector.at(second_index).pointAt(xing.second), _precision))
-        {
-            return;
-        }
         auto const first_time  = PathVectorTime(first_index,  xing.first);
         auto const second_time = PathVectorTime(second_index, xing.second);
         _crossings.emplace_back(first_time, second_time, xing.point());
@@ -254,15 +247,15 @@ PathVectorSelfIntersector::filterDeduplicate(std::vector<PathVectorIntersection>
     std::vector<PathVectorIntersection> result;
     result.reserve(xings.size());
 
-    auto const unordered_cmp = [=](Coord a1, Coord a2, Coord b1, Coord b2) -> bool {
-        return (are_near(a1, b1, _precision) && are_near(a2, b2, _precision)) ||
-               (are_near(a1, b2, _precision) && are_near(a2, b1, _precision));
+    auto const are_same_times = [&](Coord a1, Coord a2, Coord b1, Coord b2) -> bool {
+        return (are_near(a1, b1) && are_near(a2, b2)) ||
+               (are_near(a1, b2) && are_near(a2, b1));
     };
 
     Coord last_time_1 = -1.0, last_time_2 = -1.0; // Invalid path times
     for (auto &&x : xings) {
         auto const current_1 = x.first.asFlatTime(), current_2 = x.second.asFlatTime();
-        if (!unordered_cmp(current_1, current_2, last_time_1, last_time_2)) {
+        if (!are_same_times(current_1, current_2, last_time_1, last_time_2)) {
             result.push_back(std::move(x));
         }
         last_time_1 = current_1;
