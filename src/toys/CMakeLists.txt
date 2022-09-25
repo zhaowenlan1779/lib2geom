@@ -15,6 +15,7 @@ SET(2GEOM_TOYS-2_SRC
 aa
 arc-bez
 arc-length-param
+auto-cross
 boolops-toy
 bound-path
 bounds-test
@@ -53,7 +54,7 @@ evolute
 filet-minion
 find-derivative
 gear
-hatches
+#hatches
 implicit-toy
 ineaa
 inner-product-clip
@@ -90,9 +91,9 @@ rect_02
 rect_03
 rect-toy
 root-finder-comparer
-rtree-toy
+#rtree-toy
 sanitize
-sb1d
+#sb1d
 sb2d
 sb2d-solver
 sbasisdim
@@ -110,7 +111,7 @@ squiggles
 sweep
 sweeper-toy
 # these ones have only had a trivial rewrite to toy-2
-uncross
+#uncross
 winding-test
 worms
 )
