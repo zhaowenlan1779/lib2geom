@@ -98,16 +98,16 @@ public:
     }
     /** @brief Map the interval [0,1] onto this one.
      * This method simply performs 1D linear interpolation between endpoints. */
-    Coord valueAt(Coord t) {
+    Coord valueAt(Coord t) const {
         return lerp(t, min(), max());
     }
     /** @brief Compute a time value that maps to the given value.
      * The supplied value does not need to be in the interval for this method to work. */
-    Coord timeAt(Coord v) {
+    Coord timeAt(Coord v) const {
         return (v - min()) / extent();
     }
     /// Find closest time in [0,1] that maps to the given value. */
-    Coord nearestTime(Coord v) {
+    Coord nearestTime(Coord v) const {
         if (v <= min()) return 0;
         if (v >= max()) return 1;
         return timeAt(v);
