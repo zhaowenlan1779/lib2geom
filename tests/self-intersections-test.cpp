@@ -150,6 +150,18 @@ TEST_F(PVSelfIntersections, Tangential)
     EXPECT_TRUE(points_as_expected);
 }
 
+/* Regression test for issue https://gitlab.com/inkscape/lib2geom/-/issues/33 */
+TEST_F(PVSelfIntersections, Regression33)
+{
+    // Test case provided by Pascal Bies in the issue description.
+    auto const line = LineSegment(Point(486, 597), Point(313, 285));
+    Point const c{580.1377046525328, 325.5830744834947};
+    Point const d{289.35338528516013, 450.62476639303753};
+    auto const curve = CubicBezier(c, c, d, d);
+
+    EXPECT_EQ(curve.intersect(line).size(), 1);
+}
+
 /*
   Local Variables:
   mode:c++

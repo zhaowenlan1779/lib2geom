@@ -126,6 +126,24 @@ bool BezierCurve::isDegenerate() const
     return true;
 }
 
+/** Return false if there are at least 3 distinct control points, true otherwise. */
+bool BezierCurve::isLineSegment() const
+{
+    auto const last_idx = size() - 1;
+    if (last_idx == 1) {
+        return true;
+    }
+    auto const start = controlPoint(0);
+    auto const end = controlPoint(last_idx);
+    for (unsigned i = 1; i < last_idx; ++i) {
+        auto const pi = controlPoint(i);
+        if (pi != start && pi != end) {
+            return false;
+        }
+    }
+    return true;
+}
+
 Coord BezierCurve::length(Coord tolerance) const
 {
     switch (order())

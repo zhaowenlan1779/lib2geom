@@ -105,7 +105,7 @@ public:
     Point initialPoint() const override { return inner.at0(); }
     Point finalPoint() const override { return inner.at1(); }
     bool isDegenerate() const override;
-    bool isLineSegment() const override { return size() == 2; }
+    bool isLineSegment() const override;
     void setInitial(Point const &v) override { setPoint(0, v); }
     void setFinal(Point const &v) override { setPoint(order(), v); }
     Rect boundsFast() const override { return *bounds_fast(inner); }
@@ -250,7 +250,11 @@ public:
     }
 
     bool isLineSegment() const override {
-        return size() == 2;
+        if constexpr (degree == 1) {
+            return true;
+        } else {
+            return BezierCurve::isLineSegment();
+        }
     }
 
     Curve *duplicate() const override {
