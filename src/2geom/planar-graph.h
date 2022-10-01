@@ -181,6 +181,9 @@ public:
         /** Get the geometric position of the vertex. */
         Point const &point() const { return _position; }
 
+        /** Get the list of incidences to the vertex. */
+        auto const &getIncidences() const { return _incidences; }
+
         /** Compare vertices based on their coordinates (lexicographically). */
         bool operator<(Vertex const &other) const { return _cmp(_position, other._position); }
 
@@ -253,6 +256,8 @@ public:
             label.onDetach();
         }
     };
+    using EdgeIterator = typename std::vector<Edge>::iterator;
+    using EdgeConstIterator = typename std::vector<Edge>::const_iterator;
 
 private:
     double const _precision; ///< Numerical epsilon for vertex clumping.
@@ -270,6 +275,8 @@ public:
     std::list<Vertex> const &getVertices() const { return _vertices; }
     std::vector<Edge> const &getEdges() const { return _edges; }
     Edge const &getEdge(size_t index) const { return _edges.at(index); }
+    size_t getEdgeIndex(Edge const &edge) const { return &edge - _edges.data(); }
+    double getPrecision() const { return _precision; }
     size_t numVertices() const { return _vertices.size(); }
     size_t numEdges(bool include_detached = true) const
     {
@@ -354,6 +361,24 @@ public:
         }
         return clockwise ? *(vertex.cyclicPrevIncidence(it))
                          : *(vertex.cyclicNextIncidence(it));
+    }
+
+    /** As above, but return an iterator to a const incidence. */
+    inline IncConstIt nextIncidenceIt(Vertex const &vertex, Incidence const &incidence,
+                                    bool clockwise = false) const
+    {
+        IncConstIt it = std::find(vertex._incidences.begin(), vertex._incidences.end(), incidence);
+        if (it == vertex._incidences.end()) {
+            return vertex._incidences.begin();
+        }
+        return clockwise ? vertex.cyclicPrevIncidence(it)
+                         : vertex.cyclicNextIncidence(it);
+    }
+    inline IncConstIt nextIncidenceIt(Vertex const &vertex, IncConstIt const &incidence,
+                                    bool clockwise = false) const
+    {
+        return clockwise ? vertex.cyclicPrevIncidence(incidence)
+                         : vertex.cyclicNextIncidence(incidence);
     }
 
     /** As above, but start at the prescribed departure azimuth (in radians).
@@ -602,7 +627,7 @@ void PlanarGraph<EdgeLabel>::_regularizeVertex(typename PlanarGraph<EdgeLabel>::
 {
     auto &incidences = vertex._incidences;
 
-    /// Compare two polar angles in the interval [-π, π] modulo 2π to within _precision:
+    /// Compare two polar angles in the interval [-π, π] modulo 2π to within angle_precision:
     auto const angles_equal = [=](double az1, double az2) -> bool {
         static double const twopi = 2.0 * M_PI;
         return are_near(std::fmod(az1 + twopi, twopi), std::fmod(az2 + twopi, twopi),
