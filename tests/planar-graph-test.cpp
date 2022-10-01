@@ -385,7 +385,7 @@ TEST(PlanarGraphTest, Teardrop)
     auto [b, before_incidence] = graph.getIncidence(before, TestGraph::Incidence::START);
     EXPECT_EQ(start_vertex->cyclicNextIncidence(before_incidence), end_incidence);
     auto [a, after_incidence] = graph.getIncidence(after, TestGraph::Incidence::START);
-    EXPECT_EQ(start_vertex->cyclicPrevIncidence(after_incidence), start_incidence); 
+    EXPECT_EQ(start_vertex->cyclicPrevIncidence(after_incidence), start_incidence);
 }
 
 /** Test the regularization of a lasso-shaped path. */
@@ -405,7 +405,7 @@ TEST(PlanarGraphTest, ReglueLasso)
     auto const &edges = graph.getEdges();
     // Find the edge from origin and ensure it got glued.
     auto from_origin = std::find_if(edges.begin(), edges.end(), [](auto const &edge) -> bool {
-        return !edge.detached && (edge.start->point() == Point(0, 0) || 
+        return !edge.detached && (edge.start->point() == Point(0, 0) ||
                                     edge.end->point() == Point(0, 0));
     });
     ASSERT_NE(from_origin, edges.end());
@@ -432,6 +432,19 @@ TEST(PlanarGraphTest, RemoveCollapsed)
     ASSERT_TRUE(fuzzy.getEdge(nearly).detached);
 }
 
+/** Test regularization of straddling runs. */
+TEST(PlanarGraphTest, RemoveWisp)
+{
+    TestGraph graph;
+    // Insert a horizontal segment at the origin towards positive X:
+    graph.insertEdge(PTH("M 0 0 H 1"));
+    // Insert a path with a collapsed Bézier curve towards negative X:
+    graph.insertEdge(PTH("M 0 0 C -1 0 -1 0 0 0"));
+    graph.regularize();
+
+    // Ensure that the folded Bézier is removed (and no segfault occurs).
+    EXPECT_EQ(graph.numEdges(false), 1);
+}
 /*
   Local Variables:
   mode:c++

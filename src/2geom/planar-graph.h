@@ -645,15 +645,22 @@ void PlanarGraph<EdgeLabel>::_regularizeVertex(typename PlanarGraph<EdgeLabel>::
         for (auto it = incidences.begin(); it != incidences.end(); ++it) {
             if (!angles_equal(it->azimuth, previous_azimuth)) {
                 straddling_run_last = std::prev(it);
-                process_runs(it, incidences.end()); // Sets run_begin to the first element of
-                processed = true;                   // the straddling run.
+                process_runs(it, incidences.end());
+                processed = true;
                 break;
             }
             previous_azimuth = it->azimuth;
         }
         if (processed) {
-            _reglueTangentFan(vertex, run_begin, straddling_run_last, deloop);
+            // Find the first element of the straddling run.
+            auto it = std::prev(incidences.end());
+            while (angles_equal(it->azimuth, last_azimuth)) {
+                --it;
+            }
+            ++it; // Now we're at the start of the straddling run.
+            _reglueTangentFan(vertex, it, straddling_run_last, deloop);
         } else {
+            // We never encountered anything outside of the straddling run: reglue everything.
             _reglueTangentFan(vertex, incidences.begin(), std::prev(incidences.end()), deloop);
         }
     } else if (process_runs(incidences.begin(), incidences.end())) {
