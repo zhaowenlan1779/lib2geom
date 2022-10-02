@@ -410,6 +410,45 @@ TEST_F(PathTest, AppendPath) {
     EXPECT_NO_THROW(p_closed.checkContinuity());
 }
 
+TEST_F(PathTest, AppendPortion) {
+    // A closed path with two curves:
+    Path bigon = string_to_path("M 0,0 Q 1,1 2,0 Q 1,-1 0,0 Z");
+    Path target{Point(0, 0)};
+
+    PathTime end_time{1, 1.0}; // End of the closed path
+    PathTime mid_time{1, 0.0}; // Middle of the closed path (juncture between the two curves)
+    bigon.appendPortionTo(target, end_time, mid_time, true /* do cross start */);
+
+    // We expect that the target path now contains the entire first curve "M 0,0 Q 1,1 2,0",
+    // since we started at the end of a closed path and requested to cross its start.
+    EXPECT_EQ(target.size(), 1);
+    EXPECT_EQ(target, string_to_path("M 0,0 Q 1,1 2,0"));
+
+    // Similar test but with reversal (swapped times)
+    Path target_reverse{Point(2, 0)};
+    bigon.appendPortionTo(target_reverse, mid_time, end_time, true /* do cross start please */);
+    // What do we expect? To cross start going from the midpoint to the endpoint requires
+    // not taking the obvious route (bigon[1]) but rather taking bigon[0] in reverse.
+    EXPECT_EQ(target_reverse.size(), 1);
+    EXPECT_EQ(target_reverse, string_to_path("M 2,0 Q 1,1 0,0"));
+
+    // Similar test but using start time
+    PathTime start_time{0, 0.0};
+    Path mid_target{Point(2, 0)};
+    bigon.appendPortionTo(mid_target, mid_time, start_time, true /* cross start to 0:0 */);
+    // We expect to go forward from mid_time and cross over the start to start_time.
+    EXPECT_EQ(mid_target.size(), 1);
+    EXPECT_EQ(mid_target, string_to_path("M 2,0 Q 1,-1 0,0"));
+
+    // Use start time with reversal
+    Path mid_reverse{Point(0, 0)};
+    bigon.appendPortionTo(mid_reverse, start_time, mid_time, true /* Cross start, going backwards. */);
+    // We expect that we don't go forwards from start_time to mid_time, but rather cross over the starting
+    // point and backtrack over bigon[1] to the midpoint.
+    EXPECT_EQ(mid_reverse.size(), 1);
+    EXPECT_EQ(mid_reverse, string_to_path("M 0,0 Q 1,-1 2,0"));
+}
+
 TEST_F(PathTest, ReplaceMiddle) {
     p_open.replace(p_open.begin() + 1, p_open.begin() + 2, p_add);
     EXPECT_EQ(p_open.size(), 5u);

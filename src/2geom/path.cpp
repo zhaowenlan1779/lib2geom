@@ -63,17 +63,33 @@ PathInterval::PathInterval(PathTime const &from, PathTime const &to, bool cross_
     , _to(to)
     , _path_size(path_size)
     , _cross_start(cross_start)
-    , _reverse(cross_start ? to >= from : to < from)
+    , _reverse((to < from) ^ cross_start)
 {
     if (_reverse) {
         _to.normalizeForward(_path_size);
+        if (cross_start && _to < to) {
+            // Normalization made us cross start (closed path),
+            // so we don't need to cross the start anymore.
+            _cross_start = false;
+        }
         if (_from != _to) {
             _from.normalizeBackward(_path_size);
+            if (cross_start && _from > from) {
+                // Normalization backwards made us logically cross
+                // the start – we shouldn't cross the start again.
+                _cross_start = false;
+            }
         }
     } else {
         _from.normalizeForward(_path_size);
+        if (cross_start && _from < from) {
+            _cross_start = false;
+        }
         if (_from != _to) {
             _to.normalizeBackward(_path_size);
+            if (cross_start && _to > to) {
+                _cross_start = false;
+            }
         }
     }
 
@@ -977,8 +993,7 @@ Path Path::withoutDegenerateCurves() const
     return result;
 }
 
-// replace curves between first and last with contents of source,
-// 
+// Replace curves between first and last with the contents of source.
 void Path::do_update(Sequence::iterator first, Sequence::iterator last, Sequence &source)
 {
     // TODO: handle cases where first > last in closed paths?
