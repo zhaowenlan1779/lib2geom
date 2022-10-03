@@ -84,8 +84,19 @@ public:
     /// @name Vector-like arithmetic operations
     /// @{
     IntPoint operator-() const {
-        IntPoint ret(-_pt[X], -_pt[Y]);
-        return ret;
+        return IntPoint(-_pt[X], -_pt[Y]);
+    }
+    IntPoint operator*(IntPoint const &o) {
+        return IntPoint(_pt[X] * o._pt[X], _pt[Y] * o._pt[Y]);
+    }
+    IntPoint operator*(IntCoord const &o) {
+        return IntPoint(_pt[X] * o, _pt[Y] * o);
+    }
+    IntPoint operator/(IntPoint const &o) {
+        return IntPoint(_pt[X] / o._pt[X], _pt[Y] / o._pt[Y]);
+    }
+    IntPoint operator/(IntCoord const &o) {
+        return IntPoint(_pt[X] / o, _pt[Y] / o);
     }
     IntPoint &operator+=(IntPoint const &o) {
         _pt[X] += o._pt[X];
@@ -95,6 +106,26 @@ public:
     IntPoint &operator-=(IntPoint const &o) {
         _pt[X] -= o._pt[X];
         _pt[Y] -= o._pt[Y];
+        return *this;
+    }
+    IntPoint &operator*=(IntPoint const &o) {
+        _pt[X] *= o._pt[X];
+        _pt[Y] *= o._pt[Y];
+        return *this;
+    }
+    IntPoint &operator*=(IntCoord const &o) {
+        _pt[X] *= o;
+        _pt[Y] *= o;
+        return *this;
+    }
+    IntPoint &operator/=(IntPoint const &o) {
+        _pt[X] /= o._pt[X];
+        _pt[Y] /= o._pt[Y];
+        return *this;
+    }
+    IntPoint &operator/=(IntCoord const &o) {
+        _pt[X] /= o;
+        _pt[Y] /= o;
         return *this;
     }
     /// @}

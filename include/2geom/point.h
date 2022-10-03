@@ -140,25 +140,55 @@ public:
     Point operator-() const {
         return Point(-_pt[X], -_pt[Y]);
     }
+    Point operator*(Point const &o) {
+        return Point(_pt[X] * o._pt[X], _pt[Y] * o._pt[Y]);
+    }
+    Point operator*(Coord const &o) {
+        return Point(_pt[X] * o, _pt[Y] * o);
+    }
+    Point operator/(Point const &o) {
+        return Point(_pt[X] / o._pt[X], _pt[Y] / o._pt[Y]);
+    }
+    Point operator/(Coord const &o) {
+        return Point(_pt[X] / o, _pt[Y] / o);
+    }
     Point &operator+=(Point const &o) {
-        for ( unsigned i = 0 ; i < 2 ; ++i ) {
-            _pt[i] += o._pt[i];
-        }
+        _pt[X] += o._pt[X];
+        _pt[Y] += o._pt[Y];
         return *this;
     }
     Point &operator-=(Point const &o) {
-        for ( unsigned i = 0 ; i < 2 ; ++i ) {
-            _pt[i] -= o._pt[i];
-        }
+        _pt[X] -= o._pt[X];
+        _pt[Y] -= o._pt[Y];
         return *this;
     }
     Point &operator*=(Coord s) {
         for (double & i : _pt) i *= s;
         return *this;
     }
+    Point &operator*=(Point const &o) {
+        _pt[X] *= o._pt[X];
+        _pt[Y] *= o._pt[Y];
+        return *this;
+    }
+    Point &operator*=(IntPoint const &o) {
+        _pt[X] *= o.x();
+        _pt[Y] *= o.y();
+        return *this;
+    }
     Point &operator/=(Coord s) {
         //TODO: s == 0?
         for (double & i : _pt) i /= s;
+        return *this;
+    }
+    Point &operator/=(Point const &o) {
+        _pt[X] /= o._pt[X];
+        _pt[Y] /= o._pt[Y];
+        return *this;
+    }
+    Point &operator/=(IntPoint const &o) {
+        _pt[X] /= o.x();
+        _pt[Y] /= o.y();
         return *this;
     }
     /// @}

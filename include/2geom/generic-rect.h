@@ -192,6 +192,12 @@ public:
     /** @brief Get the smaller extent (width or height) of the rectangle. */
     C minExtent() const { return std::min(f[X].extent(), f[Y].extent()); }
 
+    /** @brief Get rectangle's distance SQUARED away from the given point **/
+    C distanceSq(const CPoint pt) const {
+        auto v = clamp(pt) - pt;
+        return v.x() * v.x() + v.y() * v.y();
+    }
+
     /** @brief Clamp point to the rectangle. */
     CPoint clamp(CPoint const &p) const {
         CPoint result(f[X].clamp(p[X]), f[Y].clamp(p[Y]));
@@ -415,6 +421,11 @@ public:
      * An empty rectangle will not contain any points. */
     bool contains(CPoint const &p) const { return *this && (*this)->contains(p); }
     /// @}
+
+    /** @brief Returns an empty optional (testing false) if the rectangle has zero area. */
+    OptCRect regularized() const {
+        return *this && !(*this)->hasZeroArea() ? *this : OptCRect();
+    }
 
     /// @name Modify the potentially empty rectangle.
     /// @{
