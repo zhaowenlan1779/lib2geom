@@ -625,8 +625,14 @@ std::vector<CurveIntersection> EllipticalArc::intersect(Curve const &other, Coor
     }
 
     if (auto arc = dynamic_cast<EllipticalArc const *>(&other)) {
-        auto result = _filterIntersections(_ellipse.intersect(arc->_ellipse), true);
-        return arc->_filterIntersections(std::move(result), false);
+        std::vector<CurveIntersection> crossings;
+        try {
+            crossings = _ellipse.intersect(arc->_ellipse);
+        } catch (InfinitelyManySolutions &) {
+            // This could happen if the two arcs come from the same ellipse.
+            return _intersectSameEllipse(arc);
+        }
+        return arc->_filterIntersections(_filterIntersections(std::move(crossings), true), false);
     }
 
     // in case someone wants to make a custom curve type
@@ -635,6 +641,43 @@ std::vector<CurveIntersection> EllipticalArc::intersect(Curve const &other, Coor
     return result;
 }
 
+/** @brief Check if two arcs on the same ellipse intersect/overlap.
+ *
+ * @param other Another elliptical arc on the same ellipse as this one.
+ * @return If the arcs overlap, the returned vector contains synthesized intersections
+ *         at the start and end of the overlap.
+ *         If the arcs do not overlap, an empty vector is returned.
+ */
+std::vector<ShapeIntersection> EllipticalArc::_intersectSameEllipse(EllipticalArc const *other) const
+{
+    assert(_ellipse == other->_ellipse);
+    auto const &other_angles = other->angularInterval();
+    std::vector<ShapeIntersection> result;
+
+    /// A closure to create an "intersection" at the prescribed angle.
+    auto const synthesize_intersection = [&](Angle angle) {
+        auto const time = timeAtAngle(angle);
+        if (result.end() == std::find_if(result.begin(), result.end(),
+            [=](ShapeIntersection const &xing) -> bool {
+                return xing.first == time;
+            }))
+        {
+            result.emplace_back(time, time, _ellipse.pointAt(angle));
+        }
+    };
+
+    for (auto a : {_angles.initialAngle(), _angles.finalAngle()}) {
+        if (other_angles.contains(a)) {
+            synthesize_intersection(a);
+        }
+    }
+    for (auto a : {other_angles.initialAngle(), other_angles.finalAngle()}) {
+        if (_angles.contains(a)) {
+            synthesize_intersection(a);
+        }
+    }
+    return result;
+}
 
 void EllipticalArc::_updateCenterAndAngles()
 {

@@ -4,7 +4,7 @@
  *//*
  * Authors:
  *   Krzysztof Kosiński <tweenk.pl@gmail.com>
- * 
+ *
  * Copyright 2015 Authors
  *
  * This library is free software; you can redistribute it and/or
@@ -98,6 +98,30 @@ TEST(EllipticalArcTest, ArcIntersection) {
     r2 = a3.intersect(a4);
     EXPECT_EQ(r2.size(), 3u);
     EXPECT_intersections_valid(a3, a4, r2, 1e-10);
+
+    // Make sure intersections are found between two identical arcs on the unit circle.
+    EllipticalArc const upper(Point(1, 0), Point(1, 1), 0, 1, 1, Point(-1, 0));
+    auto self_intersect = upper.intersect(upper);
+    EXPECT_EQ(self_intersect.size(), 2u);
+
+    // Make sure intersections are found between overlapping arcs.
+    EllipticalArc const right(Point(0, -1), Point(1, 1), 0, 1, 1, Point(0, 1));
+    auto quartering_overlap_xings = right.intersect(upper);
+    EXPECT_EQ(quartering_overlap_xings.size(), 2u);
+
+    // Make sure intersecections are found between an arc and its sub-arc.
+    EllipticalArc const middle(upper.pointAtAngle(0.25 * M_PI), Point(1, 1), 0, 1, 1, upper.pointAtAngle(-0.25 * M_PI));
+    EXPECT_EQ(middle.intersect(upper).size(), 2u);
+
+    // Make sure intersections are NOT found between non-overlapping sub-arcs of the same circle.
+    EllipticalArc const arc1{Point(1, 0), Point(1, 1), 0, 1, 1, Point(0, 1)};
+    EllipticalArc const arc2{Point(-1, 0), Point(1, 1), 0, 1, 1, Point(0, -1)};
+    EXPECT_EQ(arc1.intersect(arc2).size(), 0u);
+
+    // Overlapping sub-arcs but on an Ellipse with different rays.
+    EllipticalArc const eccentric{Point(2, 0), Point(2, 1), 0, 1, 1, Point(-2, 0)};
+    EllipticalArc const subarc{eccentric.pointAtAngle(0.8), Point(2, 1), 0, 1, 1, eccentric.pointAt(2)};
+    EXPECT_EQ(eccentric.intersect(subarc).size(), 2u);
 }
 
 TEST(EllipticalArcTest, BezierIntersection) {

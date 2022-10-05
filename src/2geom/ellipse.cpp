@@ -482,6 +482,11 @@ std::vector<ShapeIntersection> Ellipse::intersect(Ellipse const &other) const
     this->coefficients(A, E, B, C, D, F);
     other.coefficients(a, e, b, c, d, f);
 
+    if (operator==(other)) {
+        // Two identical ellipses
+        THROW_INFINITELY_MANY_SOLUTIONS("The two ellipses are identical.");
+    }
+
     // Assume that Q is the ellipse equation given by uppercase letters
     // and R is the equation given by lowercase ones. An intersection exists when
     // there is a coefficient mu such that
