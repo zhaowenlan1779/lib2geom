@@ -273,7 +273,9 @@ TEST(EllipseTest, UnitTangentAt) {
     EXPECT_near(b.unitTangentAt(3*M_PI/2), Point(M_SQRT2/2, M_SQRT2/2), 1e-12);
 }
 
-TEST(EllipseTest, BoundsExact) {
+TEST(EllipseTest, Bounds)
+{
+    // Create example ellipses
     std::vector<Ellipse> es;
     es.emplace_back(Point(-15,25), Point(10,15), Angle::from_degrees(45));
     es.emplace_back(Point(-10,33), Point(40,20), M_PI);
@@ -285,27 +287,42 @@ TEST(EllipseTest, BoundsExact) {
 
     for (auto & e : es) {
         Rect r = e.boundsExact();
+        Rect f = e.boundsFast();
         for (unsigned j = 0; j < 10000; ++j) {
             Coord t = g_random_double_range(-M_PI, M_PI);
-            EXPECT_TRUE(r.contains(e.pointAt(t)));
+            auto const p = e.pointAt(t);
+            EXPECT_TRUE(r.contains(p));
+            EXPECT_TRUE(f.contains(p));
         }
     }
 
     Ellipse e(Point(0,0), Point(10, 10), M_PI);
     Rect bounds = e.boundsExact();
+    Rect coarse = e.boundsFast();
     EXPECT_EQ(bounds, Rect(Point(-10,-10), Point(10,10)));
     EXPECT_TRUE(bounds.contains(e.pointAt(0)));
     EXPECT_TRUE(bounds.contains(e.pointAt(M_PI/2)));
     EXPECT_TRUE(bounds.contains(e.pointAt(M_PI)));
     EXPECT_TRUE(bounds.contains(e.pointAt(3*M_PI/2)));
     EXPECT_TRUE(bounds.contains(e.pointAt(2*M_PI)));
+    EXPECT_TRUE(coarse.contains(e.pointAt(0)));
+    EXPECT_TRUE(coarse.contains(e.pointAt(M_PI/2)));
+    EXPECT_TRUE(coarse.contains(e.pointAt(M_PI)));
+    EXPECT_TRUE(coarse.contains(e.pointAt(3*M_PI/2)));
+    EXPECT_TRUE(coarse.contains(e.pointAt(2*M_PI)));
 
     e = Ellipse(Point(0,0), Point(10, 10), M_PI/2);
     bounds = e.boundsExact();
+    coarse = e.boundsFast();
     EXPECT_EQ(bounds, Rect(Point(-10,-10), Point(10,10)));
     EXPECT_TRUE(bounds.contains(e.pointAt(0)));
     EXPECT_TRUE(bounds.contains(e.pointAt(M_PI/2)));
     EXPECT_TRUE(bounds.contains(e.pointAt(M_PI)));
     EXPECT_TRUE(bounds.contains(e.pointAt(3*M_PI/2)));
     EXPECT_TRUE(bounds.contains(e.pointAt(2*M_PI)));
+    EXPECT_TRUE(coarse.contains(e.pointAt(0)));
+    EXPECT_TRUE(coarse.contains(e.pointAt(M_PI/2)));
+    EXPECT_TRUE(coarse.contains(e.pointAt(M_PI)));
+    EXPECT_TRUE(coarse.contains(e.pointAt(3*M_PI/2)));
+    EXPECT_TRUE(coarse.contains(e.pointAt(2*M_PI)));
 }

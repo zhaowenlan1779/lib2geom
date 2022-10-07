@@ -161,6 +161,17 @@ Rect Ellipse::boundsExact() const
     return result;
 }
 
+Rect Ellipse::boundsFast() const
+{
+    // Every ellipse is contained in the circle with the same center and radius
+    // equal to the larger of the two rays. We return the bounding square
+    // of this circle (this is really fast but only exact for circles).
+    auto const larger_ray = (ray(X) > ray(Y) ? ray(X) : ray(Y));
+    assert(larger_ray >= 0.0);
+    auto const rr = Point(larger_ray, larger_ray);
+    return Rect(_center - rr, _center + rr);
+}
+
 std::vector<double> Ellipse::coefficients() const
 {
     std::vector<double> c(6);
