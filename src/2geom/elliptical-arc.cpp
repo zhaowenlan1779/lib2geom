@@ -54,7 +54,7 @@ namespace Geom
  * @brief Elliptical arc curve
  *
  * Elliptical arc is a curve taking the shape of a section of an ellipse.
- * 
+ *
  * The arc function has two forms: the regular one, mapping the unit interval to points
  * on 2D plane (the linear domain), and a second form that maps some interval
  * \f$A \subseteq [0,2\pi)\f$ to the same points (the angular domain). The interval \f$A\f$
@@ -100,9 +100,9 @@ namespace Geom
  * by computing a partial derivative with respect to the angle
  * and equating that to zero:
  * \f{align*}{
-     x &= r_x \cos \varphi \cos \theta - r_y \sin \varphi \sin \theta + c_x \\ 
-     \frac{\partial x}{\partial \theta} &= -r_x \cos \varphi \sin \theta - r_y \sin \varphi \cos \theta = 0 \\ 
-     \frac{\sin \theta}{\cos \theta} &= \tan\theta = -\frac{r_y \sin \varphi}{r_x \cos \varphi} \\ 
+     x &= r_x \cos \varphi \cos \theta - r_y \sin \varphi \sin \theta + c_x \\
+     \frac{\partial x}{\partial \theta} &= -r_x \cos \varphi \sin \theta - r_y \sin \varphi \cos \theta = 0 \\
+     \frac{\sin \theta}{\cos \theta} &= \tan\theta = -\frac{r_y \sin \varphi}{r_x \cos \varphi} \\
      \theta &= \tan^{-1} \frac{-r_y \sin \varphi}{r_x \cos \varphi}
    \f}
  * The local extremes correspond to two angles separated by \f$\pi\f$.
@@ -662,7 +662,7 @@ std::vector<ShapeIntersection> EllipticalArc::_intersectSameEllipse(EllipticalAr
                 return xing.first == time;
             }))
         {
-            result.emplace_back(time, time, _ellipse.pointAt(angle));
+            result.emplace_back(time, other->timeAtAngle(angle), _ellipse.pointAt(angle));
         }
     };
 

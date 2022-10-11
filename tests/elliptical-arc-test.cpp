@@ -122,6 +122,15 @@ TEST(EllipticalArcTest, ArcIntersection) {
     EllipticalArc const eccentric{Point(2, 0), Point(2, 1), 0, 1, 1, Point(-2, 0)};
     EllipticalArc const subarc{eccentric.pointAtAngle(0.8), Point(2, 1), 0, 1, 1, eccentric.pointAt(2)};
     EXPECT_EQ(eccentric.intersect(subarc).size(), 2u);
+
+    // Check intersection times for two touching arcs.
+    EllipticalArc const lower{Point(-1, 0), Point(1, 1), 0, 0, 1, Point(0, -1)};
+    auto expected_neg_x = upper.intersect(lower);
+    ASSERT_EQ(expected_neg_x.size(), 1);
+    auto const &left_pt = expected_neg_x[0];
+    EXPECT_EQ(left_pt.point(), Point(-1, 0));
+    EXPECT_DOUBLE_EQ(left_pt.first, 1.0); // Expect (-1, 0) reached at the end of upper
+    EXPECT_DOUBLE_EQ(left_pt.second, 0.0); // Expect (-1, 0) passed at the start of lower
 }
 
 TEST(EllipticalArcTest, BezierIntersection) {
