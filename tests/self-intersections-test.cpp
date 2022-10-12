@@ -197,6 +197,16 @@ TEST_F(PVSelfIntersections, NumericallyChallenging)
     EXPECT_EQ(egret.intersectSelf().size(), 0);
 }
 
+/* Test a regression from 88040ea2aeab8ccec2b0e96c7bda2fc7d500d5ec */
+TEST_F(PVSelfIntersections, BigonFiltering)
+{
+    auto const lens = PTH("M 0,0 C 2,1 3,1 5,0 A 2.5,1 0 1 0 0,0 Z");
+    auto const xings = lens.intersectSelf();
+    // This is a simple closed path, so we expect that no self-intersections are reported.
+    EXPECT_EQ(xings.size(), 0);
+}
+
+
 /*
   Local Variables:
   mode:c++

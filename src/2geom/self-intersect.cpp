@@ -114,12 +114,10 @@ private:
 
             size_t const other_index = std::distance(_path.begin(), other);
             auto const &[smaller, larger] = std::minmax(index, other_index);
+            /// Whether the curves meet at a common node in the path.
             bool consecutive = smaller + 1 == larger;
-            bool wraparound = false;
-            if (_path.closed()) {
-                wraparound = !smaller && larger + 1 == _path.size();
-                consecutive = consecutive || wraparound;
-            }
+            /// Whether the curves meet at the closure point of the path.
+            bool wraparound = _path.closed() && smaller == 0 && larger + 1 == _path.size();
             for (auto &&xing : curve->intersect(*other, _precision)) {
                 _appendCurveCrossing(std::move(xing), index, other_index, consecutive, wraparound);
             }
@@ -132,14 +130,16 @@ private:
     {
         // Filter out crossings that aren't real but rather represent the agreement of final
         // and initial points of consecutive curves – a consequence of the path's continuity.
-        if (consecutive) {
-            bool const first_is_first = (first_index < second_index) ^ wraparound;
+        auto const should_exclude = [&](bool flipped) -> bool {
             // Filter out spurious self-intersections by using squared geometric average.
-            double const quadrance = first_is_first ? (1.0 - xing.first) * xing.second
-                                                    : (1.0 - xing.second) * xing.first;
-            if (quadrance < EPSILON) {
-                return;
-            }
+            bool const first_is_first = (first_index < second_index) ^ flipped;
+            double const geom2 = first_is_first ? (1.0 - xing.first) * xing.second
+                                                : (1.0 - xing.second) * xing.first;
+            return geom2 < EPSILON;
+        };
+
+        if ((consecutive && should_exclude(false)) || (wraparound && should_exclude(true))) {
+            return;
         }
 
         // Convert curve indices to the original ones (before the removal of degenerate curves).
