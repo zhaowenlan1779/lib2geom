@@ -31,6 +31,7 @@
  * the specific language governing rights and limitations.
  */
 
+#include <2geom/conicsec.h>
 #include <2geom/ellipse.h>
 #include <2geom/elliptical-arc.h>
 #include <2geom/numeric/fitting-tool.h>
@@ -421,13 +422,17 @@ std::vector<ShapeIntersection> Ellipse::intersect(Line const &line) const
     }
 
     // Ax^2 + Bxy + Cy^2 + Dx + Ey + F
-    Coord A, B, C, D, E, F;
-    coefficients(A, B, C, D, E, F);
+    std::array<Coord, 6> coeffs;
+    coefficients(coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5]);
+    rescale_homogenous(coeffs);
+    auto [A, B, C, D, E, F] = coeffs;
     Affine iuct = inverseUnitCircleTransform();
 
     // generic case
-    Coord a, b, c;
-    line.coefficients(a, b, c);
+    std::array<Coord, 3> line_coeffs;
+    line.coefficients(line_coeffs[0], line_coeffs[1], line_coeffs[2]);
+    rescale_homogenous(line_coeffs);
+    auto [a, b, c] = line_coeffs;
     Point lv = line.vector();
 
     if (fabs(lv[X]) > fabs(lv[Y])) {
@@ -484,12 +489,21 @@ std::vector<ShapeIntersection> Ellipse::intersect(Ellipse const &other) const
     if (*this == other) { // Two identical ellipses.
         THROW_INFINITELY_MANY_SOLUTIONS("The two ellipses are identical.");
     }
+    if (!boundsFast().intersects(other.boundsFast())) {
+        return {};
+    }
 
-    // Find coefficients of the implicit equations of the two ellipses.
-    Coord A, B, C, D, E, F;
-    coefficients(A, B, C, D, E, F);
-    Coord a, b, c, d, e, f;
-    other.coefficients(a, b, c, d, e, f);
+    // Find coefficients of the implicit equations of the two ellipses and rescale
+    // them (losslessly) for better numerical conditioning.
+    std::array<double, 6> coeffs;
+    coefficients(coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5]);
+    rescale_homogenous(coeffs);
+    auto [A, B, C, D, E, F] = coeffs;
+
+    std::array<double, 6> otheffs;
+    other.coefficients(otheffs[0], otheffs[1], otheffs[2], otheffs[3], otheffs[4], otheffs[5]);
+    rescale_homogenous(otheffs);
+    auto [a, b, c, d, e, f] = otheffs;
 
     // Assume that Q(x, y) = 0 is the ellipse equation given by uppercase letters
     // and R(x, y) = 0 is the equation given by lowercase ones.
@@ -553,12 +567,15 @@ std::vector<ShapeIntersection> Ellipse::intersect(Ellipse const &other) const
     if (mus.size() == 3) {
         std::swap(mus[1], mus[0]);
     }
+    /// Discriminant within this radius of 0 will be considered zero.
+    static Coord const discriminant_precision = 1e-10;
+
     for (Coord candidate_mu : mus) {
-        Coord const aa = candidate_mu * A + a;
-        Coord const bb = candidate_mu * B + b;
-        Coord const cc = candidate_mu * C + c;
+        Coord const aa = std::fma(candidate_mu, A, a);
+        Coord const bb = std::fma(candidate_mu, B, b);
+        Coord const cc = std::fma(candidate_mu, C, c);
         Coord const delta = sqr(bb) - 4*aa*cc;
-        if (delta < 0) {
+        if (delta < -discriminant_precision) {
             continue;
         }
         mu = candidate_mu;
@@ -570,58 +587,53 @@ std::vector<ShapeIntersection> Ellipse::intersect(Ellipse const &other) const
         return {};
     }
 
-    Coord aa = mu * A + a;
-    Coord bb = mu * B + b;
-    Coord cc = mu * C + c;
-    Coord dd = mu * D + d;
-    Coord ee = mu * E + e;
-    Coord ff = mu * F + f;
-
-    unsigned line_num = 0;
-    Line lines[2];
-
-    if (aa != 0) {
-        cc /= aa; dd /= aa; ee /= aa; bb /= aa; // We don't do ff /= aa (ff unused in this branch)
-        Coord s = (bb + std::sqrt(bb*bb - 4*cc)) / 2;
-        Coord q = bb - s;
-        Coord alpha = (ee - dd*q) / (s - q);
-        Coord beta = dd - alpha;
-
-        line_num = 2;
-        lines[0] = Line(1, q, alpha);
-        lines[1] = Line(1, s, beta);
-    } else if (cc != 0) {
-        dd /= cc; bb /= cc; ff /= cc; // We don't do aa /= cc (aa unused in this branch)
-        Coord s = bb;
-        Coord q = 0;
-        Coord alpha = dd / bb;
-        Coord beta = ff * bb / dd;
-
-        line_num = 2;
-        lines[0] = Line(q, 1, alpha);
-        lines[1] = Line(s, 1, beta);
-    } else if (bb != 0) {
-        line_num = 2;
-        lines[0] = Line(bb, 0, ee);
-        lines[1] = Line(0, 1, dd/bb);
-    } else if (dd != 0 || ee != 0) {
-        line_num = 1;
-        lines[0] = Line(dd, ee, ff);
-    }
+    // Create the degenerate conic and decompose it into lines.
+    std::array<double, 6> degen = {std::fma(mu, A, a), std::fma(mu, B, b), std::fma(mu, C, c),
+                                   std::fma(mu, D, d), std::fma(mu, E, e), std::fma(mu, F, f)};
+    rescale_homogenous(degen);
+    auto const lines = xAx(degen[0], degen[1], degen[2],
+                           degen[3], degen[4], degen[5]).decompose_df(discriminant_precision);
 
     // intersect with the obtained lines and report intersections
     std::vector<ShapeIntersection> result;
-    for (unsigned li = 0; li < line_num; ++li) {
-        std::vector<ShapeIntersection> as = intersect(lines[li]);
+    for (auto const &line : lines) {
+        if (line.isDegenerate()) {
+            continue;
+        }
+        auto as = intersect(line);
         // NOTE: If we only cared about the intersection points, we could simply
         // intersect this ellipse with the lines and ignore the other ellipse.
         // But we need the time coordinates on the other ellipse as well.
-        std::vector<ShapeIntersection> bs = other.intersect(lines[li]);
-        if (as.size() != bs.size()) {
+        auto bs = other.intersect(line);
+        if (as.empty() || bs.empty()) {
             continue;
         }
-        for (unsigned i = 0; i < as.size(); ++i) {
-            result.emplace_back(as[i].first, bs[i].first, middle_point(as[i].point(), bs[i].point()));
+        // Due to numerical errors, a tangency may sometimes be found as 1 intersection
+        // on one ellipse and 2 intersections on the other. If this happens, we average
+        // the points of the two intersections.
+        auto const intersection_average = [](ShapeIntersection const &i,
+                                             ShapeIntersection const &j) -> ShapeIntersection
+        {
+            return ShapeIntersection(i.first, j.first, middle_point(i.point(), j.point()));
+        };
+        auto const synthesize_intersection = [&](ShapeIntersection const &i,
+                                                 ShapeIntersection const &j) -> void
+        {
+            result.emplace_back(i.first, j.first, middle_point(i.point(), j.point()));
+        };
+        if (as.size() == 2) {
+            if (bs.size() == 2) {
+                synthesize_intersection(as[0], bs[0]);
+                synthesize_intersection(as[1], bs[1]);
+            } else if (bs.size() == 1) {
+                synthesize_intersection(intersection_average(as[0], as[1]), bs[0]);
+            }
+        } else if (as.size() == 1) {
+            if (bs.size() == 2) {
+                synthesize_intersection(as[0], intersection_average(bs[0], bs[1]));
+            } else if (bs.size() == 1) {
+                synthesize_intersection(as[0], bs[0]);
+            }
         }
     }
     return result;

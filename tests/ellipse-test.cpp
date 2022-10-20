@@ -4,7 +4,7 @@
  *//*
  * Authors:
  *   Krzysztof Kosiński <tweenk.pl@gmail.com>
- * 
+ *
  * Copyright 2015 Authors
  *
  * This library is free software; you can redistribute it and/or
@@ -42,7 +42,7 @@
 #include "testing.h"
 
 #ifndef M_SQRT2
-#  define M_SQRT2 1.41421356237309504880 
+#  define M_SQRT2 1.41421356237309504880
 #endif
 
 using namespace Geom;
@@ -79,7 +79,7 @@ TEST(EllipseTest, Arcs) {
 
     // exactly half arc
     std::unique_ptr<EllipticalArc> arc3(e.arc(Point(5,0), Point(0,10), Point(5,20)));
-    
+
     EXPECT_EQ(arc3->boundsExact(), Rect::from_xywh(0,0,5,20));
     EXPECT_EQ(arc3->largeArc(), false);
     EXPECT_EQ(arc3->sweep(), false);
@@ -178,7 +178,7 @@ TEST(EllipseTest, EllipseIntersection) {
     e2.set(Point(250, 300), Point(230, 90), 1.321);
     xs = e1.intersect(e2);
     EXPECT_EQ(xs.size(), 4ul);
-    EXPECT_intersections_valid(e1, e2, xs, 1e-10);
+    EXPECT_intersections_valid(e1, e2, xs, 4e-10);
 
     e1.set(Point(0, 0), Point(1, 1), 0);
     e2.set(Point(0, 1), Point(1, 1), 0);
@@ -191,6 +191,57 @@ TEST(EllipseTest, EllipseIntersection) {
     xs = e1.intersect(e2);
     EXPECT_EQ(xs.size(), 2ul);
     EXPECT_intersections_valid(e1, e2, xs, 1e-10);
+
+    // === Test detection of external tangency between ellipses ===
+    // Perpendicular major axes
+    e1.set({0, 0}, {5, 3}, 0); // rightmost point (5, 0)
+    e2.set({6, 0}, {1, 2}, 0); // leftmost point (5, 0)
+    xs = e1.intersect(e2);
+    ASSERT_GT(xs.size(), 0);
+    EXPECT_intersections_valid(e1, e2, xs, 1e-10);
+    EXPECT_TRUE(are_near(xs[0].point(), Point(5, 0)));
+
+    // Collinear major axes
+    e1.set({30, 0}, {9, 1}, 0); // leftmost point (21, 0)
+    e2.set({18, 0}, {3, 2}, 0); // rightmost point (21, 0)
+    xs = e1.intersect(e2);
+    ASSERT_GT(xs.size(), 0);
+    EXPECT_intersections_valid(e1, e2, xs, 1e-10);
+    EXPECT_TRUE(are_near(xs[0].point(), Point(21, 0)));
+
+    // Circles not aligned to an axis (Pythagorean triple: 3^2 + 4^2 == 5^2)
+    e1.set({0, 0}, {3, 3}, 0); // radius 3
+    e2.set({3, 4}, {2, 2}, 0); // radius 2
+    // We know 2 + 3 == 5 == distance((0, 0), (3, 4)) so there's an external tangency
+    // between these circles, at a point at distance 3 from the origin, on the line x = 0.75 y.
+    xs = e1.intersect(e2);
+    ASSERT_GT(xs.size(), 0);
+    EXPECT_intersections_valid(e1, e2, xs, 1e-6);
+
+    // === Test the detection of internal tangency between ellipses ===
+    // Perpendicular major axes
+    e1.set({0, 0}, {8, 17}, 0); // rightmost point (8, 0)
+    e2.set({6, 0}, {2, 1}, 0); // rightmost point (8, 0)
+    xs = e1.intersect(e2);
+    ASSERT_GT(xs.size(), 0);
+    EXPECT_intersections_valid(e1, e2, xs, 1e-10);
+    EXPECT_TRUE(are_near(xs[0].point(), Point(8, 0)));
+
+    // Collinear major axes
+    e1.set({30, 0}, {9, 5}, 0); // rightmost point (39, 0)
+    e2.set({36, 0}, {3, 1}, 0); // rightmost point (39, 0)
+    xs = e1.intersect(e2);
+    ASSERT_GT(xs.size(), 0);
+    EXPECT_intersections_valid(e1, e2, xs, 1e-6);
+    EXPECT_TRUE(are_near(xs[0].point(), Point(39, 0)));
+
+    // Circles not aligned to an axis (Pythagorean triple: 3^2 + 4^2 == 5^2)
+    e1.set({4, 3}, {5, 5}, 0); // Passes through (0, 0), center on the line y = 0.75 x
+    e2.set({8, 6}, {10, 10}, 0); // Also passes through (0, 0), center on the same line.
+    xs = e1.intersect(e2);
+    ASSERT_GT(xs.size(), 0);
+    EXPECT_intersections_valid(e1, e2, xs, 1e-6);
+    EXPECT_TRUE(are_near(xs[0].point(), Point(0, 0)));
 }
 
 TEST(EllipseTest, BezierIntersection) {
