@@ -35,6 +35,7 @@
 #include <2geom/path-sink.h>
 #include <2geom/basic-intersection.h>
 #include <2geom/nearest-time.h>
+#include <2geom/polynomial.h>
 
 namespace Geom 
 {
@@ -332,6 +333,7 @@ Coord BezierCurveN<1>::nearestTime(Point const& p, Coord from, Coord to) const
     else return from + t*(to-from);
 }
 
+/* Specialized intersection routine for line segments. */
 template <>
 std::vector<CurveIntersection> BezierCurveN<1>::intersect(Curve const &other, Coord eps) const
 {
@@ -350,6 +352,93 @@ std::vector<CurveIntersection> BezierCurveN<1>::intersect(Curve const &other, Co
     result = other.intersect(*this, eps);
     transpose_in_place(result);
     return result;
+}
+
+/** @brief Find intersections of a low-degree Bézier curve with a line segment.
+ *
+ * Uses algebraic solutions to low-degree polynomial equations which may be faster
+ * and more precise than iterative methods.
+ *
+ * @tparam degree The degree of the Bézier curve; must be 2 or 3.
+ * @param curve A Bézier curve of the given degree.
+ * @param line A line (but really a segment).
+ * @return Intersections between the passed curve and the fundamental segment of the line
+ *         (the segment where the time parameter lies in the unit interval).
+ */
+template <unsigned degree>
+static std::vector<CurveIntersection> bezier_line_intersections(BezierCurveN<degree> const &curve, Line const &line)
+{
+    static_assert(degree == 2 || degree == 3, "bezier_line_intersections<degree>() error: degree must be 2 or 3.");
+
+    auto const length = distance(line.initialPoint(), line.finalPoint());
+    if (length == 0) {
+        return {};
+    }
+    std::vector<CurveIntersection> result;
+
+    // Find the isometry mapping the line to the x-axis, taking the initial point to the origin
+    // and the final point to (length, 0). Apply this transformation to the Bézier curve and
+    // extract the y-coordinate polynomial.
+    auto const transform = line.rotationToZero(Y);
+    Bezier const y = (curve.fragment() * transform)[Y];
+    std::vector<double> roots;
+
+    // Find roots of the polynomial y.
+    {
+        double const c2 = y[0] + y[2] - 2.0 * y[1];
+        double const c1 = y[1] - y[0];
+        double const c0 = y[0];
+
+        if constexpr (degree == 2) {
+            roots = solve_quadratic(c2, 2.0 * c1, c0);
+        } else if constexpr (degree == 3) {
+            double const c3 = y[3] - y[0] + 3.0 * (y[1] - y[2]);
+            roots = solve_cubic(c3, 3.0 * c2, 3.0 * c1 , c0);
+        }
+    }
+
+    // Filter the roots and assemble intersections.
+    for (double root : roots) {
+        if (root < 0.0 || root > 1.0) {
+            continue;
+        }
+        Coord x = (curve.pointAt(root) * transform)[X];
+        if (x < 0.0 || x > length) {
+            continue;
+        }
+        result.emplace_back(curve, line, root, x / length);
+    }
+    return result;
+}
+
+/* Specialized intersection routine for quadratic Bézier curves. */
+template <>
+std::vector<CurveIntersection> BezierCurveN<2>::intersect(Curve const &other, Coord eps) const
+{
+    if (auto other_bezier = dynamic_cast<BezierCurve const *>(&other)) {
+        auto const other_degree = other_bezier->order();
+        if (other_degree == 1) {
+            // Use the exact method to intersect a quadratic Bézier with a line segment.
+            auto line = Line(other_bezier->initialPoint(), other_bezier->finalPoint());
+            return bezier_line_intersections<2>(*this, line);
+        }
+        // TODO: implement exact intersection of two quadratic Béziers using the method of resultants.
+    }
+    return BezierCurve::intersect(other, eps);
+}
+
+/* Specialized intersection routine for cubic Bézier curves. */
+template <>
+std::vector<CurveIntersection> BezierCurveN<3>::intersect(Curve const &other, Coord eps) const
+{
+    if (auto other_bezier = dynamic_cast<BezierCurve const *>(&other)) {
+        if (other_bezier->order() == 1) {
+            // Use the exact method to intersect a cubic Bézier with a line segment.
+            auto line = Line(other_bezier->initialPoint(), other_bezier->finalPoint());
+            return bezier_line_intersections<3>(*this, line);
+        }
+    }
+    return BezierCurve::intersect(other, eps);
 }
 
 template <>

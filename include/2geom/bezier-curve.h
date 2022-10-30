@@ -323,6 +323,8 @@ template <> inline bool BezierCurveN<1>::isLineSegment() const { return true; }
 template <> Curve *BezierCurveN<1>::derivative() const;
 template <> Coord BezierCurveN<1>::nearestTime(Point const &, Coord, Coord) const;
 template <> std::vector<CurveIntersection> BezierCurveN<1>::intersect(Curve const &, Coord) const;
+template <> std::vector<CurveIntersection> BezierCurveN<2>::intersect(Curve const &, Coord) const;
+template <> std::vector<CurveIntersection> BezierCurveN<3>::intersect(Curve const &, Coord) const;
 template <> int BezierCurveN<1>::winding(Point const &) const;
 template <> void BezierCurveN<1>::feed(PathSink &sink, bool moveto_initial) const;
 template <> void BezierCurveN<2>::feed(PathSink &sink, bool moveto_initial) const;

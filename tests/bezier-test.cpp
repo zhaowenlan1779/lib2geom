@@ -6,7 +6,7 @@
  *   Nathan Hurst <njh@njhurst.com>
  *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  *   Johan Engelen <j.b.c.engelen@alumnus.utwente.nl>
- * 
+ *
  * Copyright 2010 Authors
  *
  * This library is free software; you can redistribute it and/or
@@ -44,7 +44,7 @@
 #include <iterator>
 #include <glib.h>
 
-using namespace std;
+using std::vector, std::min, std::max;
 using namespace Geom;
 
 Poly lin_poly(double a, double b) { // ax + b
@@ -57,7 +57,7 @@ Poly lin_poly(double a, double b) { // ax + b
 bool are_equal(Bezier A, Bezier B) {
     int maxSize = max(A.size(), B.size());
     double t = 0., dt = 1./maxSize;
-    
+
     for(int i = 0; i <= maxSize; i++) {
         EXPECT_FLOAT_EQ(A.valueAt(t), B.valueAt(t));// return false;
         t += dt;
@@ -85,10 +85,10 @@ protected:
 };
 
 TEST_F(BezierTest, Basics) {
-  
+
     //std::cout << unit <<std::endl;
     //std::cout << hump <<std::endl;
-    
+
     EXPECT_TRUE(Bezier(0,0,0,0).isZero());
     EXPECT_TRUE(Bezier(0,1,2,3).isFinite());
 
@@ -96,13 +96,13 @@ TEST_F(BezierTest, Basics) {
 
     ///cout << " Bezier::Bezier(const Bezier& b);\n";
     //cout << Bezier(wiggle) << " == " << wiggle << endl;
-    
+
     //cout << "explicit Bezier(unsigned ord);\n";
     //cout << Bezier(10) << endl;
-    
+
     //cout << "Bezier(Coord c0, Coord c1);\n";
     //cout << Bezier(0.0,1.0) << endl;
-    
+
     //cout << "Bezier(Coord c0, Coord c1, Coord c2);\n";
     //cout << Bezier(0,1, 2) << endl;
 
@@ -121,9 +121,9 @@ TEST_F(BezierTest, ValueAt) {
     EXPECT_EQ(3.0, wiggle.at1());
 
     EXPECT_EQ(0.0, wiggle.valueAt(0.5));
-    
+
     EXPECT_EQ(0.0, wiggle(0.5));
-    
+
     //cout << "SBasis toSBasis();\n";
     //cout << unit.toSBasis() << endl;
     //cout << hump.toSBasis() << endl;
@@ -280,7 +280,7 @@ TEST_F(BezierTest, Deflate) {
 
 TEST_F(BezierTest, Roots) {
     expect_array((const double[]){0, 0.5, 0.5}, wiggle.roots());
-    
+
     /*Bezier bigun(Bezier::Order(30));
     for(unsigned i = 0; i < bigun.size(); i++) {
         bigun.setCoeff(i,rand()-0.5);
@@ -303,7 +303,7 @@ TEST_F(BezierTest, Roots) {
     tests.push_back(vector_from_array((const double[]){0, 0.2, 0.6, 0.6, 1}));
     tests.push_back(vector_from_array((const double[]){.1,.2,.3,.4,.5,.6}));
     tests.push_back(vector_from_array((const double[]){0.25,0.25,0.25,0.75,0.75,0.75}));
-    
+
     for(auto & test : tests) {
         Bezier b = array_roots(test);
         //std::cout << tests[test_i] << ": " << b << std::endl;
@@ -513,6 +513,124 @@ TEST_F(BezierTest, Intersection) {
     Coord p6ta[] = {0.03184, 0.33990, 0.49353, 0.62148, 0.96618};
     Coord p6tb[] = {0.96977, 0.85797, 0.05087, 0.28232, 0.46102};
     #endif
+}
+
+/** Basic test for intersecting a quadratic Bézier with a line segment. */
+TEST_F(BezierTest, QuadraticIntersectLineSeg)
+{
+    double const EPS = 1e-12;
+    auto const bow = QuadraticBezier({0, 0}, {1, 1}, {2, 0});
+    auto const highhoriz  = LineSegment(Point(0, 0), Point(2, 0));
+    auto const midhoriz   = LineSegment(Point(0, 0.25), Point(2, 0.25));
+    auto const lowhoriz   = LineSegment(Point(0, 0.5), Point(2, 0.5));
+    auto const noninters  = LineSegment(Point(0, 0.5 + EPS), Point(2, 0.5 + EPS));
+    auto const noninters2 = LineSegment(Point(1, 0), Point(1, 0.5 - EPS));
+
+    auto const endpoint_intersections = bow.intersect(highhoriz, EPS);
+    EXPECT_EQ(endpoint_intersections.size(), 2);
+    EXPECT_intersections_valid(bow, highhoriz, endpoint_intersections, EPS);
+    for (auto const &ex : endpoint_intersections) {
+        EXPECT_DOUBLE_EQ(ex.point()[Y], 0.0);
+    }
+
+    auto const mid_intersections = bow.intersect(midhoriz, EPS);
+    EXPECT_EQ(mid_intersections.size(), 2);
+    EXPECT_intersections_valid(bow, midhoriz, mid_intersections, EPS);
+    for (auto const &mx : mid_intersections) {
+        EXPECT_DOUBLE_EQ(mx.point()[Y], 0.25);
+    }
+
+    auto const tangent_intersection = bow.intersect(lowhoriz, EPS);
+    EXPECT_EQ(tangent_intersection.size(), 1);
+    EXPECT_intersections_valid(bow, lowhoriz, tangent_intersection, EPS);
+    for (auto const &tx : tangent_intersection) {
+        EXPECT_DOUBLE_EQ(tx.point()[Y], 0.5);
+    }
+
+    auto no_intersections = bow.intersect(noninters, EPS);
+    EXPECT_TRUE(no_intersections.empty());
+
+    no_intersections = bow.intersect(noninters2, EPS);
+    EXPECT_TRUE(no_intersections.empty());
+}
+
+TEST_F(BezierTest, QuadraticIntersectLineRandom)
+{
+    g_random_set_seed(0xB747A380);
+    auto const diagonal = LineSegment(Point(0, 0), Point(1, 1));
+    double const EPS = 1e-12;
+
+    for (unsigned i = 0; i < 10'000; i++) {
+        auto q = QuadraticBezier({0, 1}, {g_random_double_range(0.0, 1.0), g_random_double_range(0.0, 1.0)}, {1, 0});
+        auto xings = q.intersect(diagonal, EPS);
+        ASSERT_EQ(xings.size(), 1);
+        auto pt = xings[0].point();
+        EXPECT_TRUE(are_near(pt[X], pt[Y], EPS));
+        EXPECT_intersections_valid(q, diagonal, xings, EPS);
+    }
+}
+
+/** Basic test for intersecting a cubic Bézier with a line segment. */
+TEST_F(BezierTest, CubicIntersectLine)
+{
+    double const EPS = 1e-12;
+    auto const wavelet = CubicBezier({0, 0}, {1, 2}, {0, -2}, {1, 0});
+
+    auto const unit_seg = LineSegment(Point(0, 0), Point(1, 0));
+    auto const expect3 = wavelet.intersect(unit_seg, EPS);
+    EXPECT_EQ(expect3.size(), 3);
+    EXPECT_intersections_valid(wavelet, unit_seg, expect3, EPS);
+
+    auto const half_seg = LineSegment(Point(0, 0), Point(0.5, 0));
+    auto const expect2 = wavelet.intersect(half_seg, EPS);
+    EXPECT_EQ(expect2.size(), 2);
+    EXPECT_intersections_valid(wavelet, half_seg, expect2, EPS);
+
+    auto const less_than_half = LineSegment(Point(0, 0), Point(0.5 - EPS, 0));
+    auto const expect1 = wavelet.intersect(less_than_half, EPS);
+    EXPECT_EQ(expect1.size(), 1);
+    EXPECT_intersections_valid(wavelet, less_than_half, expect1, EPS);
+
+    auto const dollar_stroke = LineSegment(Point(0, 0.5), Point(1, -0.5));
+    auto const dollar_xings = wavelet.intersect(dollar_stroke, EPS);
+    EXPECT_EQ(dollar_xings.size(), 3);
+    EXPECT_intersections_valid(wavelet, dollar_stroke, dollar_xings, EPS);
+}
+
+TEST_F(BezierTest, CubicIntersectLineRandom)
+{
+    g_random_set_seed(0xCAFECAFE);
+    auto const diagonal = LineSegment(Point(0, 0), Point(1, 1));
+    double const EPS = 1e-8;
+
+    for (unsigned i = 0; i < 10'000; i++) {
+        double a1 = g_random_double_range(0.0, 1.0);
+        double a2 = g_random_double_range(a1, 1.0);
+        double b1 = g_random_double_range(0.0, 1.0);
+        double b2 = g_random_double_range(0.0, b1);
+
+        auto c = CubicBezier({0, 1}, {a1, a2}, {b1, b2}, {1, 0});
+        auto xings = c.intersect(diagonal, EPS);
+        ASSERT_EQ(xings.size(), 1);
+        auto pt = xings[0].point();
+        EXPECT_TRUE(are_near(pt[X], pt[Y], EPS));
+        EXPECT_intersections_valid(c, diagonal, xings, EPS);
+    }
+}
+
+/** Regression test for issue https://gitlab.com/inkscape/lib2geom/-/issues/47 . */
+TEST_F(BezierTest, Balloon)
+{
+    auto const loop = CubicBezier({0, 0}, {4, -2}, {4, 2}, {0, 0});
+    auto const seghoriz = LineSegment(Point(-1, 0), Point(0, 0));
+
+    for (double EPS : {1e-6, 1e-9, 1e-12}) {
+        // We expect that 2 intersections are found: one at each end of the loop,
+        // both at the coordinates (0, 0).
+        auto xings_horiz = loop.intersect(seghoriz, EPS);
+        EXPECT_EQ(xings_horiz.size(), 2);
+        EXPECT_intersections_valid(loop, seghoriz, xings_horiz, EPS);
+    }
 }
 
 /*
