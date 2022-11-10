@@ -1397,6 +1397,9 @@ std::array<Line, 2> xAx::decompose_df(Coord epsilon) const
             result[0].setCoefficients(coeffs[0], coeffs[1], coeffs[2]);
 
             coeffs = {A, 0.5 * B, c2};
+            if (swap_xy) {
+                std::swap(coeffs[0], coeffs[1]);
+            }
             rescale_homogenous(coeffs);
             result[1].setCoefficients(coeffs[0], coeffs[1], coeffs[2]);
             return result;
