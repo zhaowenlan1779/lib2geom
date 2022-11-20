@@ -327,11 +327,24 @@ TEST_F(BezierTest, BoundsExact) {
 }
 
 TEST_F(BezierTest, Operators) {
-    /*cout << "scalar operators\n";
-    cout << hump + 3 << endl;
-    cout << hump - 3 << endl;
-    cout << hump*3 << endl;
-    cout << hump/3 << endl;*/
+    // Test equality operators
+    EXPECT_EQ(zero, zero);
+    EXPECT_EQ(hump, hump);
+    EXPECT_EQ(wiggle, wiggle);
+    EXPECT_EQ(unit, unit);
+
+    EXPECT_NE(zero, hump);
+    EXPECT_NE(hump, zero);
+    EXPECT_NE(wiggle, hump);
+    EXPECT_NE(zero, wiggle);
+    EXPECT_NE(wiggle, unit);
+
+    // Recall that hump == Bezier(0,1,0);
+    EXPECT_EQ(hump + 3, Bezier(3, 4, 3));
+    EXPECT_EQ(hump - 3, Bezier(-3, -2, -3));
+    EXPECT_EQ(hump * 3, Bezier(0, 3, 0));
+    EXPECT_EQ(hump / 3, Bezier(0, 1.0/3.0, 0));
+    EXPECT_EQ(-hump, Bezier(0, -1, 0));
 
     Bezier reverse_wiggle = reverse(wiggle);
     EXPECT_EQ(reverse_wiggle.at0(), wiggle.at1());

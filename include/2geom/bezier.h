@@ -157,6 +157,25 @@ public:
         return *this;
     }
 
+    bool operator==(Bezier const &other) const
+    {
+        if (degree() != other.degree()) {
+            return false;
+        }
+
+        for (size_t i = 0; i < c_.size(); i++) {
+            if (c_[i] != other.c_[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator!=(Bezier const &other) const
+    {
+        return !(*this == other);
+    }
+
     struct Order {
         unsigned order;
         explicit Order(Bezier const &b) : order(b.order()) {}
@@ -302,6 +321,14 @@ public:
     }
     Bezier &operator+=(Bezier const &other);
     Bezier &operator-=(Bezier const &other);
+
+    /// Unary minus
+    Bezier operator-() const
+    {
+        Bezier result;
+        result.c_ = -c_;
+        return result;
+    }
 };
 
 
