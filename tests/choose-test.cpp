@@ -47,7 +47,7 @@ TEST(ChooseTest, PascalsTriangle) {
         double b = choose<double>(n-1, k);
         double c = choose<double>(n-1, k-1);
 
-        EXPECT_EQ(a, b + c);
+        EXPECT_DOUBLE_EQ(a, b + c);
     }
 }
 
