@@ -302,15 +302,19 @@ Coord EllipticalArc::valueAt(Coord t, Dim2 d) const
 Curve* EllipticalArc::portion(double f, double t) const
 {
     // fix input arguments
-    if (f < 0) f = 0;
-    if (f > 1) f = 1;
-    if (t < 0) t = 0;
-    if (t > 1) t = 1;
+    f = std::clamp(f, 0.0, 1.0);
+    t = std::clamp(t, 0.0, 1.0);
 
     if (f == t) {
         EllipticalArc *arc = new EllipticalArc();
         arc->_initial_point = arc->_final_point = pointAt(f);
         return arc;
+    }
+    if (f == 0.0 && t == 1.0) {
+        return duplicate();
+    }
+    if (f == 1.0 && t == 0.0) {
+        return reverse();
     }
 
     EllipticalArc *arc = static_cast<EllipticalArc*>(duplicate());

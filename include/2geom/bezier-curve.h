@@ -122,9 +122,9 @@ public:
     Curve *duplicate() const override {
         return new BezierCurve(*this);
     }
-    Curve *portion(Coord f, Coord t) const override {
-        return new BezierCurve(Geom::portion(inner, f, t));
-    }
+
+    Curve *portion(Coord f, Coord t) const override;
+
     Curve *reverse() const override {
         return new BezierCurve(Geom::reverse(inner));
     }

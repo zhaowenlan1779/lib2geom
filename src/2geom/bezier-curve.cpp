@@ -242,6 +242,17 @@ bool BezierCurve::isNear(Curve const &c, Coord precision) const
     }
 }
 
+Curve *BezierCurve::portion(Coord f, Coord t) const
+{
+    if (f == 0.0 && t == 1.0) {
+        return duplicate();
+    }
+    if (f == 1.0 && t == 0.0) {
+        return reverse();
+    }
+    return new BezierCurve(Geom::portion(inner, f, t));
+}
+
 bool BezierCurve::operator==(Curve const &c) const
 {
     if (this == &c) return true;

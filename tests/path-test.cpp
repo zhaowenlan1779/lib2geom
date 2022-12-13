@@ -894,6 +894,20 @@ TEST_F(PathTest, GetExtrema) {
     EXPECT_FLOAT_EQ(extrema_x.glance_direction_at_min, -1.0);
 }
 
+/** Regression test for issue https://gitlab.com/inkscape/lib2geom/-/issues/50 */
+TEST_F(PathTest, PizzaSlice)
+{
+    auto pv = parse_svg_path("M 0 0 L 0.30901699437494745 0.9510565162951535 "
+                             "A 1 1 0 0 1 -0.8090169943749473 0.5877852522924732 z");
+    auto &sector = pv[0];
+    Path piece;
+    EXPECT_NO_THROW(piece = sector.portion(PathTime(0, 0.0), PathTime(2, 0.0), false));
+    EXPECT_FALSE(piece.closed());
+    EXPECT_TRUE(piece.size() == 2 ||
+               (piece.size() == 3 && piece[2].isDegenerate()));
+    EXPECT_EQ(piece.finalPoint(), Point(-0.8090169943749473, 0.5877852522924732));
+}
+
 /*
   Local Variables:
   mode:c++
