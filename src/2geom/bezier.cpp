@@ -208,8 +208,6 @@ Bezier &Bezier::operator-=(Bezier const &other)
     return *this;
 }
 
-
-
 Bezier operator*(Bezier const &f, Bezier const &g)
 {
     unsigned m = f.order();
@@ -310,7 +308,86 @@ OptInterval bounds_local(Bezier const &b, OptInterval const &i)
     }
 }
 
-} // end namespace Geom
+/*
+ * The general bézier of degree n is
+ *
+ *     p(t) = sum_{i = 0...n} binomial(n, i) t^i (1 - t)^(n - i) x[i]
+ *
+ * It can be written explicitly as a polynomial in t as
+ *
+ *     p(t) = sum_{i = 0...n} binomial(n, i) t^i [ sum_{j = 0...i} binomial(i, j) (-1)^(i - j) x[j] ]
+ *
+ * Its derivative is
+ *
+ *     p'(t) = n sum_{i = 1...n} binomial(n - 1, i - 1) t^(i - 1) [ sum_{j = 0...i} binomial(i, j) (-1)^(i - j) x[j] ]
+ *
+ * This is used by the various specialisations below as an optimisation for low degree n <= 3.
+ * In the remaining cases, the generic implementation is used which resorts to iteration.
+ */
+
+void bezier_expand_to_image(Interval &range, Coord x0, Coord x1, Coord x2)
+{
+    range.expandTo(x2);
+
+    if (range.contains(x1)) {
+        // The interval contains all control points, and therefore the entire curve.
+        return;
+    }
+
+    // p'(t) / 2 = at + b
+    auto a = (x2 - x1) - (x1 - x0);
+    auto b = x1 - x0;
+
+    // t = -b / a
+    if (std::abs(a) > EPSILON) {
+        auto t = -b / a;
+        if (t > 0.0 && t < 1.0) {
+            auto s = 1.0 - t;
+            auto x = s * s * x0 + 2 * s * t * x1 + t * t * x2;
+            range.expandTo(x);
+        }
+    }
+}
+
+void bezier_expand_to_image(Interval &range, Coord x0, Coord x1, Coord x2, Coord x3)
+{
+    range.expandTo(x3);
+
+    if (range.contains(x1) && range.contains(x2)) {
+        // The interval contains all control points, and therefore the entire curve.
+        return;
+    }
+
+    // p'(t) / 3 = at^2 + 2bt + c
+    auto a = (x3 - x0) - 3 * (x2 - x1);
+    auto b = (x2 - x1) - (x1 - x0);
+    auto c = x1 - x0;
+
+    auto expand = [&] (Coord t) {
+        if (t > 0.0 && t < 1.0) {
+            auto s = 1.0 - t;
+            auto x = s * s * s * x0 + 3 * s * s * t * x1 + 3 * t * t * s * x2 + t * t * t * x3;
+            range.expandTo(x);
+        }
+    };
+
+    // t = (-b ± sqrt(b^2 - ac)) / a
+    if (std::abs(a) < EPSILON) {
+        if (std::abs(b) > EPSILON) {
+            expand(-c / (2 * b));
+        }
+    } else {
+        auto d2 = b * b - a * c;
+        if (d2 >= 0.0) {
+            auto bsign = b >= 0.0 ? 1 : -1;
+            auto tmp = -(b + bsign * std::sqrt(d2));
+            expand(tmp / a);
+            expand(c / tmp); // Using Vieta's formula: product of roots == c/a
+        }
+    }
+}
+
+} // namespace Geom
 
 /*
   Local Variables:

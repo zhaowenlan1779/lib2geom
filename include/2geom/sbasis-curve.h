@@ -103,6 +103,9 @@ public:
     }
     Rect boundsFast() const override  { return *bounds_fast(inner); }
     Rect boundsExact() const override { return *bounds_exact(inner); }
+    void expandToTransformed(Rect &bbox, Affine const &transform) const override {
+        bbox |= bounds_exact(inner * transform);
+    }
     OptRect boundsLocal(OptInterval const &i, unsigned deg) const override {
         return bounds_local(inner, i, deg);
     }

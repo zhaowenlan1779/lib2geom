@@ -145,6 +145,11 @@ bool BezierCurve::isLineSegment() const
     return true;
 }
 
+void BezierCurve::expandToTransformed(Rect &bbox, Affine const &transform) const
+{
+    bbox |= bounds_exact(inner * transform);
+}
+
 Coord BezierCurve::length(Coord tolerance) const
 {
     switch (order())
@@ -496,6 +501,42 @@ void BezierCurveN<3>::feed(PathSink &sink, bool moveto_initial) const
     sink.curveTo(controlPoint(1), controlPoint(2), controlPoint(3));
 }
 
+static void bezier_expand_to_image(Rect &range, Point const &x0, Point const &x1, Point const &x2)
+{
+    for (auto i : { X, Y }) {
+        bezier_expand_to_image(range[i], x0[i], x1[i], x2[i]);
+    }
+}
+
+static void bezier_expand_to_image(Rect &range, Point const &x0, Point const &x1, Point const &x2, Point const &x3)
+{
+    for (auto i : { X, Y }) {
+        bezier_expand_to_image(range[i], x0[i], x1[i], x2[i], x3[i]);
+    }
+}
+
+template <>
+void BezierCurveN<1>::expandToTransformed(Rect &bbox, Affine const &transform) const
+{
+    bbox.expandTo(finalPoint() * transform);
+}
+
+template <>
+void BezierCurveN<2>::expandToTransformed(Rect &bbox, Affine const &transform) const
+{
+    bezier_expand_to_image(bbox, controlPoint(0) * transform,
+                                 controlPoint(1) * transform,
+                                 controlPoint(2) * transform);
+}
+
+template <>
+void BezierCurveN<3>::expandToTransformed(Rect &bbox, Affine const &transform) const
+{
+    bezier_expand_to_image(bbox, controlPoint(0) * transform,
+                                 controlPoint(1) * transform,
+                                 controlPoint(2) * transform,
+                                 controlPoint(3) * transform);
+}
 
 static Coord bezier_length_internal(std::vector<Point> &v1, Coord tolerance, int level)
 {

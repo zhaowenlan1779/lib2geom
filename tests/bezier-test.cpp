@@ -633,6 +633,34 @@ TEST_F(BezierTest, Balloon)
     }
 }
 
+TEST_F(BezierTest, ExpandToTransformedTest)
+{
+    auto test_curve = [] (Curve const &c) {
+        constexpr int N = 50;
+        for (int i = 0; i < N; i++) {
+            auto angle = 2 * M_PI * i / N;
+            auto transform = Affine(Rotate(angle));
+            
+            auto copy = std::unique_ptr<Curve>(c.duplicate());
+            *copy *= transform;
+            auto box1 = copy->boundsExact();
+            
+            auto pt = c.initialPoint() * transform;
+            auto box2 = Rect(pt, pt);
+            c.expandToTransformed(box2, transform);
+            
+            for (auto i : { X, Y }) {
+                EXPECT_DOUBLE_EQ(box1[i].min(), box2[i].min());
+                EXPECT_DOUBLE_EQ(box1[i].max(), box2[i].max());
+            }
+        }
+    };
+    
+    test_curve(LineSegment(Point(-1, 0), Point(1, 2)));
+    test_curve(QuadraticBezier(Point(-1, 0), Point(1, 1), Point(3, 0)));
+    test_curve(CubicBezier(Point(-1, 0), Point(1, 1), Point(2, -2), Point(3, 0)));
+}
+
 /*
   Local Variables:
   mode:c++

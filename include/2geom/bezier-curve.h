@@ -110,6 +110,7 @@ public:
     void setFinal(Point const &v) override { setPoint(order(), v); }
     Rect boundsFast() const override { return *bounds_fast(inner); }
     Rect boundsExact() const override { return *bounds_exact(inner); }
+    void expandToTransformed(Rect &bbox, Affine const &transform) const override;
     OptRect boundsLocal(OptInterval const &i, unsigned deg) const override {
         if (!i) return OptRect();
         if(i->min() == 0 && i->max() == 1) return boundsFast();
@@ -290,6 +291,10 @@ public:
         // call super. this is implemented only to allow specializations
         BezierCurve::feed(sink, moveto_initial);
     }
+    void expandToTransformed(Rect &bbox, Affine const &transform) const override {
+        // call super. this is implemented only to allow specializations
+        BezierCurve::expandToTransformed(bbox, transform);
+    }
 };
 
 // BezierCurveN<0> is meaningless; specialize it out
@@ -329,6 +334,9 @@ template <> int BezierCurveN<1>::winding(Point const &) const;
 template <> void BezierCurveN<1>::feed(PathSink &sink, bool moveto_initial) const;
 template <> void BezierCurveN<2>::feed(PathSink &sink, bool moveto_initial) const;
 template <> void BezierCurveN<3>::feed(PathSink &sink, bool moveto_initial) const;
+template <> void BezierCurveN<1>::expandToTransformed(Rect &bbox, Affine const &transform) const;
+template <> void BezierCurveN<2>::expandToTransformed(Rect &bbox, Affine const &transform) const;
+template <> void BezierCurveN<3>::expandToTransformed(Rect &bbox, Affine const &transform) const;
 
 inline Point middle_point(LineSegment const& _segment) {
     return ( _segment.initialPoint() + _segment.finalPoint() ) / 2;

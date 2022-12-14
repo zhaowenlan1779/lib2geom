@@ -146,6 +146,12 @@ Rect EllipticalArc::boundsExact() const
     return result;
 }
 
+void EllipticalArc::expandToTransformed(Rect &bbox, Affine const &transform) const
+{
+    auto c = *this;
+    c *= transform;
+    bbox |= c.boundsExact();
+}
 
 Point EllipticalArc::pointAtAngle(Coord t) const
 {

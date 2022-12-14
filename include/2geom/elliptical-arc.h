@@ -270,6 +270,7 @@ public:
         return boundsExact();
     }
     Rect boundsExact() const override;
+    void expandToTransformed(Rect &bbox, Affine const &transform) const override;
     // TODO: native implementation of the following methods
     OptRect boundsLocal(OptInterval const &i, unsigned int deg) const override {
         return SBasisCurve(toSBasis()).boundsLocal(i, deg);

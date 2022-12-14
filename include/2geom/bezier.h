@@ -366,6 +366,10 @@ OptInterval bounds_fast(Bezier const &b);
 OptInterval bounds_exact(Bezier const &b);
 OptInterval bounds_local(Bezier const &b, OptInterval const &i);
 
+/// Expand an interval to the image of a Bézier-Bernstein polynomial, assuming it already contains the initial point x0.
+void bezier_expand_to_image(Interval &range, Coord x0, Coord x1, Coord x2);
+void bezier_expand_to_image(Interval &range, Coord x0, Coord x1, Coord x2, Coord x3);
+
 inline std::ostream &operator<< (std::ostream &os, const Bezier & b) {
     os << "Bezier(";
     for(unsigned i = 0; i < b.order(); i++) {
@@ -375,7 +379,8 @@ inline std::ostream &operator<< (std::ostream &os, const Bezier & b) {
     return os;
 }
 
-}
+} // namespace Geom
+
 #endif // LIB2GEOM_SEEN_BEZIER_H
 
 /*
