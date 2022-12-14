@@ -661,6 +661,13 @@ TEST_F(BezierTest, ExpandToTransformedTest)
     test_curve(CubicBezier(Point(-1, 0), Point(1, 1), Point(2, -2), Point(3, 0)));
 }
 
+TEST_F(BezierTest, ForwardDifferenceTest)
+{
+    auto b = Bezier(3, 4, 2, -5, 7);
+    EXPECT_EQ(b.forward_difference(1), Bezier(19, 34, 22, 5));
+    EXPECT_EQ(b.forward_difference(2), Bezier(-3, 2, 2));
+}
+
 /*
   Local Variables:
   mode:c++

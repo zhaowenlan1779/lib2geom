@@ -13,7 +13,7 @@
  * there is only one solution.
  */
 
-namespace Geom{
+namespace Geom {
 
 template<class t>
 static int SGN(t x) { return (x > 0 ? 1 : (x < 0 ? -1 : 0)); }
@@ -25,16 +25,15 @@ static int SGN(t x) { return (x > 0 ? 1 : (x < 0 ? -1 : 0)); }
 /**
  * This function is called _a lot_.  We have included various manual memory management stuff to reduce the amount of mallocing that goes on.  In the future it is possible that this will hurt performance.
  **/
-class Bernsteins{
+class Bernsteins
+{
 public:
-    static const size_t MAX_DEPTH = 53;
+    static constexpr size_t MAX_DEPTH = 53;
     size_t degree, N;
     std::vector<double> &solutions;
-    //std::vector<double> bc;
-    BinomialCoefficient<double> bc;
 
-    Bernsteins(size_t _degree, std::vector<double> & sol)
-        : degree(_degree), N(degree+1), solutions(sol), bc(degree)
+    Bernsteins(size_t _degree, std::vector<double> &sol)
+        : degree(_degree), N(degree+1), solutions(sol)
     {
     }
 
@@ -230,8 +229,7 @@ Bernsteins::control_poly_flat_enough(double const *V)
 }
 #endif
 
-
-};
+} // namespace Geom
 
 /*
   Local Variables:

@@ -38,6 +38,7 @@
 #include <2geom/bezier.h>
 #include <2geom/solver.h>
 #include <2geom/concepts.h>
+#include <2geom/choose.h>
 
 namespace Geom {
 
@@ -113,13 +114,16 @@ std::vector<Coord> Bezier::roots(Interval const &ivl) const
 
 Bezier Bezier::forward_difference(unsigned k) const
 {
-    Bezier fd(Order(order()-k));
-    unsigned n = fd.size();
+    Bezier fd(Order(order() - k));
+    int n = fd.size();
     
-    for(unsigned i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         fd[i] = 0;
-        for(unsigned j = i; j < n; j++) {
-            fd[i] += (((j)&1)?-c_[j]:c_[j])*choose<double>(n, j-i);
+        int b = (i & 1) ? -1 : 1; // b = (-1)^j binomial(n, j - i)
+        for (int j = i; j < n; j++) {
+            fd[i] += c_[j] * b;
+            binomial_increment_k(b, n, j - i);
+            b = -b;
         }
     }
     return fd;
@@ -210,20 +214,30 @@ Bezier &Bezier::operator-=(Bezier const &other)
 
 Bezier operator*(Bezier const &f, Bezier const &g)
 {
-    unsigned m = f.order();
-    unsigned n = g.order();
+    int m = f.order();
+    int n = g.order();
     Bezier h(Bezier::Order(m+n));
     // h_k = sum_(i+j=k) (m i)f_i (n j)g_j / (m+n k)
     
-    for(unsigned i = 0; i <= m; i++) {
-        const double fi = choose<double>(m,i)*f[i];
-        for(unsigned j = 0; j <= n; j++) {
-            h[i+j] += fi * choose<double>(n,j)*g[j];
+    int mci = 1;
+    for (int i = 0; i <= m; i++) {
+        double const fi = mci * f[i];
+
+        int ncj = 1;
+        for (int j = 0; j <= n; j++) {
+            h[i + j] += fi * ncj * g[j];
+            binomial_increment_k(ncj, n, j);
         }
+
+        binomial_increment_k(mci, m, i);
     }
-    for(unsigned k = 0; k <= m+n; k++) {
-        h[k] /= choose<double>(m+n, k);
+
+    int mnck = 1;
+    for (int k = 0; k <= m + n; k++) {
+        h[k] /= mnck;
+        binomial_increment_k(mnck, m + n, k);
     }
+
     return h;
 }
 

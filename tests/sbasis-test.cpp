@@ -234,6 +234,28 @@ TEST_F(SBasisTest, ToCubicBezier)
     }
 }
 
+TEST_F(SBasisTest, Roundtrip)
+{
+    auto bz1 = Bezier(1, -2, 3, 7, 11, -24, 42, -1, 9, 1);
+    auto sbasis = bz1.toSBasis();
+    Bezier bz2;
+    sbasis_to_bezier(bz2, sbasis);
+    ASSERT_EQ(bz1, bz2);
+
+    std::vector<Point> pts;
+    for (int i = 0; i < bz1.size(); i++) {
+        pts.emplace_back(bz1[i], bz1[i]);
+    }
+    D2<SBasis> sbasis_d2;
+    bezier_to_sbasis(sbasis_d2, pts);
+    ASSERT_EQ(sbasis_d2[X], sbasis);
+    ASSERT_EQ(sbasis_d2[Y], sbasis);
+    D2<Bezier> bz2_d2;
+    sbasis_to_bezier(bz2_d2, sbasis_d2);
+    ASSERT_EQ(bz2_d2[X], bz1);
+    ASSERT_EQ(bz2_d2[Y], bz1);
+}
+
 /*
   Local Variables:
   mode:c++
