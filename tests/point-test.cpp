@@ -74,6 +74,37 @@ TEST(PointTest, Near) {
     EXPECT_FALSE(are_near_rel(Point(100, 0), Point(100, 1e-2)));
 }
 
+TEST(PointTest, Multiplicative) {
+    EXPECT_EQ(Point(2, 3) * Point(4, 5), Point(8, 15));
+    EXPECT_EQ(IntPoint(2, 3) * IntPoint(4, 5), IntPoint(8, 15));
+    EXPECT_EQ(Point(10, 11) / Point(2, 3), Point(5, 11.0 / 3.0));
+    EXPECT_EQ(IntPoint(10, 11) / IntPoint(2, 3), IntPoint(5, 11 / 3));
+}
+
+TEST(PointTest, PointCtors) {
+    Point a(2, 3);
+    EXPECT_EQ(a[X], 2);
+    EXPECT_EQ(a[Y], 3);
+
+    a.~Point();
+    new (&a) Point;
+    EXPECT_EQ(a, Point(0, 0));
+
+    a = Point(IntPoint(4, 5));
+    EXPECT_EQ(a[X], 4);
+    EXPECT_EQ(a[Y], 5);
+}
+
+TEST(PointTest, IntPointCtors) {
+    IntPoint a(2, 3);
+    EXPECT_EQ(a[X], 2);
+    EXPECT_EQ(a[Y], 3);
+
+    a.~IntPoint();
+    new (&a) IntPoint;
+    EXPECT_EQ(a, IntPoint(0, 0));
+}
+
 } // end namespace Geom
 
 /*

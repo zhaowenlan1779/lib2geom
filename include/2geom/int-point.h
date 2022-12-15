@@ -49,17 +49,20 @@ namespace Geom {
 class IntPoint
     : boost::additive< IntPoint
     , boost::totally_ordered< IntPoint
-    > >
+    , boost::multiplicative< IntPoint, IntCoord
+    , boost::multiplicative< IntPoint
+    > > > >
 {
-    IntCoord _pt[2];
+    IntCoord _pt[2] = { 0, 0 };
 public:
-    /// @name Creating integer points
+    /// @name Create integer points
     /// @{
-    IntPoint() { }
-    IntPoint(IntCoord x, IntCoord y) {
-        _pt[X] = x;
-        _pt[Y] = y;
-    }
+    /** Construct a point at the origin. */
+    IntPoint() = default;
+    /** Construct a point from its coordinates. */
+    IntPoint(IntCoord x, IntCoord y)
+        : _pt{ x, y }
+    {}
     /// @}
 
     /// @name Access the coordinates of a point
@@ -86,18 +89,6 @@ public:
     IntPoint operator-() const {
         return IntPoint(-_pt[X], -_pt[Y]);
     }
-    IntPoint operator*(IntPoint const &o) {
-        return IntPoint(_pt[X] * o._pt[X], _pt[Y] * o._pt[Y]);
-    }
-    IntPoint operator*(IntCoord const &o) {
-        return IntPoint(_pt[X] * o, _pt[Y] * o);
-    }
-    IntPoint operator/(IntPoint const &o) {
-        return IntPoint(_pt[X] / o._pt[X], _pt[Y] / o._pt[Y]);
-    }
-    IntPoint operator/(IntCoord const &o) {
-        return IntPoint(_pt[X] / o, _pt[Y] / o);
-    }
     IntPoint &operator+=(IntPoint const &o) {
         _pt[X] += o._pt[X];
         _pt[Y] += o._pt[Y];
@@ -113,7 +104,7 @@ public:
         _pt[Y] *= o._pt[Y];
         return *this;
     }
-    IntPoint &operator*=(IntCoord const &o) {
+    IntPoint &operator*=(IntCoord o) {
         _pt[X] *= o;
         _pt[Y] *= o;
         return *this;
@@ -123,7 +114,7 @@ public:
         _pt[Y] /= o._pt[Y];
         return *this;
     }
-    IntPoint &operator/=(IntCoord const &o) {
+    IntPoint &operator/=(IntCoord o) {
         _pt[X] /= o;
         _pt[Y] /= o;
         return *this;

@@ -50,6 +50,8 @@ class Point
     : boost::additive< Point
     , boost::totally_ordered< Point
     , boost::multiplicative< Point, Coord
+    , boost::multiplicative< Point
+    , boost::multiplicative< Point, IntPoint
     , MultipliableNoncommutative< Point, Affine
     , MultipliableNoncommutative< Point, Translate
     , MultipliableNoncommutative< Point, Rotate
@@ -57,29 +59,26 @@ class Point
     , MultipliableNoncommutative< Point, HShear
     , MultipliableNoncommutative< Point, VShear
     , MultipliableNoncommutative< Point, Zoom
-      > > > > > > > > > > // base class chaining, see documentation for Boost.Operator
+      > > > > > > > > > > > > // base class chaining, see documentation for Boost.Operator
 {
-    Coord _pt[2];
+    Coord _pt[2] = { 0, 0 };
 public:
-    typedef Coord D1Value;
-    typedef Coord &D1Reference;
-    typedef Coord const &D1ConstReference;
+    using D1Value = Coord;
+    using D1Reference = Coord &;
+    using D1ConstReference = Coord const &;
 
     /// @name Create points
     /// @{
-    /** Construct a point on the origin. */
-    Point()
-    { _pt[X] = _pt[Y] = 0; }
-
+    /** Construct a point at the origin. */
+    Point() = default;
     /** Construct a point from its coordinates. */
-    Point(Coord x, Coord y) {
-        _pt[X] = x; _pt[Y] = y;
-    }
+    Point(Coord x, Coord y)
+        : _pt{ x, y }
+    {}
     /** Construct from integer point. */
-    Point(IntPoint const &p) {
-        _pt[X] = p[X];
-        _pt[Y] = p[Y];
-    }
+    Point(IntPoint const &p)
+        : Point(p[X], p[Y])
+    {}
     /** @brief Construct a point from its polar coordinates.
      * The angle is specified in radians, in the mathematical convention (increasing
      * counter-clockwise from +X). */
@@ -112,7 +111,7 @@ public:
     /// @{
     /** @brief Compute the distance from origin.
      * @return Length of the vector from origin to this point */
-    Coord length() const { return hypot(_pt[0], _pt[1]); }
+    Coord length() const { return std::hypot(_pt[0], _pt[1]); }
     void normalize();
     Point normalized() const {
         Point ret(*this);
@@ -139,18 +138,6 @@ public:
     /// @{
     Point operator-() const {
         return Point(-_pt[X], -_pt[Y]);
-    }
-    Point operator*(Point const &o) {
-        return Point(_pt[X] * o._pt[X], _pt[Y] * o._pt[Y]);
-    }
-    Point operator*(Coord const &o) {
-        return Point(_pt[X] * o, _pt[Y] * o);
-    }
-    Point operator/(Point const &o) {
-        return Point(_pt[X] / o._pt[X], _pt[Y] / o._pt[Y]);
-    }
-    Point operator/(Coord const &o) {
-        return Point(_pt[X] / o, _pt[Y] / o);
     }
     Point &operator+=(Point const &o) {
         _pt[X] += o._pt[X];
