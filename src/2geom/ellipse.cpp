@@ -412,13 +412,63 @@ bool Ellipse::contains(Point const &p) const
     return tp.length() <= 1;
 }
 
+/** @brief Convert curve time on the major axis to the corresponding angle
+ *         parameters on a degenerate ellipse collapsed onto that axis.
+ * @param t The curve time on the major axis of an ellipse.
+ * @param vertical If true, the major axis goes from angle -π/2 to +π/2;
+ *                 otherwise, the major axis connects angles π and 0.
+ * @return The two angles at which the collapsed ellipse passes through the
+ *         major axis point corresponding to the given time \f$t \in [0, 1]\f$.
+ */
+static std::array<Coord, 2> axis_time_to_angles(Coord t, bool vertical)
+{
+    Coord const to_unit = std::clamp(2.0 * t - 1.0, -1.0, 1.0);
+    if (vertical) {
+        double const arcsin = std::asin(to_unit);
+        return {arcsin, M_PI - arcsin};
+    } else {
+        double const arccos = std::acos(to_unit);
+        return {arccos, -arccos};
+    }
+}
+
+/** @brief For each intersection of some shape with the major axis of an ellipse, produce one or two
+ *         intersections of a degenerate ellipse (collapsed onto that axis) with the same shape.
+ *
+ * @param axis_intersections The intersections of some shape with the major axis.
+ * @param vertical Whether this is the vertical major axis (in the ellipse's natural coordinates).
+ * @return A vector with doubled intersections (corresponding to the two passages of the squashed
+ *         ellipse through that point) and swapped order of the intersected shapes.
+*/
+static std::vector<ShapeIntersection> double_axis_intersections(std::vector<ShapeIntersection> &&axis_intersections,
+                                                                bool vertical)
+{
+    if (axis_intersections.empty()) {
+        return {};
+    }
+    std::vector<ShapeIntersection> result;
+    result.reserve(2 * axis_intersections.size());
+
+    for (auto const &x : axis_intersections) {
+        for (auto a : axis_time_to_angles(x.second, vertical)) {
+            result.emplace_back(a, x.first, x.point()); // Swap first <-> converted second.
+            if (x.second == 0.0 || x.second == 1.0) {
+                break; // Do not double up endpoint intersections.
+            }
+        }
+    }
+    return result;
+}
+
 std::vector<ShapeIntersection> Ellipse::intersect(Line const &line) const
 {
     std::vector<ShapeIntersection> result;
 
-    if (line.isDegenerate()) return result;
+    if (line.isDegenerate()) {
+        return result;
+    }
     if (ray(X) == 0 || ray(Y) == 0) {
-        return line.intersect(majorAxis());
+        return double_axis_intersections(line.intersect(majorAxis()), ray(X) == 0);
     }
 
     // Ax^2 + Bxy + Cy^2 + Dx + Ey + F
@@ -484,7 +534,7 @@ std::vector<ShapeIntersection> Ellipse::intersect(Ellipse const &other) const
 {
     // Handle degenerate cases first.
     if (ray(X) == 0 || ray(Y) == 0) { // Degenerate ellipse, collapsed to the major axis.
-        return other.intersect(majorAxis());
+        return double_axis_intersections(other.intersect(majorAxis()), ray(X) == 0);
     }
     if (*this == other) { // Two identical ellipses.
         THROW_INFINITELY_MANY_SOLUTIONS("The two ellipses are identical.");

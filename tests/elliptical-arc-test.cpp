@@ -82,6 +82,79 @@ TEST(EllipticalArcTest, LineSegmentIntersection) {
     r1 = a3.intersect(ls);
     EXPECT_EQ(r1.size(), 2u);
     EXPECT_intersections_valid(a3, ls, r1, 1e-10);
+
+    g_random_set_seed(0xB747A380);
+    // Test with randomized arcs and segments.
+    for (size_t _ = 0; _ < 10'000; _++) {
+        auto arc = EllipticalArc({g_random_double_range(1.0, 5.0), 0.0},
+                                 {g_random_double_range(6.0, 8.0), g_random_double_range(2.0, 7.0)},
+                                  g_random_double_range(-0.5, 0.5), true, g_random_boolean(),
+                                 {g_random_double_range(-5.0, -1.0), 0.0});
+        Coord x = g_random_double_range(15, 30);
+        Coord y = g_random_double_range(10, 20);
+        auto seg = LineSegment(Point(-x, y), Point(x, -y));
+        auto xings = arc.intersect(seg);
+        EXPECT_EQ(xings.size(), 1u);
+        EXPECT_intersections_valid(arc, seg, xings, 1e-12);
+    }
+
+    // Test with degenerate arcs
+    EllipticalArc x_squash_pos{{3.0, 0.0}, {3.0, 2.0}, 0, true, true, {-3.0, 0.0}};
+    EllipticalArc x_squash_neg{{3.0, 0.0}, {3.0, 2.0}, 0, true, false, {-3.0, 0.0}};
+    auto const squash_to_x = Scale(1.0, 0.0);
+    x_squash_pos *= squash_to_x; // squash to X axis interval [-3, 3].
+    x_squash_neg *= squash_to_x;
+
+    for (size_t _ = 0; _ < 10'000; _++) {
+        auto seg = LineSegment(Point(g_random_double_range(-3.0, 3.0), g_random_double_range(-3.0, -1.0)),
+                               Point(g_random_double_range(-3.0, 3.0), g_random_double_range(1.0, 3.0)));
+        auto xings = x_squash_pos.intersect(seg);
+        EXPECT_EQ(xings.size(), 1u);
+        EXPECT_intersections_valid(x_squash_pos, seg, xings, 1e-12);
+
+        std::unique_ptr<Curve> rev{x_squash_pos.reverse()};
+        xings = rev->intersect(seg);
+        EXPECT_EQ(xings.size(), 1u);
+        EXPECT_intersections_valid(*rev, seg, xings, 1e-12);
+
+        xings = x_squash_neg.intersect(seg);
+        EXPECT_EQ(xings.size(), 1u);
+        EXPECT_intersections_valid(x_squash_neg, seg, xings, 1e-12);
+
+        rev.reset(x_squash_neg.reverse());
+        xings = rev->intersect(seg);
+        EXPECT_EQ(xings.size(), 1u);
+        EXPECT_intersections_valid(*rev, seg, xings, 1e-12);
+    }
+
+    // Now test with an arc squashed to the Y-axis.
+    EllipticalArc y_squash_pos{{0.0, -2.0}, {3.0, 2.0}, 0, true, true, {0.0, 2.0}};
+    EllipticalArc y_squash_neg{{0.0, -2.0}, {3.0, 2.0}, 0, true, false, {0.0, 2.0}};
+    auto const squash_to_y = Scale(0.0, 1.0);
+    y_squash_pos *= squash_to_y; // Y-axis interval [-2, 2].
+    y_squash_neg *= squash_to_y;
+
+    for (size_t _ = 0; _ < 10'000; _++) {
+        auto seg = LineSegment(Point(g_random_double_range(-3.0, -1.0), g_random_double_range(-2.0, 2.0)),
+                               Point(g_random_double_range(1.0, 3.0),   g_random_double_range(-2.0, 2.0)));
+        auto xings = y_squash_pos.intersect(seg, 1e-10);
+        EXPECT_EQ(xings.size(), 1u);
+        EXPECT_intersections_valid(y_squash_pos, seg, xings, 1e-12);
+
+        std::unique_ptr<Curve> rev{y_squash_pos.reverse()};
+        xings = rev->intersect(seg, 1e-12);
+        EXPECT_EQ(xings.size(), 1u);
+        EXPECT_intersections_valid(*rev, seg, xings, 1e-12);
+
+        xings = y_squash_neg.intersect(seg, 1e-12);
+        EXPECT_EQ(xings.size(), 1u);
+        EXPECT_intersections_valid(y_squash_neg, seg, xings, 1e-12);
+
+        rev.reset(y_squash_neg.reverse());
+        xings = rev->intersect(seg, 1e-12);
+        EXPECT_EQ(xings.size(), 1u);
+        EXPECT_intersections_valid(*rev, seg, xings, 1e-12);
+    }
 }
 
 TEST(EllipticalArcTest, ArcIntersection) {

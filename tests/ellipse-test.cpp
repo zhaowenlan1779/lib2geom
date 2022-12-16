@@ -167,6 +167,37 @@ TEST(EllipseTest, LineIntersection) {
     EXPECT_NEAR(xs[1].point()[Y], 8./5, 1e-15);
 
     EXPECT_intersections_valid(e, l, xs, 1e-15);
+
+    // Test with a degenerate ellipse
+    auto degen = Ellipse({0, 0}, {3, 2}, 0);
+    degen *= Scale(1.0, 0.0); // Squash to the X-axis interval [-3, 3].
+
+    g_random_set_seed(0xCAFECAFE);
+    // Intersect with a line
+    for (size_t _ = 0; _ < 10'000; _++) {
+        auto line = Line(Point(g_random_double_range(-3.0, 3.0), g_random_double_range(-3.0, -1.0)),
+                         Point(g_random_double_range(-3.0, 3.0), g_random_double_range(1.0, 3.0)));
+        auto xings = degen.intersect(line);
+        EXPECT_EQ(xings.size(), 2u);
+        EXPECT_intersections_valid(degen, line, xings, 1e-14);
+    }
+    // Intersect with another, non-degenerate ellipse
+    for (size_t _ = 0; _ < 10'000; _++) {
+        auto other = Ellipse(Point(g_random_double_range(-1.0, 1.0), g_random_double_range(-1.0, 1.0)),
+                             Point(g_random_double_range(1.0, 2.0), g_random_double_range(1.0, 3.0)), 0);
+        auto xings = degen.intersect(other);
+        EXPECT_intersections_valid(degen, other, xings, 1e-14);
+    }
+    // Intersect with another ellipse which is also degenerate
+    for (size_t _ = 0; _ < 10'000; _++) {
+        auto other = Ellipse({0, 0}, {1, 1}, 0); // Unit circle
+        other *= Scale(0.0, g_random_double_range(0.5, 4.0)); // Squash to Y axis
+        other *= Rotate(g_random_double_range(-1.5, 1.5)); // Rotate a little (still passes through the origin)
+        other *= Translate(g_random_double_range(-2.9, 2.9), 0.0);
+        auto xings = degen.intersect(other);
+        EXPECT_EQ(xings.size(), 4u);
+        EXPECT_intersections_valid(degen, other, xings, 1e-14);
+    }
 }
 
 TEST(EllipseTest, EllipseIntersection) {
