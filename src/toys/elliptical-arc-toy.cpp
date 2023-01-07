@@ -139,7 +139,7 @@ class EllipticalArcToy: public Toy
                     large_arc, sweep,
                     final_point.pos);
         }
-        catch( RangeError e )
+        catch (RangeError const &e)
         {
             no_solution = true;
             std::cerr << e.what() << std::endl;
@@ -186,7 +186,7 @@ class EllipticalArcToy: public Toy
                     toggles[1].on,
                     final_point.pos );
         }
-        catch( RangeError e )
+        catch (RangeError const &e)
         {
             no_solution = true;
             std::cerr << e.what() << std::endl;
@@ -518,7 +518,7 @@ class EllipticalArcToy: public Toy
             cairo_d2_sb(cr, arc);
             cairo_stroke(cr);
         }
-        catch( RangeError e )
+        catch (RangeError const &e)
         {
             std::cerr << "conversion failure" << std::endl;
             std::cerr << e.what() << std::endl;

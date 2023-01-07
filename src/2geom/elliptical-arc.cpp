@@ -96,15 +96,7 @@ namespace Geom
 /** @brief Compute bounds of an elliptical arc.
  * The bounds computation works as follows. The extreme X and Y points
  * are either the endpoints or local minima / maxima of the ellipse.
- * We already have endpoints, and we can find the local extremes
- * by computing a partial derivative with respect to the angle
- * and equating that to zero:
- * \f{align*}{
-     x &= r_x \cos \varphi \cos \theta - r_y \sin \varphi \sin \theta + c_x \\
-     \frac{\partial x}{\partial \theta} &= -r_x \cos \varphi \sin \theta - r_y \sin \varphi \cos \theta = 0 \\
-     \frac{\sin \theta}{\cos \theta} &= \tan\theta = -\frac{r_y \sin \varphi}{r_x \cos \varphi} \\
-     \theta &= \tan^{-1} \frac{-r_y \sin \varphi}{r_x \cos \varphi}
-   \f}
+ * We already have endpoints, and we compute the local extremes.
  * The local extremes correspond to two angles separated by \f$\pi\f$.
  * Once we compute these angles, we check whether they belong to the arc,
  * and if they do, we evaluate the ellipse at these angles.
@@ -114,43 +106,67 @@ namespace Geom
 Rect EllipticalArc::boundsExact() const
 {
     if (isChord()) {
-        return chord().boundsExact();
+        return { _initial_point, _final_point };
     }
 
-    Coord coord[2][4] = {
-        { _initial_point[X], _final_point[X], 0, 0 },
-        { _initial_point[Y], _final_point[Y], 0, 0 }
-    };
-    int ncoord[2] = { 2, 2 };
+    if (_angles.isFull()) {
+        return _ellipse.boundsExact();
+    }
 
-    Angle extremes[2][2];
-    double sinrot, cosrot;
-    sincos(rotationAngle(), sinrot, cosrot);
+    auto const trans = unitCircleTransform();
 
-    extremes[X][0] = std::atan2( -ray(Y) * sinrot, ray(X) * cosrot );
-    extremes[X][1] = extremes[X][0] + M_PI;
-    extremes[Y][0] = std::atan2( ray(Y) * cosrot, ray(X) * sinrot );
-    extremes[Y][1] = extremes[Y][0] + M_PI;
+    auto proj_bounds = [&] (Dim2 d) {
+        // The dth coordinate function pulls back to trans[d] * x + trans[d + 2] * y + trans[d + 4]
+        // in the coordinate system where the ellipse is a unit circle. We compute its range of
+        // values on the unit circle arc.
+        auto result = Interval(_initial_point[d], _final_point[d]);
 
-    for (unsigned d = 0; d < 2; ++d) {
-        for (unsigned i = 0; i < 2; ++i) {
-            if (containsAngle(extremes[d][i])) {
-                coord[d][ncoord[d]++] = valueAtAngle(extremes[d][i], d ? Y : X);
-            }
+        auto const v = Point(trans[d], trans[d + 2]);
+        auto const r = v.length();
+        auto const mid = trans[d + 4];
+        auto const angle = Angle(v);
+
+        if (_angles.contains(angle)) {
+            result.expandTo(mid + r);
         }
-    }
+        if (_angles.contains(angle + M_PI)) {
+            result.expandTo(mid - r);
+        }
 
-    Interval xival = Interval::from_range(coord[X], coord[X] + ncoord[X]);
-    Interval yival = Interval::from_range(coord[Y], coord[Y] + ncoord[Y]);
-    Rect result(xival, yival);
-    return result;
+        return result;
+    };
+
+    return { proj_bounds(X), proj_bounds(Y) };
 }
 
 void EllipticalArc::expandToTransformed(Rect &bbox, Affine const &transform) const
 {
-    auto c = *this;
-    c *= transform;
-    bbox |= c.boundsExact();
+    bbox.expandTo(_final_point * transform);
+
+    if (isChord() || bbox.contains(_ellipse.boundsFast())) {
+        return;
+    }
+
+    auto const trans = unitCircleTransform() * transform;
+
+    for (auto d : { X, Y }) {
+        // See boundsExact() for explanation.
+        auto const v = Point(trans[d], trans[d + 2]);
+        auto const r = v.length();
+        auto const mid = trans[d + 4];
+
+        if (_angles.isFull()) {
+            bbox[d].unionWith(Interval(mid - r, mid + r));
+        } else {
+            auto const angle = Angle(v);
+            if (_angles.contains(angle)) {
+                bbox[d].expandTo(mid + r);
+            }
+            if (_angles.contains(angle + M_PI)) {
+                bbox[d].expandTo(mid - r);
+            }
+        }
+    }
 }
 
 Point EllipticalArc::pointAtAngle(Coord t) const
