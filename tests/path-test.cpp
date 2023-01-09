@@ -906,6 +906,37 @@ TEST_F(PathTest, PizzaSlice)
     EXPECT_TRUE(piece.size() == 2 ||
                (piece.size() == 3 && piece[2].isDegenerate()));
     EXPECT_EQ(piece.finalPoint(), Point(-0.8090169943749473, 0.5877852522924732));
+
+    // Test slicing in the middle of an arc and past its end
+    pv = parse_svg_path("M 0,0 H 1 A 1,1 0 0 1 0.3080657835086775,0.9513650577098072 z");
+    EXPECT_NO_THROW(piece = pv[0].portion(PathTime(1, 0.5), PathTime(2, 1.0)));
+    EXPECT_FALSE(piece.closed());
+    EXPECT_EQ(piece.finalPoint(), pv[0].finalPoint());
+
+    // Test slicing from before the start to a point on the arc
+    EXPECT_NO_THROW(piece = pv[0].portion(PathTime(0, 0.5), PathTime(1, 0.5)));
+    EXPECT_FALSE(piece.closed());
+    EXPECT_EQ(piece.initialPoint(), pv[0].pointAt(PathTime(0, 0.5)));
+    EXPECT_EQ(piece.finalPoint(), pv[0].pointAt(PathTime(1, 0.5)));
+
+    // Test slicing a part of the arc
+    EXPECT_NO_THROW(piece = pv[0].portion(PathTime(1, 0.25), PathTime(1, 0.75)));
+    EXPECT_FALSE(piece.closed());
+    EXPECT_EQ(piece.size(), 1);
+
+    // Test slicing in reverse
+    EXPECT_NO_THROW(piece = pv[0].portion(PathTime(2, 1.0), PathTime(1, 0.5)));
+    EXPECT_FALSE(piece.closed());
+    EXPECT_EQ(piece.finalPoint(), pv[0].pointAt(PathTime(1, 0.5)));
+
+    EXPECT_NO_THROW(piece = pv[0].portion(PathTime(1, 0.5), PathTime(0, 0.5)));
+    EXPECT_FALSE(piece.closed());
+    EXPECT_EQ(piece.initialPoint(), pv[0].pointAt(PathTime(1, 0.5)));
+    EXPECT_EQ(piece.finalPoint(), pv[0].pointAt(PathTime(0, 0.5)));
+
+    EXPECT_NO_THROW(piece = pv[0].portion(PathTime(1, 0.75), PathTime(1, 0.25)));
+    EXPECT_FALSE(piece.closed());
+    EXPECT_EQ(piece.size(), 1);
 }
 
 /*

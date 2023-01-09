@@ -311,7 +311,15 @@ EllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
 
 Point EllipticalArc::pointAt(Coord t) const
 {
-    if (isChord()) return chord().pointAt(t);
+    if (t == 0.0) {
+        return initialPoint();
+    }
+    if (t == 1.0) {
+        return finalPoint();
+    }
+    if (isChord()) {
+        return chord().pointAt(t);
+    }
     return _ellipse.pointAt(angleAt(t));
 }
 
