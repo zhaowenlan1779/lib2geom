@@ -155,6 +155,27 @@ TEST(EllipticalArcTest, LineSegmentIntersection) {
         EXPECT_EQ(xings.size(), 1u);
         EXPECT_intersections_valid(*rev, seg, xings, 1e-12);
     }
+
+    // Test whether the coincidence between the common endpoints of an
+    // arc and a segment is correctly detected as an intersection.
+    {
+        Point const from{1, 0};
+        Point const to{0.30901699437494745, 0.9510565162951535};
+        auto arc = EllipticalArc(from, {1, 1}, 0, false, true, to);
+        auto seg = LineSegment({0, 0}, to);
+        auto xings = arc.intersect(seg);
+        ASSERT_EQ(xings.size(), 1);
+        EXPECT_TRUE(are_near(xings[0].point(), to, 1e-12));
+        EXPECT_TRUE(are_near(xings[0].first, 1.0, 1e-24));
+        EXPECT_TRUE(are_near(xings[0].second, 1.0, 1e-24));
+
+        auto seg2 = LineSegment(Point{1, 1}, from);
+        xings = arc.intersect(seg2);
+        ASSERT_EQ(xings.size(), 1);
+        EXPECT_TRUE(are_near(xings[0].point(), from, 1e-12));
+        EXPECT_TRUE(are_near(xings[0].first, 0.0, 1e-24));
+        EXPECT_TRUE(are_near(xings[0].second, 1.0, 1e-24));
+    }
 }
 
 TEST(EllipticalArcTest, ArcIntersection) {

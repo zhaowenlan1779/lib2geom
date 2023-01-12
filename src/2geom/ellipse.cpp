@@ -520,10 +520,26 @@ std::vector<ShapeIntersection> Ellipse::intersect(LineSegment const &seg) const
         return {};
     }
 
-    // we simply re-use the procedure for lines and filter out
-    // results where the line time value is outside of the unit interval.
-    std::vector<ShapeIntersection> result = intersect(Line(seg));
-    filter_line_segment_intersections(result);
+    // We simply reuse the procedure for lines and filter out
+    // results where the line time value is outside of the unit interval,
+    // but we apply a small tolerance to account for numerical errors.
+    double const param_prec = EPSILON / seg.length(0.0);
+    // TODO: accept a precision setting instead of always using EPSILON
+    // (requires an ABI break).
+
+    auto xings = intersect(Line(seg));
+    if (xings.empty()) {
+        return xings;
+    }
+    decltype(xings) result;
+    result.reserve(xings.size());
+
+    for (auto const &x : xings) {
+        if (x.second < -param_prec || x.second > 1.0 + param_prec) {
+            continue;
+        }
+        result.emplace_back(x.first, std::clamp(x.second, 0.0, 1.0), x.point());
+    }
     return result;
 }
 
