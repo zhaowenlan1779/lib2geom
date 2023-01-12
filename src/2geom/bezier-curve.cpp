@@ -4,7 +4,7 @@
  *   MenTaLguY <mental@rydia.net>
  *   Marco Cecchetti <mrcekets at gmail.com>
  *   Krzysztof Kosiński <tweenk.pl@gmail.com>
- * 
+ *
  * Copyright 2007-2009 Authors
  *
  * This library is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 #include <2geom/nearest-time.h>
 #include <2geom/polynomial.h>
 
-namespace Geom 
+namespace Geom
 {
 
 /**
@@ -102,8 +102,8 @@ namespace Geom
  * @brief Bezier curve with compile-time specified order.
  *
  * @tparam degree unsigned value indicating the order of the Bezier curve
- * 
- * @relates BezierCurve 
+ *
+ * @relates BezierCurve
  * @ingroup Curves
  */
 
@@ -349,25 +349,109 @@ Coord BezierCurveN<1>::nearestTime(Point const& p, Coord from, Coord to) const
     else return from + t*(to-from);
 }
 
-/* Specialized intersection routine for line segments. */
+/* Specialized intersection routine for line segments.
+ *
+ * NOTE: if the segments overlap in part or in full, the function returns the start and end
+ * of the overlapping subsegment as intersections. This behavior is more useful than throwing
+ * Geom::InfinitelyManySolutions.
+ */
 template <>
 std::vector<CurveIntersection> BezierCurveN<1>::intersect(Curve const &other, Coord eps) const
 {
     std::vector<CurveIntersection> result;
 
     // only handle intersections with other LineSegments here
-    if (other.isLineSegment()) {
-        Line this_line(initialPoint(), finalPoint());
-        Line other_line(other.initialPoint(), other.finalPoint());
-        result = this_line.intersect(other_line);
-        filter_line_segment_intersections(result, true, true);
+    if (!other.isLineSegment()) {
+        // pass all other types to the other curve
+        result = other.intersect(*this, eps);
+        transpose_in_place(result);
         return result;
     }
 
-    // pass all other types to the other curve
-    result = other.intersect(*this, eps);
-    transpose_in_place(result);
-    return result;
+    Point const u = finalPoint() - initialPoint();
+    Point const v = other.initialPoint() - other.finalPoint();
+    if (u.isZero() || v.isZero()) {
+        return {};
+    }
+    Coord const uv = u.length() * v.length();
+    Coord const u_cross_v = cross(u, v);
+    bool const segments_are_parallel = std::abs(u_cross_v) < eps * uv;
+
+    if (segments_are_parallel) {
+        // We check if the segments lie on the same line.
+        Coord const distance_between_lines = std::abs(cross(u.normalized(),
+                                                            other.initialPoint() - initialPoint()));
+        if (distance_between_lines > eps) {
+            // Segments are parallel but aren't part of the same line => no intersections.
+            return {};
+        }
+        // The segments are on the same line, so they may overlap in part or in full.
+        // Look for the times on this segment's line at which the line passes through
+        // the initial and final points of the other segment.
+        Coord const ulen_inverse = 1.0 / u.length();
+        auto const time_of_passage = [&](Point const &point_on_line) -> Coord {
+            return dot(u.normalized(), point_on_line - initialPoint()) * ulen_inverse;
+        };
+        // Find the range of times on our segment where we travel through the other segment.
+        auto time_in_other = Interval(time_of_passage(other.initialPoint()),
+                                      time_of_passage(other.finalPoint()));
+        Coord const eps_utime = eps * ulen_inverse;
+        if (time_in_other.min() > 1 + eps_utime || time_in_other.max() < -eps_utime) {
+            return {};
+        }
+
+        // Create two intersections, one at each end of the overlap interval.
+        Coord last_time = infinity();
+        for (Coord t : {time_in_other.min(), time_in_other.max()}) {
+            t = std::clamp(t, 0.0, 1.0);
+            if (t == last_time) {
+                continue;
+            }
+            last_time = t;
+            auto const point = pointAt(t);
+            Coord const other_t = std::clamp(dot(v.normalized(), other.initialPoint() - point) / v.length(), 0.0, 1.0);
+            auto const other_pt = other.pointAt(other_t);
+            if (distance(point, other_pt) > eps) {
+                continue;
+            }
+            result.emplace_back(t, other_t, middle_point(point, other_pt));
+        }
+        return result;
+    } else {
+        // Segments are not collinear - there is 0 or 1 intersection.
+        // This is the typical case so it's important for it to be fast.
+        Point const w = other.initialPoint() - initialPoint();
+        Coord candidate_time_this = cross(w, v) / u_cross_v;
+
+        /// Filter out candidate times outside of the interval [0, 1] fuzzed so as to accommodate
+        /// for epsilon.
+        auto const is_outside_seg = [eps](Coord t, Coord len) -> bool {
+            Coord const arclen_coord = t * len;
+            return arclen_coord < -eps || arclen_coord > len + eps;
+        };
+
+        if (is_outside_seg(candidate_time_this, u.length())) {
+            return {};
+        }
+
+        Coord candidate_time_othr = cross(u, w) / u_cross_v;
+        if (is_outside_seg(candidate_time_othr, v.length())) {
+            return {};
+        }
+
+        // Even if there was some fuzz in the interval, we must now restrict to [0, 1] and verify
+        // that the intersection found is still within epsilon precision (the fuzz may have been too
+        // large, depending on the angle between the intervals).
+        candidate_time_this = std::clamp(candidate_time_this, 0.0, 1.0);
+        candidate_time_othr = std::clamp(candidate_time_othr, 0.0, 1.0);
+
+        auto const pt_this = pointAt(candidate_time_this);
+        auto const pt_othr = other.pointAt(candidate_time_othr);
+        if (distance(pt_this, pt_othr) > eps) {
+            return {};
+        }
+        return { CurveIntersection(candidate_time_this, candidate_time_othr, middle_point(pt_this, pt_othr)) };
+    }
 }
 
 /** @brief Find intersections of a low-degree Bézier curve with a line segment.
@@ -547,7 +631,7 @@ static Coord bezier_length_internal(std::vector<Point> &v1, Coord tolerance, int
      * error tolerance, we can be sure that the true value is no further than
      * 0.5 * tolerance from their arithmetic mean. When it's larger, we recursively
      * subdivide the Bezier curve into two parts and add their lengths.
-     * 
+     *
      * We cap the maximum number of subdivisions at 256, which corresponds to 8 levels.
      */
     Coord lower = distance(v1.front(), v1.back());
@@ -558,7 +642,7 @@ static Coord bezier_length_internal(std::vector<Point> &v1, Coord tolerance, int
     if (upper - lower <= 2*tolerance || level >= 8) {
         return (lower + upper) / 2;
     }
-        
+
 
     std::vector<Point> v2 = v1;
 
