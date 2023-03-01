@@ -719,12 +719,16 @@ void EllipticalArc::_updateCenterAndAngles()
     Point d = initialPoint() - finalPoint();
     Point mid = middle_point(initialPoint(), finalPoint());
 
-    // if ip = sp, the arc contains no other points
-    if (initialPoint() == finalPoint()) {
+    auto degenerate_ellipse = [&] {
         _ellipse = Ellipse();
         _ellipse.setCenter(initialPoint());
         _angles = AngleInterval();
         _large_arc = false;
+    };
+
+    // if ip = fp, the arc contains no other points
+    if (initialPoint() == finalPoint()) {
+        degenerate_ellipse();
         return;
     }
 
@@ -745,7 +749,7 @@ void EllipticalArc::_updateCenterAndAngles()
     Rotate invrot = rot.inverse(); // the matrix in F.6.5.1
 
     Point r = rays();
-    Point p = (initialPoint() - mid) * invrot; // x', y' in F.6.5.1
+    Point p = d / 2 * invrot; // x', y' in F.6.5.1
     Point c(0,0); // cx', cy' in F.6.5.2
 
     // Correct out-of-range radii
@@ -759,7 +763,12 @@ void EllipticalArc::_updateCenterAndAngles()
         Coord rxry = r[X]*r[X] * r[Y]*r[Y];
         Coord pxry = p[X]*p[X] * r[Y]*r[Y];
         Coord rxpy = r[X]*r[X] * p[Y]*p[Y];
-        Coord rad = (rxry - pxry - rxpy)/(rxpy + pxry);
+        Coord const denominator = rxpy + pxry;
+        if (denominator == 0.0) {
+            degenerate_ellipse();
+            return;
+        }
+        Coord rad = (rxry - pxry - rxpy) / denominator;
         // normally rad should never be negative, but numerical inaccuracy may cause this
         if (rad > 0) {
             rad = std::sqrt(rad);
