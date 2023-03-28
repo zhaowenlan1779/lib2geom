@@ -132,7 +132,7 @@ install(EXPORT 2geom_targets
     FILE 2GeomTargets.cmake
     NAMESPACE 2Geom::
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/2Geom"
-    COMPONENT "lib2geom-dev"
+    COMPONENT "lib2geom_dev"
     )
 
 include(CMakePackageConfigHelpers)
@@ -142,15 +142,15 @@ write_basic_package_version_file("2GeomConfigVersion.cmake"
 
 install(FILES "2GeomConfig.cmake" "${CMAKE_CURRENT_BINARY_DIR}/2GeomConfigVersion.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/2Geom"
-    COMPONENT "lib2geom-dev"
+    COMPONENT "lib2geom_dev"
     )
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/2geom"
 	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/2geom-${2GEOM_VERSION}"
-	COMPONENT "lib2geom-dev")
+	COMPONENT "lib2geom_dev")
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/2geom.pc.in
                 ${CMAKE_CURRENT_BINARY_DIR}/2geom.pc @ONLY IMMEDIATE )
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/2geom.pc"
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
-	COMPONENT "lib2geom-dev")
+	COMPONENT "lib2geom_dev")
