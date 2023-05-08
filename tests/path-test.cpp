@@ -3,6 +3,8 @@
 #include <iterator>
 #include <iostream>
 
+#include <glib.h>
+
 #include <2geom/bezier.h>
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
@@ -31,7 +33,7 @@ protected:
         arcs = string_to_path("M 0,0 a 5,10 45 0 1 10,10 a 5,10 45 0 1 0,0 z");
         diederik = string_to_path("m 262.6037,35.824151 c 0,0 -92.64892,-187.405851 30,-149.999981 104.06976,31.739531 170,109.9999815 170,109.9999815 l -10,-59.9999905 c 0,0 40,79.99999 -40,79.99999 -80,0 -70,-129.999981 -70,-129.999981 l 50,0 C 435.13571,-131.5667 652.76275,126.44872 505.74322,108.05672 358.73876,89.666591 292.6037,-14.175849 292.6037,15.824151 c 0,30 -30,20 -30,20 z");
         cmds = string_to_path("M 0,0 V 100 H 100 Q 100,0 0,0 L 200,0 C 200,100 300,100 300,0 S 200,-100 200,0");
-        
+
         p_open = string_to_path("M 0,0 L 0,5 5,5 5,0");
         p_closed = p_open;
         p_closed.close(true);
@@ -53,14 +55,14 @@ TEST_F(PathTest, CopyConstruction) {
     EXPECT_EQ(pa.closed(), p_closed.closed());
     EXPECT_EQ(pc, p_closed);
     EXPECT_EQ(pc.closed(), p_closed.closed());
-    
+
     Path poa = cmds;
     Path poc(cmds);
     EXPECT_EQ(poa, cmds);
     EXPECT_EQ(poa.closed(), cmds.closed());
     EXPECT_EQ(poc, cmds);
     EXPECT_EQ(poc.closed(), cmds.closed());
-    
+
     PathVector pvc(pa);
     EXPECT_EQ(pvc[0], pa);
     PathVector pva((Geom::Path()));
@@ -230,7 +232,7 @@ TEST_F(PathTest, NearestPoint) {
     EXPECT_EQ(0, square.nearestTime(Point(0,0)).asFlatTime());
     EXPECT_EQ(1, square.nearestTime(Point(1,0)).asFlatTime());
     EXPECT_EQ(3, square.nearestTime(Point(0,1)).asFlatTime());
-    
+
     //cout << diederik.nearestTime(Point(247.32293,-43.339507)) << endl;
 
     Point p(511.75,40.85);
@@ -304,6 +306,44 @@ TEST_F(PathTest, Winding) {
     Path hump2 = string_to_path("M 0,0 L 2,0 2,2 Q 1,1 0,2 Z");
     EXPECT_EQ(hump2.winding(Point(0.25, 1.5)), 1);
     EXPECT_EQ(hump2.winding(Point(1.75, 1.5)), 1);
+}
+
+/// Regression test for issue https://gitlab.com/inkscape/lib2geom/-/issues/58
+TEST_F(PathTest, Issue58)
+{
+    auto const random_point_in = [](Geom::Rect const &box) -> Point {
+        Coord const x = g_random_double_range(box[X].min(), box[X].max());
+        Coord const y = g_random_double_range(box[Y].min(), box[Y].max());
+        return {x, y};
+    };
+
+    auto const verify_windings = [](Ellipse const &e, Path const &path, Point const &pt) {
+        int const winding = path.winding(pt);
+        if (e.contains(pt)) {
+            EXPECT_EQ(winding, 1);
+        } else {
+            EXPECT_EQ(winding, 0);
+        }
+    };
+
+    // Example elliptical path from issue https://gitlab.com/inkscape/lib2geom/-/issues/58
+    char const *const issue_d = "M 495.8157837290847 280.07459226562503"
+                                "A 166.63407933993605 132.04407218873035 0 0 1 329.1817043891487 412.11866445435544"
+                                "A 166.63407933993605 132.04407218873035 0 0 1 162.54762504921263 280.07459226562503"
+                                "A 166.63407933993605 132.04407218873035 0 0 1 329.1817043891487 148.0305200768947"
+                                "A 166.63407933993605 132.04407218873035 0 0 1 495.8157837290847 280.07459226562503"
+                                "z";
+    auto const pv = parse_svg_path(issue_d);
+    auto const issue_ellipse = Ellipse(Point(329.1817043891487, 280.07459226562503),
+                                       Point(166.63407933993605, 132.04407218873035), 0);
+
+    auto box = issue_ellipse.boundsExact();
+    box.expandBy(1.0);
+
+    g_random_set_seed(0xE111BB5E);
+    for (size_t _ = 0; _ < 10'000; _++) {
+        verify_windings(issue_ellipse, pv[0], random_point_in(box));
+    }
 }
 
 TEST_F(PathTest, SVGRoundtrip) {
@@ -388,7 +428,7 @@ TEST_F(PathTest, AppendSegment) {
     p_open.append(new LineSegment(Point(10,20), Point(10,25)));
     EXPECT_EQ(p_open.size(), 3u);
     EXPECT_NO_THROW(p_open.checkContinuity());
-    
+
     p_closed.setStitching(true);
     p_closed.close(true);
     p_closed.append(new LineSegment(Point(10,20), Point(10,25)));
@@ -453,7 +493,7 @@ TEST_F(PathTest, ReplaceMiddle) {
     p_open.replace(p_open.begin() + 1, p_open.begin() + 2, p_add);
     EXPECT_EQ(p_open.size(), 5u);
     EXPECT_NO_THROW(p_open.checkContinuity());
-    
+
     p_closed.replace(p_closed.begin() + 1, p_closed.begin() + 2, p_add);
     EXPECT_EQ(p_closed.size(), 6u);
     EXPECT_NO_THROW(p_closed.checkContinuity());
@@ -463,7 +503,7 @@ TEST_F(PathTest, ReplaceStart) {
     p_open.replace(p_open.begin(), p_open.begin() + 2, p_add);
     EXPECT_EQ(p_open.size(), 3u);
     EXPECT_NO_THROW(p_open.checkContinuity());
-    
+
     p_closed.replace(p_closed.begin(), p_closed.begin() + 2, p_add);
     EXPECT_EQ(p_closed.size(), 5u);
     EXPECT_NO_THROW(p_closed.checkContinuity());
@@ -473,7 +513,7 @@ TEST_F(PathTest, ReplaceEnd) {
     p_open.replace(p_open.begin() + 1, p_open.begin() + 3, p_add);
     EXPECT_EQ(p_open.size(), 3u);
     EXPECT_NO_THROW(p_open.checkContinuity());
-    
+
     p_closed.replace(p_closed.begin() + 1, p_closed.begin() + 3, p_add);
     EXPECT_EQ(p_closed.size(), 5u);
     EXPECT_NO_THROW(p_closed.checkContinuity());
@@ -483,7 +523,7 @@ TEST_F(PathTest, ReplaceClosing) {
     p_open.replace(p_open.begin() + 1, p_open.begin() + 4, p_add);
     EXPECT_EQ(p_open.size(), 3u);
     EXPECT_NO_THROW(p_open.checkContinuity());
-    
+
     p_closed.replace(p_closed.begin() + 1, p_closed.begin() + 4, p_add);
     EXPECT_EQ(p_closed.size(), 4u);
     EXPECT_NO_THROW(p_closed.checkContinuity());

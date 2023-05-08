@@ -940,13 +940,20 @@ int EllipticalArc::winding(Point const &p) const
         swap(ymin_a, ymax_a);
     }
 
-    Interval yspan(ymin[Y], ymax[Y]);
-    if (!yspan.lowerContains(p[Y])) return 0;
+    if (!Interval(ymin[Y], ymax[Y]).lowerContains(p[Y])) {
+        return 0;
+    }
 
-    bool left = cross(ymax - ymin, p - ymin) > 0;
-    bool inside = _ellipse.contains(p);
-    bool includes_ymin = _angles.contains(ymin_a);
-    bool includes_ymax = _angles.contains(ymax_a);
+    bool const left = cross(ymax - ymin, p - ymin) > 0;
+    bool const inside = _ellipse.contains(p);
+    if (_angles.isFull()) {
+        if (inside) {
+            return sweep() ? 1 : -1;
+        }
+        return 0;
+    }
+    bool const includes_ymin = _angles.contains(ymin_a);
+    bool const includes_ymax = _angles.contains(ymax_a);
 
     AngleInterval rarc(ymin_a, ymax_a, true),
                   larc(ymax_a, ymin_a, true);
@@ -960,65 +967,55 @@ int EllipticalArc::winding(Point const &p) const
         swap(ip, fp);
     }
 
-    bool initial_left = larc.contains(ia);
-    bool initial_right = !initial_left; // rarc.contains(ia);
-    bool final_left = larc.contains(fa);
-    bool final_right = !final_left; //  rarc.contains(fa);
+    bool const initial_left = larc.contains(ia);
+    bool const final_left = larc.contains(fa);
 
-    int result = 0;
+    bool intersects_left = false, intersects_right = false;
     if (inside || left) {
-        if (includes_ymin && final_right) {
-            Interval ival(ymin[Y], fp[Y]);
-            if (ival.lowerContains(p[Y])) {
-                ++result;
-            }
-        }
-        if (initial_right && final_right && !largeArc()) {
-            Interval ival(ip[Y], fp[Y]);
-            if (ival.lowerContains(p[Y])) {
-                ++result;
-            }
-        }
-        if (initial_right && includes_ymax) {
-            Interval ival(ip[Y], ymax[Y]);
-            if (ival.lowerContains(p[Y])) {
-                ++result;
-            }
-        }
-        if (!initial_right && !final_right && includes_ymin && includes_ymax) {
-            Interval ival(ymax[Y], ymin[Y]);
-            if (ival.lowerContains(p[Y])) {
-                ++result;
-            }
-        }
+        // The point is inside the ellipse or to the left of it, so the rightwards horizontal ray
+        // may intersect the part of the arc contained in the right half of the ellipse.
+        // There are four ways in which this can happen.
+
+        intersects_right =
+            // Possiblity 1: the arc extends into the right half through the min-Y point
+            // and the ray intersects this extension:
+            (includes_ymin && !final_left && Interval(ymin[Y], fp[Y]).lowerContains(p[Y]))
+            ||
+            // Possibility 2: the arc starts and ends within the right half (hence, it cannot be the
+            // "large arc") and the ray's Y-coordinate is within the Y-coordinate range of the arc:
+            (!initial_left && !final_left && !largeArc() && Interval(ip[Y], fp[Y]).lowerContains(p[Y]))
+            ||
+            // Possibility 3: the arc starts in the right half and continues through the max-Y
+            // point into the left half:
+            (!initial_left && includes_ymax && Interval(ip[Y], ymax[Y]).lowerContains(p[Y]))
+            ||
+            // Possibility 4: the entire right half of the ellipse is contained in the arc.
+            (initial_left && final_left && includes_ymin && includes_ymax);
     }
     if (left && !inside) {
-        if (includes_ymin && initial_left) {
-            Interval ival(ymin[Y], ip[Y]);
-            if (ival.lowerContains(p[Y])) {
-                --result;
-            }
-        }
-        if (initial_left && final_left && !largeArc()) {
-            Interval ival(ip[Y], fp[Y]);
-            if (ival.lowerContains(p[Y])) {
-                --result;
-            }
-        }
-        if (final_left && includes_ymax) {
-            Interval ival(fp[Y], ymax[Y]);
-            if (ival.lowerContains(p[Y])) {
-                --result;
-            }
-        }
-        if (!initial_left && !final_left && includes_ymin && includes_ymax) {
-            Interval ival(ymax[Y], ymin[Y]);
-            if (ival.lowerContains(p[Y])) {
-                --result;
-            }
-        }
+        // The point is to the left of the ellipse, so the rightwards horizontal ray
+        // may intersect the part of the arc contained in the left half of the ellipse.
+        // There are four ways in which this can happen.
+
+        intersects_left =
+            // Possibility 1: the arc starts in the left half and continues through the min-Y
+            // point into the right half:
+            (includes_ymin && initial_left && Interval(ymin[Y], ip[Y]).lowerContains(p[Y]))
+            ||
+            // Possibility 2: the arc starts and ends within the left half (hence, it cannot be the
+            // "large arc") and the ray's Y-coordinate is within the Y-coordinate range of the arc:
+            (initial_left && final_left && !largeArc() && Interval(ip[Y], fp[Y]).lowerContains(p[Y]))
+            ||
+            // Possibility 3: the arc extends into the left half through the max-Y point
+            // and the ray intersects this extension:
+            (final_left && includes_ymax && Interval(fp[Y], ymax[Y]).lowerContains(p[Y]))
+            ||
+            // Possibility 4: the entire left half of the ellipse is contained in the arc.
+            (!initial_left && !final_left && includes_ymin && includes_ymax);
+
     }
-    return sweep() ? result : -result;
+    int const winding_assuming_increasing_angles = (int)intersects_right - (int)intersects_left;
+    return sweep() ? winding_assuming_increasing_angles : -winding_assuming_increasing_angles;
 }
 
 std::ostream &operator<<(std::ostream &out, EllipticalArc const &ea)
