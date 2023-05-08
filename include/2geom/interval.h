@@ -9,7 +9,7 @@
  *   Nathan Hurst <njh@mail.csse.monash.edu.au>
  *   bulia byak <buliabyak@users.sf.net>
  *   MenTaLguY <mental@rydia.net>
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
  * License version 2.1 as published by the Free Software Foundation
@@ -46,7 +46,7 @@
 
 namespace Geom {
 
-/** 
+/**
  * @brief Range of real numbers that is never empty.
  *
  * Intervals are closed ranges \f$[a, b]\f$, which means they include their endpoints.
@@ -123,7 +123,7 @@ public:
      * Interior means all numbers in the interval except its ends. */
     bool interiorContains(Interval const &val) const { return min() < val.min() && val.max() < max(); }
     /// Check whether the number is contained in the union of the interior and the lower boundary.
-    bool lowerContains(Coord val) { return min() <= val && val < max(); }
+    bool lowerContains(Coord val) const { return min() <= val && val < max(); }
     /// Check whether the given interval is contained in the union of the interior and the lower boundary.
     bool lowerContains(Interval const &val) const { return min() <= val.min() && val.max() < max(); }
     /// Check whether the number is contained in the union of the interior and the upper boundary.
@@ -176,7 +176,7 @@ public:
         return Base::operator==(other);
     }
     /// @}
-    
+
     /// @name Rounding to integer values
     /// @{
     /** @brief Return the smallest integer interval which contains this one. */
