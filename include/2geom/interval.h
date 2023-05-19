@@ -57,16 +57,16 @@ namespace Geom {
 class Interval
     : public GenericInterval<Coord>
 {
-    typedef GenericInterval<Coord> Base;
+    using Base = GenericInterval<Coord>;
 public:
     /// @name Create intervals.
     /// @{
     /** @brief Create an interval that contains only zero. */
-    constexpr Interval() {}
+    constexpr Interval() = default;
     /** @brief Create an interval that contains a single point. */
     explicit constexpr Interval(Coord u) : Base(u) {}
     /** @brief Create an interval that contains all points between @c u and @c v. */
-    constexpr Interval(Coord u, Coord v) : Base(u,v) {}
+    constexpr Interval(Coord u, Coord v) : Base(u, v) {}
     /** @brief Convert from integer interval */
     constexpr Interval(IntInterval const &i) : Base(i.min(), i.max()) {}
     constexpr Interval(Base const &b) : Base(b) {}
@@ -80,13 +80,11 @@ public:
      * @return Interval that contains all values from [start, end). */
     template <typename InputIterator>
     static Interval from_range(InputIterator start, InputIterator end) {
-        Interval result = Base::from_range(start, end);
-        return result;
+        return Base::from_range(start, end);
     }
     /** @brief Create an interval from a C-style array of values it should contain. */
     static Interval from_array(Coord const *c, unsigned n) {
-        Interval result = from_range(c, c+n);
-        return result;
+        return Base::from_array(c, n);
     }
     /// @}
 
@@ -145,7 +143,7 @@ public:
         using std::swap;
         _b[0] *= s;
         _b[1] *= s;
-        if(s < 0) swap(_b[0], _b[1]);
+        if (s < 0) swap(_b[0], _b[1]);
         return *this;
     }
     /** @brief Scale an interval by the inverse of the specified value */
@@ -153,7 +151,7 @@ public:
         using std::swap;
         _b[0] /= s;
         _b[1] /= s;
-        if(s < 0) swap(_b[0], _b[1]);
+        if (s < 0) swap(_b[0], _b[1]);
         return *this;
     }
     /** @brief Multiply two intervals.
@@ -181,15 +179,13 @@ public:
     /// @{
     /** @brief Return the smallest integer interval which contains this one. */
     IntInterval roundOutwards() const {
-        IntInterval ret(floor(min()), ceil(max()));
-        return ret;
+        return IntInterval(floor(min()), ceil(max()));
     }
     /** @brief Return the largest integer interval which is contained in this one. */
     OptIntInterval roundInwards() const {
         IntCoord u = ceil(min()), v = floor(max());
-        if (u > v) { OptIntInterval e; return e; }
-        IntInterval ret(u, v);
-        return ret;
+        if (u > v) return {};
+        return IntInterval(u, v);
     }
     /// @}
 };
@@ -201,7 +197,7 @@ public:
 class OptInterval
     : public GenericOptInterval<Coord>
 {
-    typedef GenericOptInterval<Coord> Base;
+    using Base = GenericOptInterval<Coord>;
 public:
     using Base::Base;
     using Base::operator==;
@@ -212,24 +208,20 @@ public:
     /** @brief Promote from IntInterval. */
     constexpr OptInterval(IntInterval const &i) : Base(Interval(i)) {}
     /** @brief Promote from OptIntInterval. */
-    constexpr OptInterval(OptIntInterval const &i) : Base() {
+    constexpr OptInterval(OptIntInterval const &i) {
         if (i) *this = Interval(*i);
     }
 };
 
 // functions required for Python bindings
-inline Interval unify(Interval const &a, Interval const &b)
-{
-    Interval r = a | b;
-    return r;
+inline Interval unify(Interval const &a, Interval const &b) {
+    return a | b;
 }
-inline OptInterval intersect(Interval const &a, Interval const &b)
-{
-    OptInterval r = a & b;
-    return r;
+inline OptInterval intersect(Interval const &a, Interval const &b) {
+    return a & b;
 }
 
-} // end namespace Geom
+} // namespace Geom
 
 // Structured binding support
 template <> struct std::tuple_size<Geom::Interval> : std::integral_constant<size_t, 2> {};
@@ -238,7 +230,7 @@ template <size_t I> struct std::tuple_element<I, Geom::Interval> { using type = 
 // Hash support
 template <> struct std::hash<Geom::Interval> : std::hash<Geom::GenericInterval<Geom::Coord>> {};
 
-#endif //SEEN_INTERVAL_H
+#endif // LIB2GEOM_SEEN_INTERVAL_H
 
 /*
   Local Variables:

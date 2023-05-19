@@ -51,8 +51,8 @@ template <typename C>
 class GenericInterval
     : CoordTraits<C>::IntervalOps
 {
-    typedef typename CoordTraits<C>::IntervalType CInterval;
-    typedef GenericInterval<C> Self;
+    using CInterval = typename CoordTraits<C>::IntervalType;
+    using Self = GenericInterval<C>;
 protected:
     C _b[2] = { 0, 0 };
 public:
@@ -87,8 +87,7 @@ public:
     }
     /** @brief Create an interval from a C-style array of values it should contain. */
     static CInterval from_array(C const *c, unsigned n) {
-        CInterval result = from_range(c, c+n);
-        return result;
+        return from_range(c, c + n);
     }
     /// @}
 
@@ -102,9 +101,7 @@ public:
     C operator[](unsigned i) const { assert(i < 2); return _b[i]; }
     constexpr C operator[](Dim2 d) const { return _b[d]; }
     constexpr C clamp(C val) const {
-        if (val < min()) return min();
-        if (val > max()) return max();
-        return val;
+        return std::clamp(val, min(), max());
     }
     /// Return the closer end of the interval.
     C nearestEnd(C val) const {
@@ -138,7 +135,7 @@ public:
      * When the given number is larger than the interval's largest element,
      * it will be reduced to the single number @c val. */
     constexpr void setMin(C val) {
-        if(val > _b[1]) {
+        if (val > _b[1]) {
             _b[0] = _b[1] = val;
         } else {
             _b[0] = val;
@@ -148,7 +145,7 @@ public:
      * When the given number is smaller than the interval's smallest element,
      * it will be reduced to the single number @c val. */
     constexpr void setMax(C val) {
-        if(val < _b[0]) {
+        if (val < _b[0]) {
             _b[1] = _b[0] = val;
         } else {
             _b[1] = val;
@@ -166,8 +163,8 @@ public:
     }
     /** @brief Extend the interval to include the given number. */
     constexpr void expandTo(C val) {
-       if(val < _b[0]) _b[0] = val;
-       if(val > _b[1]) _b[1] = val;  //no else, as we want to handle NaN
+       if (val < _b[0]) _b[0] = val;
+       if (val > _b[1]) _b[1] = val;  // no else, as we want to handle NaN
     }
     /** @brief Expand or shrink the interval in both directions by the given amount.
      * After this method, the interval's length (extent) will be increased by
@@ -178,7 +175,7 @@ public:
         _b[0] -= amount;
         _b[1] += amount;
         if (_b[0] > _b[1]) {
-            C halfway = (_b[0]+_b[1])/2;
+            C halfway = (_b[0] + _b[1]) / 2;
             _b[0] = _b[1] = halfway;
         }
     }
@@ -187,8 +184,8 @@ public:
      * It might also contain some points which didn't belong to either - this happens
      * when the intervals did not have any common elements. */
     constexpr void unionWith(CInterval const &a) {
-        if(a._b[0] < _b[0]) _b[0] = a._b[0];
-        if(a._b[1] > _b[1]) _b[1] = a._b[1];
+        if (a._b[0] < _b[0]) _b[0] = a._b[0];
+        if (a._b[1] > _b[1]) _b[1] = a._b[1];
     }
     /// @}
 
@@ -196,7 +193,7 @@ public:
     /// @{
     //IMPL: OffsetableConcept
     //TODO: rename output_type to something else in the concept
-    typedef C output_type;
+    using output_type = C;
     /** @brief Offset the interval by a specified amount */
     constexpr Self &operator+=(C amnt) {
         _b[0] += amnt; _b[1] += amnt;
@@ -209,7 +206,7 @@ public:
     }
     
     /** @brief Return an interval mirrored about 0 */
-    constexpr Self operator-() const { Self r(-_b[1], -_b[0]); return r; }
+    constexpr Self operator-() const { return { -_b[1], -_b[0] }; }
     // IMPL: AddableConcept
     /** @brief Add two intervals.
      * Sum is defined as the set of points that can be obtained by adding any two values
@@ -259,22 +256,22 @@ class GenericOptInterval
     : public std::optional<typename CoordTraits<C>::IntervalType>
     , boost::orable< GenericOptInterval<C>
     , boost::andable< GenericOptInterval<C>
-      > >
+      >>
 {
-    typedef typename CoordTraits<C>::IntervalType CInterval;
-    typedef typename CoordTraits<C>::OptIntervalType OptCInterval;
-    typedef std::optional<CInterval> Base;
+    using CInterval = typename CoordTraits<C>::IntervalType;
+    using OptCInterval = typename CoordTraits<C>::OptIntervalType;
+    using Base = std::optional<CInterval>;
 public:
     /// @name Create optionally empty intervals.
     /// @{
     /** @brief Create an empty interval. */
-    constexpr GenericOptInterval() : Base() {}
+    constexpr GenericOptInterval() = default;
     /** @brief Wrap an existing interval. */
     constexpr GenericOptInterval(GenericInterval<C> const &a) : Base(CInterval(a)) {}
     /** @brief Create an interval containing a single point. */
     constexpr GenericOptInterval(C u) : Base(CInterval(u)) {}
     /** @brief Create an interval containing a range of numbers. */
-    constexpr GenericOptInterval(C u, C v) : Base(CInterval(u,v)) {}
+    constexpr GenericOptInterval(C u, C v) : Base(CInterval(u, v)) {}
 
     /** @brief Create a possibly empty interval containing a range of values.
      * The resulting interval will contain all values from the given range.
@@ -287,11 +284,9 @@ public:
     template <typename InputIterator>
     static GenericOptInterval<C> from_range(InputIterator start, InputIterator end) {
         if (start == end) {
-            GenericOptInterval<C> ret;
-            return ret;
+            return {};
         }
-        GenericOptInterval<C> ret(CInterval::from_range(start, end));
-        return ret;
+        return CInterval::from_range(start, end);
     }
     /// @}
 
@@ -310,7 +305,6 @@ public:
     }
     constexpr void intersectWith(GenericOptInterval<C> const &o) {
         if (o && *this) {
-            if (!*this) return;
             C u = std::max((*this)->min(), o->min());
             C v = std::min((*this)->max(), o->max());
             if (u <= v) {
@@ -318,7 +312,7 @@ public:
                 return;
             }
         }
-        (*static_cast<Base*>(this)) = std::nullopt;
+        *this = {};
     }
     constexpr GenericOptInterval<C> &operator|=(OptCInterval const &o) {
         unionWith(o);
@@ -330,7 +324,7 @@ public:
     }
 
     // The equality operators inherited from std::optional don't work with derived types, because
-    // the template overload ignores that the devived type is also an optional. It would result in
+    // the template overload ignores that the derived type is also an optional. It would result in
     // `GenericInterval() != GenericInterval()` being true.
     template <typename U, typename = std::enable_if_t<std::is_base_of_v<Base, U>>>
     constexpr bool operator==(U const &other) const {
@@ -356,10 +350,9 @@ inline GenericOptInterval<C> operator&(GenericInterval<C> const &a, GenericInter
 }
 
 template <typename C>
-inline std::ostream &operator<< (std::ostream &os, 
-                                 GenericInterval<C> const &I) {
-    os << "Interval("<<I.min() << ", "<<I.max() << ")";
-    return os;
+inline std::ostream &operator<<(std::ostream &out,
+                                GenericInterval<C> const &I) {
+    return out << "Interval(" << I.min() << ", " << I.max() << ")";
 }
 
 template <typename C>
@@ -385,7 +378,7 @@ template <typename C> struct std::hash<Geom::GenericInterval<C>>
     }
 };
 
-#endif // !LIB2GEOM_SEEN_GENERIC_INTERVAL_H
+#endif // LIB2GEOM_SEEN_GENERIC_INTERVAL_H
 
 /*
   Local Variables:

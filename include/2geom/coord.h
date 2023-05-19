@@ -45,11 +45,11 @@ namespace Geom {
 
 /** @brief 2D axis enumeration (X or Y).
  * @ingroup Primitives */
-enum Dim2 { X=0, Y=1 };
+enum Dim2 { X = 0, Y = 1 };
 
 /** @brief Get the other (perpendicular) dimension.
  * @ingroup Primitives */
-constexpr Dim2 other_dimension(Dim2 d) { return Dim2(int(d) ^ 1); }
+constexpr Dim2 other_dimension(Dim2 d) { return static_cast<Dim2>(static_cast<int>(d) ^ 1); }
 
 // TODO: make a smarter implementation with C++11
 template <typename T>

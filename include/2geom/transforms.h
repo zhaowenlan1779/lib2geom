@@ -185,7 +185,7 @@ inline bool are_near(Scale const &a, Scale const &b, Coord eps=EPSILON) {
 class Rotate
     : public TransformOperations< Rotate >
 {
-    Point vec; ///< @todo Convert to storing the angle, as it's more space-efficient.
+    Point vec;
 public:
     /// Construct a zero-degree rotation.
     Rotate() : vec(1, 0) {}
@@ -193,14 +193,14 @@ public:
      * Positive arguments correspond to counter-clockwise rotations (if Y grows upwards). */
     explicit Rotate(Coord theta) : vec(Point::polar(theta)) {}
     /// Construct a rotation from its characteristic vector.
-    explicit Rotate(Point const &p) : vec(unit_vector(p)) {}
+    explicit Rotate(Point const &p) : vec(p.normalized()) {}
     /// Construct a rotation from the coordinates of its characteristic vector.
     explicit Rotate(Coord x, Coord y) : Rotate(Point(x, y)) {}
-    operator Affine() const { Affine ret(vec[X], vec[Y], -vec[Y], vec[X], 0, 0); return ret; }
+    operator Affine() const { return Affine(vec[X], vec[Y], -vec[Y], vec[X], 0, 0); }
 
     /** @brief Get the characteristic vector of the rotation.
      * @return A vector that would be obtained by applying this transform to the X versor. */
-    Point vector() const { return vec; }
+    Point const &vector() const { return vec; }
     Coord angle() const { return atan2(vec); }
     Coord operator[](Dim2 dim) const { return vec[dim]; }
     Coord operator[](unsigned dim) const { return vec[dim]; }
@@ -208,15 +208,15 @@ public:
     bool operator==(Rotate const &o) const { return vec == o.vec; }
     Rotate inverse() const {
         Rotate r;
-        r.vec = Point(vec[X], -vec[Y]); 
+        r.vec = Point(vec[X], -vec[Y]);
         return r;
     }
     /// @brief Get a zero-degree rotation.
-    static Rotate identity() { Rotate ret; return ret; }
+    static Rotate identity() { return {}; }
     /** @brief Construct a rotation from its angle in degrees.
      * Positive arguments correspond to clockwise rotations if Y grows downwards. */
     static Rotate from_degrees(Coord deg) {
-        Coord rad = (deg / 180.0) * M_PI;
+        Coord rad = deg / 180.0 * M_PI;
         return Rotate(rad);
     }
     static Affine around(Point const &p, Coord angle);

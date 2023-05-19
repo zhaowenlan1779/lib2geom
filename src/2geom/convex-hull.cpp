@@ -104,7 +104,7 @@ ConvexHull::ConvexHull(std::vector<Point> const &pts)
     _construct();
 }
 
-bool ConvexHull::_is_clockwise_turn(Point const &a, Point const &b, Point const &c)
+static bool is_clockwise_turn(Point const &a, Point const &b, Point const &c)
 {
     if (b == c) return false;
     return cross(b-a, c-a) > 0;
@@ -129,7 +129,7 @@ void ConvexHull::_construct()
 
     std::size_t k = 2;
     for (std::size_t i = 2; i < _boundary.size(); ++i) {
-        while (k >= 2 && !_is_clockwise_turn(_boundary[k-2], _boundary[k-1], _boundary[i])) {
+        while (k >= 2 && !is_clockwise_turn(_boundary[k-2], _boundary[k-1], _boundary[i])) {
             --k;
         }
         std::swap(_boundary[k++], _boundary[i]);
@@ -139,7 +139,7 @@ void ConvexHull::_construct()
     std::sort(_boundary.begin() + k, _boundary.end(), Point::LexGreater<X>());
     _boundary.push_back(_boundary.front());
     for (std::size_t i = _lower; i < _boundary.size(); ++i) {
-        while (k > _lower && !_is_clockwise_turn(_boundary[k-2], _boundary[k-1], _boundary[i])) {
+        while (k > _lower && !is_clockwise_turn(_boundary[k-2], _boundary[k-1], _boundary[i])) {
             --k;
         }
         std::swap(_boundary[k++], _boundary[i]);
@@ -162,10 +162,8 @@ double ConvexHull::area() const
 
 OptRect ConvexHull::bounds() const
 {
-    OptRect ret;
-    if (empty()) return ret;
-    ret = Rect(left(), top(), right(), bottom());
-    return ret;
+    if (empty()) return {};
+    return Rect(left(), top(), right(), bottom());
 }
 
 std::pair<Rotate, OptRect> ConvexHull::minAreaRotation() const

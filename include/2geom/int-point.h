@@ -53,7 +53,7 @@ class IntPoint
     , boost::totally_ordered< IntPoint
     , boost::multiplicative< IntPoint, IntCoord
     , boost::multiplicative< IntPoint
-    > > > >
+    >>>> // base class chaining, see documentation for Boost.Operator
 {
     IntCoord _pt[2] = { 0, 0 };
 public:
@@ -141,16 +141,15 @@ public:
     /// @name Various utilities
     /// @{
     /** @brief Equality operator. */
-    constexpr bool operator==(IntPoint const &in_pnt) const {
-        return ((_pt[X] == in_pnt[X]) && (_pt[Y] == in_pnt[Y]));
+    constexpr bool operator==(IntPoint const &p) const {
+        return _pt[X] == p[X] && _pt[Y] == p[Y];
     }
     /** @brief Lexicographical ordering for points.
      * Y coordinate is regarded as more significant. When sorting according to this
      * ordering, the points will be sorted according to the Y coordinate, and within
      * points with the same Y coordinate according to the X coordinate. */
     constexpr bool operator<(IntPoint const &p) const {
-        return ( ( _pt[Y] < p[Y] ) ||
-             (( _pt[Y] == p[Y] ) && ( _pt[X] < p[X] )));
+        return _pt[Y] < p[Y] || (_pt[Y] == p[Y] && _pt[X] < p[X]);
     }
     /// @}
     
@@ -203,7 +202,7 @@ inline bool IntPoint::LexGreaterRt::operator()(IntPoint const &a, IntPoint const
     return dim ? IntPoint::LexGreater<Y>()(a, b) : IntPoint::LexGreater<X>()(a, b);
 }
 
-}  // namespace Geom
+} // namespace Geom
 
 // Structured binding support
 template <> struct std::tuple_size<Geom::IntPoint> : std::integral_constant<size_t, 2> {};
@@ -220,7 +219,7 @@ template <> struct std::hash<Geom::IntPoint>
     }
 };
 
-#endif // !SEEN_GEOM_INT_POINT_H
+#endif // LIB2GEOM_SEEN_INT_POINT_H
 
 /*
   Local Variables:
