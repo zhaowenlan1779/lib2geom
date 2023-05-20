@@ -25,6 +25,7 @@ elliptical-arc-test
 intersection-graph-test
 interval-test
 line-test
+min-bbox-test
 nl-vector-test
 parallelogram-test
 path-test

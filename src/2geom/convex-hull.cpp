@@ -168,6 +168,69 @@ OptRect ConvexHull::bounds() const
     return ret;
 }
 
+std::pair<Rotate, OptRect> ConvexHull::minAreaRotation() const
+{
+    if (empty()) {
+        return {};
+    } else if (_boundary.size() == 1) {
+        return { {}, Rect(front(), front()) };
+    }
+
+    // Move the point i cyclically along until it maximises distance in the direction n.
+    auto advance = [this] (size_t i, Point const &n) {
+        auto ih = dot(_boundary[i], n);
+        while (true) {
+            auto j = (i + 1) % size();
+            auto jh = dot(_boundary[j], n);
+            if (ih >= jh) {
+                return i;
+            }
+            i = j;
+            ih = jh;
+        }
+    };
+
+    auto min_area = std::numeric_limits<Coord>::max();
+    Point min_v;
+    Rect min_rect;
+
+    // Run rotating callipers.
+    size_t j, k, l;
+    for (size_t i = 0; i < size(); i++) {
+        // Get the current segment.
+        auto &p1 = _boundary[i];
+        auto &p2 = _boundary[(i + 1) % size()];
+        auto const v = p2 - p1;
+        auto const n = v.cw();
+
+        if (i == 0) {
+            // Initialise the points.
+            j = advance(0,  v);
+            k = advance(j,  n);
+            l = advance(k, -v);
+        } else {
+            // Advance the points.
+            j = advance(j,  v);
+            k = advance(k,  n);
+            l = advance(l, -v);
+        }
+
+        // Compute the dimensions of the unconstrained rectangle, times v.length().
+        auto const w = dot(_boundary[j] - _boundary[l], v);
+        auto const h = dot(_boundary[k] - _boundary[i], n);
+        auto const area = w * h / v.lengthSq();
+
+        // Track the minimum.
+        if (area < min_area) {
+            min_area = area;
+            min_v = v;
+            min_rect = Rect::from_xywh(dot(_boundary[l], v), dot(_boundary[i], n), w, h);
+        }
+    }
+
+    return { Rotate(min_v).inverse(), min_rect * Scale(1.0 / min_v.length()) };
+}
+
 Point ConvexHull::topPoint() const
 {
     Point ret;

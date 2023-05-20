@@ -39,6 +39,7 @@
 #include <boost/operators.hpp>
 #include <optional>
 #include <boost/range/iterator_range.hpp>
+#include <2geom/transforms.h>
 
 namespace Geom {
 
@@ -176,6 +177,9 @@ public:
 
     /// Compute the bounding rectangle of the convex hull.
     OptRect bounds() const;
+    /// Return a rotation that puts the convex hull into a position
+    /// such that bounds() has minimal area, and return those bounds.
+    std::pair<Rotate, OptRect> minAreaRotation() const;
 
     /// Get the leftmost (minimum X) coordinate of the hull.
     Coord left() const { return _boundary[0][X]; }
