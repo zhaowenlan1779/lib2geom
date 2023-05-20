@@ -182,7 +182,7 @@ public:
     /** @brief Get the point in the geometric center of the rectangle. */
     CPoint midpoint() const { return CPoint(f[X].middle(), f[Y].middle()); }
 
-    /** @brief Compute rectangle's area. */
+    /** @brief Compute the rectangle's area. */
     C area() const { return f[X].extent() * f[Y].extent(); }
     /** @brief Check whether the rectangle has zero area. */
     bool hasZeroArea() const { return f[X].isSingular() || f[Y].isSingular(); }
@@ -422,10 +422,12 @@ public:
     bool contains(CPoint const &p) const { return *this && (*this)->contains(p); }
     /// @}
 
+    /** @brief Compute the rectangle's area. */
+    C area() const { return *this ? (*this)->area() : 0; }
+    /** @brief Check whether the rectangle has zero area. */
+    bool hasZeroArea() const { return !*this || (*this)->hasZeroArea(); }
     /** @brief Returns an empty optional (testing false) if the rectangle has zero area. */
-    OptCRect regularized() const {
-        return *this && !(*this)->hasZeroArea() ? *this : OptCRect();
-    }
+    OptCRect regularized() const { return hasZeroArea() ? OptCRect() : *this; }
 
     /// @name Modify the potentially empty rectangle.
     /// @{
@@ -529,6 +531,11 @@ template <typename C>
 inline std::ostream &operator<<(std::ostream &out, GenericRect<C> const &r) {
     out << "Rect " << r[X] << " x " << r[Y];
     return out;
+}
+
+template <typename C>
+inline std::ostream &operator<<(std::ostream &out, GenericOptRect<C> const &r) {
+    return r ? (out << *r) : (out << "Rect (empty)");
 }
 
 } // end namespace Geom

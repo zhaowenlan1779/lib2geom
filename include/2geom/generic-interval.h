@@ -34,6 +34,8 @@
 #include <cassert>
 #include <iostream>
 #include <optional>
+#include <tuple>
+#include <boost/functional/hash.hpp>
 #include <2geom/coord.h>
 
 namespace Geom {
@@ -108,6 +110,8 @@ public:
         C dmin = std::abs(val - min()), dmax = std::abs(val - max());
         return dmin <= dmax ? min() : max();
     }
+    // Structured binding support
+    template <size_t I> C get() const { static_assert(I < 2); return _b[I]; }
     /// @}
 
     /// @name Test coordinates and other intervals for inclusion.
@@ -291,7 +295,7 @@ public:
     /// @}
 
     /** @brief Check whether this interval is empty. */
-    bool empty() { return !*this; }
+    bool empty() const { return !*this; }
 
     /** @brief Union with another interval, gracefully handling empty ones. */
     void unionWith(GenericOptInterval<C> const &a) {
@@ -354,12 +358,34 @@ inline GenericOptInterval<C> operator&(GenericInterval<C> const &a, GenericInter
 
 template <typename C>
 inline std::ostream &operator<< (std::ostream &os, 
-                                 Geom::GenericInterval<C> const &I) {
+                                 GenericInterval<C> const &I) {
     os << "Interval("<<I.min() << ", "<<I.max() << ")";
     return os;
 }
 
+template <typename C>
+inline std::ostream &operator<<(std::ostream &out,
+                                GenericOptInterval<C> const &I) {
+    return I ? (out << *I) : (out << "Interval (empty)");
+}
+
 } // namespace Geom
+
+// Structured binding support
+template <typename C> struct std::tuple_size<Geom::GenericInterval<C>> : std::integral_constant<size_t, 2> {};
+template <size_t I, typename C> struct std::tuple_element<I, Geom::GenericInterval<C>> { using type = C; };
+
+// Hash support
+template <typename C> struct std::hash<Geom::GenericInterval<C>>
+{
+    size_t operator()(Geom::GenericInterval<C> const &a) const noexcept {
+        size_t hash = 0;
+        boost::hash_combine(hash, a.min());
+        boost::hash_combine(hash, a.max());
+        return hash;
+    }
+};
+
 #endif // !LIB2GEOM_SEEN_GENERIC_INTERVAL_H
 
 /*

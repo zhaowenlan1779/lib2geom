@@ -31,7 +31,9 @@
 #ifndef LIB2GEOM_SEEN_INT_POINT_H
 #define LIB2GEOM_SEEN_INT_POINT_H
 
-#include <stdexcept>
+#include <cassert>
+#include <tuple>
+#include <boost/functional/hash.hpp>
 #include <boost/operators.hpp>
 #include <2geom/coord.h>
 
@@ -67,14 +69,8 @@ public:
 
     /// @name Access the coordinates of a point
     /// @{
-    IntCoord operator[](unsigned i) const {
-        if ( i > Y ) throw std::out_of_range("index out of range");
-        return _pt[i];
-    }
-    IntCoord &operator[](unsigned i) {
-        if ( i > Y ) throw std::out_of_range("index out of range");
-        return _pt[i];
-    }
+    IntCoord operator[](unsigned i) const { assert(i < 2); return _pt[i]; }
+    IntCoord &operator[](unsigned i) { assert(i < 2); return _pt[i]; }
     IntCoord operator[](Dim2 d) const { return _pt[d]; }
     IntCoord &operator[](Dim2 d) { return _pt[d]; }
 
@@ -82,6 +78,27 @@ public:
     IntCoord &x() noexcept { return _pt[X]; }
     IntCoord y() const noexcept { return _pt[Y]; }
     IntCoord &y() noexcept { return _pt[Y]; }
+
+    // Structured binding support
+    template <size_t I> constexpr IntCoord get() const { static_assert(I < 2); return _pt[I]; }
+    template <size_t I> constexpr IntCoord &get() { static_assert(I < 2); return _pt[I]; }
+    /// @}
+
+    /// @name Vector-like operations
+    /// @{
+    IntCoord lengthSq() const { return _pt[X] * _pt[X] + _pt[Y] * _pt[Y]; }
+    /** @brief Return a point like this point but rotated -90 degrees.
+     * If the y axis grows downwards and the x axis grows to the
+     * right, then this is 90 degrees counter-clockwise. */
+    IntPoint ccw() const {
+        return IntPoint(_pt[Y], -_pt[X]);
+    }
+    /** @brief Return a point like this point but rotated +90 degrees.
+     * If the y axis grows downwards and the x axis grows to the
+     * right, then this is 90 degrees clockwise. */
+    IntPoint cw() const {
+        return IntPoint(-_pt[Y], _pt[X]);
+    }
     /// @}
 
     /// @name Vector-like arithmetic operations
@@ -187,6 +204,21 @@ inline bool IntPoint::LexGreaterRt::operator()(IntPoint const &a, IntPoint const
 }
 
 }  // namespace Geom
+
+// Structured binding support
+template <> struct std::tuple_size<Geom::IntPoint> : std::integral_constant<size_t, 2> {};
+template <size_t I> struct std::tuple_element<I, Geom::IntPoint> { using type = Geom::IntCoord; };
+
+// Hash support
+template <> struct std::hash<Geom::IntPoint>
+{
+    size_t operator()(Geom::IntPoint const &p) const noexcept {
+        size_t hash = 0;
+        boost::hash_combine(hash, p.x());
+        boost::hash_combine(hash, p.y());
+        return hash;
+    }
+};
 
 #endif // !SEEN_GEOM_INT_POINT_H
 

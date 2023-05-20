@@ -231,6 +231,13 @@ inline OptInterval intersect(Interval const &a, Interval const &b)
 
 } // end namespace Geom
 
+// Structured binding support
+template <> struct std::tuple_size<Geom::Interval> : std::integral_constant<size_t, 2> {};
+template <size_t I> struct std::tuple_element<I, Geom::Interval> { using type = Geom::Coord; };
+
+// Hash support
+template <> struct std::hash<Geom::Interval> : std::hash<Geom::GenericInterval<Geom::Coord>> {};
+
 #endif //SEEN_INTERVAL_H
 
 /*

@@ -195,7 +195,7 @@ public:
     /// Construct a rotation from its characteristic vector.
     explicit Rotate(Point const &p) : vec(unit_vector(p)) {}
     /// Construct a rotation from the coordinates of its characteristic vector.
-    explicit Rotate(Coord x, Coord y) { Rotate(Point(x, y)); }
+    explicit Rotate(Coord x, Coord y) : Rotate(Point(x, y)) {}
     operator Affine() const { Affine ret(vec[X], vec[Y], -vec[Y], vec[X], 0, 0); return ret; }
 
     /** @brief Get the characteristic vector of the rotation.

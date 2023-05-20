@@ -35,8 +35,11 @@
 #ifndef LIB2GEOM_SEEN_POINT_H
 #define LIB2GEOM_SEEN_POINT_H
 
+#include <cassert>
 #include <iostream>
 #include <iterator>
+#include <tuple>
+#include <boost/functional/hash.hpp>
 #include <boost/operators.hpp>
 #include <2geom/forward.h>
 #include <2geom/coord.h>
@@ -95,9 +98,8 @@ public:
 
     /// @name Access the coordinates of a point
     /// @{
-    Coord operator[](unsigned i) const { return _pt[i]; }
-    Coord &operator[](unsigned i) { return _pt[i]; }
-
+    Coord operator[](unsigned i) const { assert(i < 2); return _pt[i]; }
+    Coord &operator[](unsigned i) { assert(i < 2); return _pt[i]; }
     Coord operator[](Dim2 d) const noexcept { return _pt[d]; }
     Coord &operator[](Dim2 d) noexcept { return _pt[d]; }
 
@@ -105,6 +107,10 @@ public:
     Coord &x() noexcept { return _pt[X]; }
     Coord y() const noexcept { return _pt[Y]; }
     Coord &y() noexcept { return _pt[Y]; }
+
+    // Structured binding support
+    template <size_t I> constexpr Coord get() const { static_assert(I < 2); return _pt[I]; }
+    template <size_t I> constexpr Coord &get() { static_assert(I < 2); return _pt[I]; }
     /// @}
 
     /// @name Vector operations
@@ -112,6 +118,7 @@ public:
     /** @brief Compute the distance from origin.
      * @return Length of the vector from origin to this point */
     Coord length() const { return std::hypot(_pt[0], _pt[1]); }
+    constexpr Coord lengthSq() const { return _pt[X] * _pt[X] + _pt[Y] * _pt[Y]; }
     void normalize();
     Point normalized() const {
         Point ret(*this);
@@ -434,6 +441,21 @@ Point constrain_angle(Point const &A, Point const &B, unsigned int n = 4, Geom::
 namespace std {
 template <> class iterator_traits<Geom::Point> {};
 }
+
+// Structured binding support
+template <> struct std::tuple_size<Geom::Point> : std::integral_constant<size_t, 2> {};
+template <size_t I> struct std::tuple_element<I, Geom::Point> { using type = Geom::Coord; };
+
+// Hash support
+template <> struct std::hash<Geom::Point>
+{
+    size_t operator()(Geom::Point const &p) const noexcept {
+        size_t hash = 0;
+        boost::hash_combine(hash, p.x());
+        boost::hash_combine(hash, p.y());
+        return hash;
+    }
+};
 
 #endif // LIB2GEOM_SEEN_POINT_H
 
