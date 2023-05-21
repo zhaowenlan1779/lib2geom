@@ -31,6 +31,8 @@
  * the specific language governing rights and limitations.
  */
 
+#include <cassert>
+#include <unordered_map>
 #include <gtest/gtest.h>
 #include <2geom/point.h>
 
@@ -105,7 +107,54 @@ TEST(PointTest, IntPointCtors) {
     EXPECT_EQ(a, IntPoint(0, 0));
 }
 
-} // end namespace Geom
+template <typename PointType>
+constexpr bool structured_binding_test()
+{
+    auto p = PointType(1, 2);
+
+    // Check unpacking the coordinates works.
+    {
+        auto [x, y] = p;
+        assert(p[X] == x);
+        assert(p[Y] == y);
+    }
+
+    // Ensure point is writeable.
+    {
+        auto &[x, y] = p;
+        assert(p[X] == x);
+        assert(p[Y] == y);
+        x = 3;
+        y = 4;
+        assert(p == PointType(3, 4));
+    }
+
+    return true;
+}
+
+TEST(IntervalTest, StructuredBindingTest)
+{
+    constexpr bool results[] = { structured_binding_test<Point>(),
+                                 structured_binding_test<IntPoint>() };
+}
+
+TEST(PointTest, Hash)
+{
+    auto test = [] <typename PointType> {
+        std::unordered_map<PointType, int> map;
+        map[PointType(1, 1)] = 1;
+        map[PointType(1, 2)] = 2;
+        map[PointType(2, 1)] = 3;
+        EXPECT_EQ(map[PointType(1, 1)], 1);
+        EXPECT_EQ(map[PointType(1, 2)], 2);
+        EXPECT_EQ(map[PointType(2, 1)], 3);
+    };
+
+    test.template operator()<Point>();
+    test.template operator()<IntPoint>();
+}
+
+} // namespace Geom
 
 /*
   Local Variables:
