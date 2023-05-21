@@ -49,7 +49,7 @@ enum Dim2 { X=0, Y=1 };
 
 /** @brief Get the other (perpendicular) dimension.
  * @ingroup Primitives */
-inline constexpr Dim2 other_dimension(Dim2 d) { return Dim2(int(d) ^ 1); }
+constexpr Dim2 other_dimension(Dim2 d) { return Dim2(int(d) ^ 1); }
 
 // TODO: make a smarter implementation with C++11
 template <typename T>
@@ -85,16 +85,16 @@ constexpr Coord EPSILON = 1e-6;
 
 /** @brief Get a value representing infinity.
  * @ingroup Primitives */
-inline constexpr Coord infinity() { return std::numeric_limits<Coord>::infinity(); }
+constexpr Coord infinity() { return std::numeric_limits<Coord>::infinity(); }
 
 /** @brief Nearness predicate for values.
  * @ingroup Primitives */
-inline constexpr bool are_near(Coord a, Coord b, double eps=EPSILON) { return std::abs(a-b) <= eps; }
-inline constexpr bool rel_error_bound(Coord a, Coord b, double eps=EPSILON) { return std::abs(a) <= eps*b; }
+inline bool are_near(Coord a, Coord b, double eps = EPSILON) { return std::abs(a - b) <= eps; }
+inline bool rel_error_bound(Coord a, Coord b, double eps = EPSILON) { return std::abs(a) <= eps * b; }
 
 /** @brief Numerically stable linear interpolation.
  * @ingroup Primitives */
-inline constexpr Coord lerp(Coord t, Coord a, Coord b) {
+constexpr Coord lerp(Coord t, Coord a, Coord b) {
     return (1 - t) * a + t * b;
 }
 

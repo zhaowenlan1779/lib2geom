@@ -62,14 +62,14 @@ public:
     /// @name Create intervals.
     /// @{
     /** @brief Create an interval that contains only zero. */
-    Interval() {}
+    constexpr Interval() {}
     /** @brief Create an interval that contains a single point. */
-    explicit Interval(Coord u) : Base(u) {}
+    explicit constexpr Interval(Coord u) : Base(u) {}
     /** @brief Create an interval that contains all points between @c u and @c v. */
-    Interval(Coord u, Coord v) : Base(u,v) {}
+    constexpr Interval(Coord u, Coord v) : Base(u,v) {}
     /** @brief Convert from integer interval */
-    Interval(IntInterval const &i) : Base(i.min(), i.max()) {}
-    Interval(Base const &b) : Base(b) {}
+    constexpr Interval(IntInterval const &i) : Base(i.min(), i.max()) {}
+    constexpr Interval(Base const &b) : Base(b) {}
 
     /** @brief Create an interval containing a range of values.
      * The resulting interval will contain all values from the given range.
@@ -98,16 +98,16 @@ public:
     }
     /** @brief Map the interval [0,1] onto this one.
      * This method simply performs 1D linear interpolation between endpoints. */
-    Coord valueAt(Coord t) const {
+    constexpr Coord valueAt(Coord t) const {
         return lerp(t, min(), max());
     }
     /** @brief Compute a time value that maps to the given value.
      * The supplied value does not need to be in the interval for this method to work. */
-    Coord timeAt(Coord v) const {
+    constexpr Coord timeAt(Coord v) const {
         return (v - min()) / extent();
     }
     /// Find closest time in [0,1] that maps to the given value. */
-    Coord nearestTime(Coord v) const {
+    constexpr Coord nearestTime(Coord v) const {
         if (v <= min()) return 0;
         if (v >= max()) return 1;
         return timeAt(v);
@@ -118,21 +118,21 @@ public:
     /// @{
     /** @brief Check whether the interior of the interval includes this number.
      * Interior means all numbers in the interval except its ends. */
-    bool interiorContains(Coord val) const { return min() < val && val < max(); }
+    constexpr bool interiorContains(Coord val) const { return min() < val && val < max(); }
     /** @brief Check whether the interior of the interval includes the given interval.
      * Interior means all numbers in the interval except its ends. */
-    bool interiorContains(Interval const &val) const { return min() < val.min() && val.max() < max(); }
+    constexpr bool interiorContains(Interval const &val) const { return min() < val.min() && val.max() < max(); }
     /// Check whether the number is contained in the union of the interior and the lower boundary.
-    bool lowerContains(Coord val) const { return min() <= val && val < max(); }
+    constexpr bool lowerContains(Coord val) const { return min() <= val && val < max(); }
     /// Check whether the given interval is contained in the union of the interior and the lower boundary.
-    bool lowerContains(Interval const &val) const { return min() <= val.min() && val.max() < max(); }
+    constexpr bool lowerContains(Interval const &val) const { return min() <= val.min() && val.max() < max(); }
     /// Check whether the number is contained in the union of the interior and the upper boundary.
-    bool upperContains(Coord val) { return min() < val && val <= max(); }
+    constexpr bool upperContains(Coord val) { return min() < val && val <= max(); }
     /// Check whether the given interval is contained in the union of the interior and the upper boundary.
-    bool upperContains(Interval const &val) const { return min() < val.min() && val.max() <= max(); }
+    constexpr bool upperContains(Interval const &val) const { return min() < val.min() && val.max() <= max(); }
     /** @brief Check whether the interiors of the intervals have any common elements.
      * A single point in common is not considered an intersection. */
-    bool interiorIntersects(Interval const &val) const {
+    constexpr bool interiorIntersects(Interval const &val) const {
         return std::max(min(), val.min()) < std::min(max(), val.max());
     }
     /// @}
@@ -141,7 +141,7 @@ public:
     /// @{
     // IMPL: ScalableConcept
     /** @brief Scale an interval */
-    Interval &operator*=(Coord s) {
+    constexpr Interval &operator*=(Coord s) {
         using std::swap;
         _b[0] *= s;
         _b[1] *= s;
@@ -149,7 +149,7 @@ public:
         return *this;
     }
     /** @brief Scale an interval by the inverse of the specified value */
-    Interval &operator/=(Coord s) {
+    constexpr Interval &operator/=(Coord s) {
         using std::swap;
         _b[0] /= s;
         _b[1] /= s;
@@ -160,7 +160,7 @@ public:
      * Product is defined as the set of points that can be obtained by multiplying
      * any value from the second operand by any value from the first operand:
      * \f$S = \{x \in A, y \in B: x * y\}\f$ */
-    Interval &operator*=(Interval const &o) {
+    constexpr Interval &operator*=(Interval const &o) {
         // TODO implement properly
         Coord mn = min(), mx = max();
         expandTo(mn * o.min());
@@ -169,10 +169,10 @@ public:
         expandTo(mx * o.max());
         return *this;
     }
-    bool operator==(IntInterval const &ii) const {
+    constexpr bool operator==(IntInterval const &ii) const {
         return min() == Coord(ii.min()) && max() == Coord(ii.max());
     }
-    bool operator==(Interval const &other) const {
+    constexpr bool operator==(Interval const &other) const {
         return Base::operator==(other);
     }
     /// @}
@@ -207,12 +207,12 @@ public:
     using Base::operator==;
     using Base::operator!=;
 
-    OptInterval(Base const &b) : Base(b) {}
+    constexpr OptInterval(Base const &b) : Base(b) {}
 
     /** @brief Promote from IntInterval. */
-    OptInterval(IntInterval const &i) : Base(Interval(i)) {}
+    constexpr OptInterval(IntInterval const &i) : Base(Interval(i)) {}
     /** @brief Promote from OptIntInterval. */
-    OptInterval(OptIntInterval const &i) : Base() {
+    constexpr OptInterval(OptIntInterval const &i) : Base() {
         if (i) *this = Interval(*i);
     }
 };

@@ -60,9 +60,9 @@ public:
     /// @name Create integer points
     /// @{
     /** Construct a point at the origin. */
-    IntPoint() = default;
+    constexpr IntPoint() = default;
     /** Construct a point from its coordinates. */
-    IntPoint(IntCoord x, IntCoord y)
+    constexpr IntPoint(IntCoord x, IntCoord y)
         : _pt{ x, y }
     {}
     /// @}
@@ -71,13 +71,13 @@ public:
     /// @{
     IntCoord operator[](unsigned i) const { assert(i < 2); return _pt[i]; }
     IntCoord &operator[](unsigned i) { assert(i < 2); return _pt[i]; }
-    IntCoord operator[](Dim2 d) const { return _pt[d]; }
-    IntCoord &operator[](Dim2 d) { return _pt[d]; }
+    constexpr IntCoord operator[](Dim2 d) const { return _pt[d]; }
+    constexpr IntCoord &operator[](Dim2 d) { return _pt[d]; }
 
-    IntCoord x() const noexcept { return _pt[X]; }
-    IntCoord &x() noexcept { return _pt[X]; }
-    IntCoord y() const noexcept { return _pt[Y]; }
-    IntCoord &y() noexcept { return _pt[Y]; }
+    constexpr IntCoord x() const noexcept { return _pt[X]; }
+    constexpr IntCoord &x() noexcept { return _pt[X]; }
+    constexpr IntCoord y() const noexcept { return _pt[Y]; }
+    constexpr IntCoord &y() noexcept { return _pt[Y]; }
 
     // Structured binding support
     template <size_t I> constexpr IntCoord get() const { static_assert(I < 2); return _pt[I]; }
@@ -86,52 +86,52 @@ public:
 
     /// @name Vector-like operations
     /// @{
-    IntCoord lengthSq() const { return _pt[X] * _pt[X] + _pt[Y] * _pt[Y]; }
+    constexpr IntCoord lengthSq() const { return _pt[X] * _pt[X] + _pt[Y] * _pt[Y]; }
     /** @brief Return a point like this point but rotated -90 degrees.
      * If the y axis grows downwards and the x axis grows to the
      * right, then this is 90 degrees counter-clockwise. */
-    IntPoint ccw() const {
+    constexpr IntPoint ccw() const {
         return IntPoint(_pt[Y], -_pt[X]);
     }
     /** @brief Return a point like this point but rotated +90 degrees.
      * If the y axis grows downwards and the x axis grows to the
      * right, then this is 90 degrees clockwise. */
-    IntPoint cw() const {
+    constexpr IntPoint cw() const {
         return IntPoint(-_pt[Y], _pt[X]);
     }
     /// @}
 
     /// @name Vector-like arithmetic operations
     /// @{
-    IntPoint operator-() const {
+    constexpr IntPoint operator-() const {
         return IntPoint(-_pt[X], -_pt[Y]);
     }
-    IntPoint &operator+=(IntPoint const &o) {
+    constexpr IntPoint &operator+=(IntPoint const &o) {
         _pt[X] += o._pt[X];
         _pt[Y] += o._pt[Y];
         return *this;
     }
-    IntPoint &operator-=(IntPoint const &o) {
+    constexpr IntPoint &operator-=(IntPoint const &o) {
         _pt[X] -= o._pt[X];
         _pt[Y] -= o._pt[Y];
         return *this;
     }
-    IntPoint &operator*=(IntPoint const &o) {
+    constexpr IntPoint &operator*=(IntPoint const &o) {
         _pt[X] *= o._pt[X];
         _pt[Y] *= o._pt[Y];
         return *this;
     }
-    IntPoint &operator*=(IntCoord o) {
+    constexpr IntPoint &operator*=(IntCoord o) {
         _pt[X] *= o;
         _pt[Y] *= o;
         return *this;
     }
-    IntPoint &operator/=(IntPoint const &o) {
+    constexpr IntPoint &operator/=(IntPoint const &o) {
         _pt[X] /= o._pt[X];
         _pt[Y] /= o._pt[Y];
         return *this;
     }
-    IntPoint &operator/=(IntCoord o) {
+    constexpr IntPoint &operator/=(IntCoord o) {
         _pt[X] /= o;
         _pt[Y] /= o;
         return *this;
@@ -141,14 +141,14 @@ public:
     /// @name Various utilities
     /// @{
     /** @brief Equality operator. */
-    bool operator==(IntPoint const &in_pnt) const {
+    constexpr bool operator==(IntPoint const &in_pnt) const {
         return ((_pt[X] == in_pnt[X]) && (_pt[Y] == in_pnt[Y]));
     }
     /** @brief Lexicographical ordering for points.
      * Y coordinate is regarded as more significant. When sorting according to this
      * ordering, the points will be sorted according to the Y coordinate, and within
      * points with the same Y coordinate according to the X coordinate. */
-    bool operator<(IntPoint const &p) const {
+    constexpr bool operator<(IntPoint const &p) const {
         return ( ( _pt[Y] < p[Y] ) ||
              (( _pt[Y] == p[Y] ) && ( _pt[X] < p[X] )));
     }

@@ -54,16 +54,16 @@ class GenericInterval
     typedef typename CoordTraits<C>::IntervalType CInterval;
     typedef GenericInterval<C> Self;
 protected:
-    C _b[2];
+    C _b[2] = { 0, 0 };
 public:
     /// @name Create intervals.
     /// @{
     /** @brief Create an interval that contains only zero. */
-    GenericInterval() { _b[0] = 0;  _b[1] = 0; }
+    constexpr GenericInterval() = default;
     /** @brief Create an interval that contains a single point. */
-    explicit GenericInterval(C u) { _b[0] = _b[1] = u; }
+    explicit constexpr GenericInterval(C u) { _b[0] = _b[1] = u; }
     /** @brief Create an interval that contains all points between @c u and @c v. */
-    GenericInterval(C u, C v) {
+    constexpr GenericInterval(C u, C v) {
         if (u <= v) {
             _b[0] = u; _b[1] = v;
         } else {
@@ -94,13 +94,14 @@ public:
 
     /// @name Inspect contained values.
     /// @{
-    C min() const { return _b[0]; }
-    C max() const { return _b[1]; }
-    C extent() const { return max() - min(); }
-    C middle() const { return (max() + min()) / 2; }
-    bool isSingular() const { return min() == max(); }
+    constexpr C min() const { return _b[0]; }
+    constexpr C max() const { return _b[1]; }
+    constexpr C extent() const { return max() - min(); }
+    constexpr C middle() const { return (max() + min()) / 2; }
+    constexpr bool isSingular() const { return min() == max(); }
     C operator[](unsigned i) const { assert(i < 2); return _b[i]; }
-    C clamp(C val) const {
+    constexpr C operator[](Dim2 d) const { return _b[d]; }
+    constexpr C clamp(C val) const {
         if (val < min()) return min();
         if (val > max()) return max();
         return val;
@@ -111,21 +112,21 @@ public:
         return dmin <= dmax ? min() : max();
     }
     // Structured binding support
-    template <size_t I> C get() const { static_assert(I < 2); return _b[I]; }
+    template <size_t I> constexpr C get() const { static_assert(I < 2); return _b[I]; }
     /// @}
 
     /// @name Test coordinates and other intervals for inclusion.
     /// @{
     /** @brief Check whether the interval includes this number. */
-    bool contains(C val) const {
+    constexpr bool contains(C val) const {
         return min() <= val && val <= max();
     }
     /** @brief Check whether the interval includes the given interval. */
-    bool contains(CInterval const &val) const {
+    constexpr bool contains(CInterval const &val) const {
         return min() <= val.min() && val.max() <= max();
     }
     /** @brief Check whether the intervals have any common elements. */
-    bool intersects(CInterval const &val) const {
+    constexpr bool intersects(CInterval const &val) const {
         return contains(val.min()) || contains(val.max()) || val.contains(*this);
     }
     /// @}
@@ -136,7 +137,7 @@ public:
     /** @brief Set the lower boundary of the interval.
      * When the given number is larger than the interval's largest element,
      * it will be reduced to the single number @c val. */
-    void setMin(C val) {
+    constexpr void setMin(C val) {
         if(val > _b[1]) {
             _b[0] = _b[1] = val;
         } else {
@@ -146,7 +147,7 @@ public:
     /** @brief Set the upper boundary of the interval.
      * When the given number is smaller than the interval's smallest element,
      * it will be reduced to the single number @c val. */
-    void setMax(C val) {
+    constexpr void setMax(C val) {
         if(val < _b[0]) {
             _b[1] = _b[0] = val;
         } else {
@@ -154,7 +155,7 @@ public:
         }
     }
     /// Set both ends of the interval simultaneously
-    void setEnds(C a, C b) {
+    constexpr void setEnds(C a, C b) {
         if (a <= b) {
             _b[0] = a;
             _b[1] = b;
@@ -164,7 +165,7 @@ public:
         }
     }
     /** @brief Extend the interval to include the given number. */
-    void expandTo(C val) {
+    constexpr void expandTo(C val) {
        if(val < _b[0]) _b[0] = val;
        if(val > _b[1]) _b[1] = val;  //no else, as we want to handle NaN
     }
@@ -173,7 +174,7 @@ public:
      * <code>amount * 2</code>. Negative values can be given; they will shrink the interval.
      * Shrinking by a value larger than half the interval's length will create a degenerate
      * interval containing only the midpoint of the original. */
-    void expandBy(C amount) {
+    constexpr void expandBy(C amount) {
         _b[0] -= amount;
         _b[1] += amount;
         if (_b[0] > _b[1]) {
@@ -185,7 +186,7 @@ public:
      * The resulting interval will contain all points of both intervals.
      * It might also contain some points which didn't belong to either - this happens
      * when the intervals did not have any common elements. */
-    void unionWith(CInterval const &a) {
+    constexpr void unionWith(CInterval const &a) {
         if(a._b[0] < _b[0]) _b[0] = a._b[0];
         if(a._b[1] > _b[1]) _b[1] = a._b[1];
     }
@@ -197,23 +198,23 @@ public:
     //TODO: rename output_type to something else in the concept
     typedef C output_type;
     /** @brief Offset the interval by a specified amount */
-    Self &operator+=(C amnt) {
+    constexpr Self &operator+=(C amnt) {
         _b[0] += amnt; _b[1] += amnt;
         return *this;
     }
     /** @brief Offset the interval by the negation of the specified amount */
-    Self &operator-=(C amnt) {
+    constexpr Self &operator-=(C amnt) {
         _b[0] -= amnt; _b[1] -= amnt;
         return *this;
     }
     
     /** @brief Return an interval mirrored about 0 */
-    Self operator-() const { Self r(-_b[1], -_b[0]); return r; }
+    constexpr Self operator-() const { Self r(-_b[1], -_b[0]); return r; }
     // IMPL: AddableConcept
     /** @brief Add two intervals.
      * Sum is defined as the set of points that can be obtained by adding any two values
      * from both operands: \f$S = \{x \in A, y \in B: x + y\}\f$ */
-    Self &operator+=(CInterval const &o) {
+    constexpr Self &operator+=(CInterval const &o) {
         _b[0] += o._b[0];
         _b[1] += o._b[1];
         return *this;
@@ -222,7 +223,7 @@ public:
      * Difference is defined as the set of points that can be obtained by subtracting
      * any value from the second operand from any value from the first operand:
      * \f$S = \{x \in A, y \in B: x - y\}\f$ */
-    Self &operator-=(CInterval const &o) {
+    constexpr Self &operator-=(CInterval const &o) {
         // equal to *this += -o
         _b[0] -= o._b[1];
         _b[1] -= o._b[0];
@@ -231,12 +232,12 @@ public:
     /** @brief Union two intervals.
      * Note that the intersection-and-assignment operator is not defined,
      * because the result of an intersection can be empty, while Interval cannot. */
-    Self &operator|=(CInterval const &o) {
+    constexpr Self &operator|=(CInterval const &o) {
         unionWith(o);
         return *this;
     }
     /** @brief Test for interval equality. */
-    bool operator==(CInterval const &other) const {
+    constexpr bool operator==(CInterval const &other) const {
         return min() == other.min() && max() == other.max();
     }
     /// @}
@@ -267,13 +268,13 @@ public:
     /// @name Create optionally empty intervals.
     /// @{
     /** @brief Create an empty interval. */
-    GenericOptInterval() : Base() {}
+    constexpr GenericOptInterval() : Base() {}
     /** @brief Wrap an existing interval. */
-    GenericOptInterval(GenericInterval<C> const &a) : Base(CInterval(a)) {}
+    constexpr GenericOptInterval(GenericInterval<C> const &a) : Base(CInterval(a)) {}
     /** @brief Create an interval containing a single point. */
-    GenericOptInterval(C u) : Base(CInterval(u)) {}
+    constexpr GenericOptInterval(C u) : Base(CInterval(u)) {}
     /** @brief Create an interval containing a range of numbers. */
-    GenericOptInterval(C u, C v) : Base(CInterval(u,v)) {}
+    constexpr GenericOptInterval(C u, C v) : Base(CInterval(u,v)) {}
 
     /** @brief Create a possibly empty interval containing a range of values.
      * The resulting interval will contain all values from the given range.
@@ -295,10 +296,10 @@ public:
     /// @}
 
     /** @brief Check whether this interval is empty. */
-    bool empty() const { return !*this; }
+    constexpr bool empty() const { return !*this; }
 
     /** @brief Union with another interval, gracefully handling empty ones. */
-    void unionWith(GenericOptInterval<C> const &a) {
+    constexpr void unionWith(GenericOptInterval<C> const &a) {
         if (a) {
             if (*this) { // check that we are not empty
                 (*this)->unionWith(*a);
@@ -307,7 +308,7 @@ public:
             }
         }
     }
-    void intersectWith(GenericOptInterval<C> const &o) {
+    constexpr void intersectWith(GenericOptInterval<C> const &o) {
         if (o && *this) {
             if (!*this) return;
             C u = std::max((*this)->min(), o->min());
@@ -319,11 +320,11 @@ public:
         }
         (*static_cast<Base*>(this)) = std::nullopt;
     }
-    GenericOptInterval<C> &operator|=(OptCInterval const &o) {
+    constexpr GenericOptInterval<C> &operator|=(OptCInterval const &o) {
         unionWith(o);
         return *this;
     }
-    GenericOptInterval<C> &operator&=(OptCInterval const &o) {
+    constexpr GenericOptInterval<C> &operator&=(OptCInterval const &o) {
         intersectWith(o);
         return *this;
     }
@@ -332,13 +333,11 @@ public:
     // the template overload ignores that the devived type is also an optional. It would result in
     // `GenericInterval() != GenericInterval()` being true.
     template <typename U, typename = std::enable_if_t<std::is_base_of_v<Base, U>>>
-    bool operator==(U const &other) const
-    {
+    constexpr bool operator==(U const &other) const {
         return static_cast<Base const &>(*this) == static_cast<Base const &>(other);
     }
     template <typename U, typename = std::enable_if_t<std::is_base_of_v<Base, U>>>
-    bool operator!=(U const &other) const
-    {
+    constexpr bool operator!=(U const &other) const {
         return static_cast<Base const &>(*this) != static_cast<Base const &>(other);
     }
 };
