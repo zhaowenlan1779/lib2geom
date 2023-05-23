@@ -2,17 +2,22 @@
 # Git repository. Recycle the one for the master Inkscape branch for now
 image: registry.gitlab.com/inkscape/inkscape-ci-docker/master
 
+# Speed up git on runners
 variables:
   GIT_DEPTH: "10"
   GIT_SUBMODULE_STRATEGY: recursive
 
-# The main build of the library
-2geom:
-  stage: build
+# Reusable templates
+.ccache_init: &ccache_init
   before_script:
     - mkdir -p ccache
     - export CCACHE_BASEDIR=${PWD}
     - export CCACHE_DIR=${PWD}/ccache
+
+# The main build of the library
+2geom:
+  stage: build
+  <<: *ccache_init
   script:
     - mkdir -p build opt
     - cd build
@@ -22,6 +27,7 @@ variables:
                -DCMAKE_BUILD_TYPE=Debug
                -DCMAKE_INSTALL_PREFIX=../opt
                -D2GEOM_BOOST_PYTHON=ON
+               -DWITH_COVERAGE=ON
     - make -j3
     - make -j3 perf
     - make py2geom
@@ -38,10 +44,7 @@ variables:
 # Build an executable including lib2geom as a subproject
 2geom:as-subproject:
   stage: build
-  before_script:
-    - mkdir -p ccache
-    - export CCACHE_BASEDIR="${PWD}"
-    - export CCACHE_DIR="${PWD}/ccache"
+  <<: *ccache_init
   script:
     - mkdir -p opt2
     - cd tests/dependent-project
@@ -62,10 +65,7 @@ variables:
   dependencies:
     - 2geom
   needs: ["2geom"]
-  before_script:
-    - mkdir -p ccache
-    - export CCACHE_BASEDIR="${PWD}"
-    - export CCACHE_DIR="${PWD}/ccache"
+  <<: *ccache_init
   script:
     - mkdir -p opt3
     - cd tests/dependent-project
@@ -90,10 +90,34 @@ variables:
   needs: ["2geom"]
   script:
     - cd build
-    - make -j3 test
+    - find . -type f -name '*.gcno' | xargs touch # Suppress gcov warning due to GitLab updating source timestamps.
+    - make -j3 coverage_xml
+  coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
+    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
     expire_in: 1 month
     paths:
       - build/Testing
     expose_as: 'Test logs'
     when: on_failure
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: build/coverage_xml.xml
+
+# Generate coverage html report
+pages:
+    stage: deploy
+    dependencies:
+      - 2geom
+    script:
+      - cd build
+      - find . -type f -name '*.gcno' | xargs touch
+      - make -j3 coverage_html
+      - mv coverage_html/ ../public/
+    artifacts:
+      paths:
+        - public
+      expire_in: 30 days
+    only:
+      - master

@@ -17,6 +17,14 @@ else()
     message(STATUS "Ragel NOT found. Using stale ${SVG_PARSER_CPP}.")
 endif()
 
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${SVG_PARSER_CPP}"
+                   COMMAND "${CMAKE_COMMAND}"
+                       "-DSOURCE=${CMAKE_CURRENT_SOURCE_DIR}/${SVG_PARSER_CPP}"
+                       "-DTARGET=${CMAKE_CURRENT_BINARY_DIR}/${SVG_PARSER_CPP}"
+                       "-DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+                       -P "${CMAKE_MODULE_PATH}/RewriteLineMarkers.cmake"
+                   DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${SVG_PARSER_CPP}"
+                   COMMENT "Rewriting #line markers in ${SVG_PARSER_CPP}")
 
 add_library(2geom ${LIB_TYPE}
     # sources
@@ -79,7 +87,7 @@ add_library(2geom ${LIB_TYPE}
     solve-bezier.cpp
     solve-bezier-one-d.cpp
     solve-bezier-parametric.cpp
-    svg-path-parser.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/${SVG_PARSER_CPP}
     svg-path-writer.cpp
     sweep-bounds.cpp
 

@@ -76,7 +76,6 @@ endif()
 #    )
 
 add_compile_options(-Wall -Wformat-security -Woverloaded-virtual -Wpointer-arith -Werror=return-type)
-add_compile_options(-O2)
 
 # suppress the very annoying "#pragma ms_struct" Clang warning, caused by -mms-bitfield required for GTK
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -93,6 +92,23 @@ option(WITH_PROFILING
 if(WITH_PROFILING)
     add_compile_options(-pg)
     set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -pg")
+endif()
+
+option(WITH_COVERAGE
+    "Enable generation of code coverage reports."
+    OFF)
+
+if(WITH_COVERAGE)
+    set(GCOVR_ADDITIONAL_ARGS "-s")
+    include(CodeCoverage)
+    set(COVERAGE_EXCLUDES
+        "${PROJECT_SOURCE_DIR}/src/performance-tests/*"
+        "${PROJECT_SOURCE_DIR}/src/py2geom/*"
+        "${PROJECT_SOURCE_DIR}/src/toys/*"
+        "${PROJECT_SOURCE_DIR}/include/toys/*")
+    setup_target_for_coverage_gcovr_xml(NAME coverage_xml EXECUTABLE ctest)
+    setup_target_for_coverage_gcovr_html(NAME coverage_html EXECUTABLE ctest)
+    append_coverage_compiler_flags()
 endif()
 
 option(2GEOM_BUILD_SHARED
