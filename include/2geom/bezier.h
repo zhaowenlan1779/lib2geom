@@ -282,7 +282,7 @@ public:
     SBasis toSBasis() const;
 
     Coord &operator[](unsigned ix) { return c_[ix]; }
-    Coord const &operator[](unsigned ix) const { return const_cast<std::valarray<Coord>&>(c_)[ix]; }
+    Coord const &operator[](unsigned ix) const { return c_[ix]; }
 
     void setCoeff(unsigned ix, double val) { c_[ix] = val; }
 
@@ -331,7 +331,7 @@ public:
 };
 
 
-void bezier_to_sbasis (SBasis &sb, Bezier const &bz);
+void bezier_to_sbasis(SBasis &sb, Bezier const &bz);
 
 Bezier operator*(Bezier const &f, Bezier const &g);
 inline Bezier multiply(Bezier const &f, Bezier const &g) {

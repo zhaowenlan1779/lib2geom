@@ -76,16 +76,16 @@ void Bezier::subdivide(Coord t, Bezier *left, Bezier *right) const
         left->c_.resize(size());
         if (right) {
             right->c_.resize(size());
-            casteljau_subdivision<double>(t, &const_cast<std::valarray<Coord>&>(c_)[0],
+            casteljau_subdivision<double>(t, &c_[0],
                 &left->c_[0], &right->c_[0], order());
         } else {
-            casteljau_subdivision<double>(t, &const_cast<std::valarray<Coord>&>(c_)[0],
-                &left->c_[0], NULL, order());
+            casteljau_subdivision<double>(t, &c_[0],
+                &left->c_[0], nullptr, order());
         }
     } else if (right) {
         right->c_.resize(size());
-        casteljau_subdivision<double>(t, &const_cast<std::valarray<Coord>&>(c_)[0],
-            NULL, &right->c_[0], order());
+        casteljau_subdivision<double>(t, &c_[0],
+            nullptr, &right->c_[0], order());
     }
 }
 
@@ -107,7 +107,7 @@ std::vector<Coord> Bezier::roots() const
 std::vector<Coord> Bezier::roots(Interval const &ivl) const
 {
     std::vector<Coord> solutions;
-    find_bernstein_roots(&const_cast<std::valarray<Coord>&>(c_)[0], order(), solutions, 0, ivl.min(), ivl.max());
+    find_bernstein_roots(&c_[0], order(), solutions, 0, ivl.min(), ivl.max());
     std::sort(solutions.begin(), solutions.end());
     return solutions;
 }
@@ -181,7 +181,7 @@ Bezier Bezier::deflate() const
 SBasis Bezier::toSBasis() const
 {
     SBasis sb;
-    bezier_to_sbasis(sb, (*this));
+    bezier_to_sbasis(sb, *this);
     return sb;
     //return bezier_to_sbasis(&c_[0], order());
 }
@@ -256,7 +256,7 @@ Bezier portion(Bezier const &a, double from, double to)
             if (to == 1) {
                 break;
             }
-            casteljau_subdivision<double>(to, &ret.c_[0], &ret.c_[0], NULL, ret.order());
+            casteljau_subdivision<double>(to, &ret.c_[0], &ret.c_[0], nullptr, ret.order());
             break; 
         }
         casteljau_subdivision<double>(from, &ret.c_[0], NULL, &ret.c_[0], ret.order());
@@ -298,8 +298,7 @@ Bezier integral(Bezier const &a)
 
 OptInterval bounds_fast(Bezier const &b)
 {
-    OptInterval ret = Interval::from_array(&const_cast<Bezier&>(b).c_[0], b.size());
-    return ret;
+    return Interval::from_array(&b.c_[0], b.size());
 }
 
 OptInterval bounds_exact(Bezier const &b)

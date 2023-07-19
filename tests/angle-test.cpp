@@ -207,3 +207,9 @@ TEST(AngleIntervalTest, Extent) {
     EXPECT_EQ(d.extent(), pi32);
     EXPECT_EQ(d.sweepAngle(), -pi32);
 }
+
+TEST(DegRadConversion, PreservesPI180)
+{
+    EXPECT_EQ(deg_from_rad(M_PI), 180);
+    EXPECT_EQ(rad_from_deg(180), M_PI);
+}
