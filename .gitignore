@@ -24,8 +24,8 @@ doc/latex/
 doxygen_warnings.log
 Testing
 CTestTestfile.cmake
-src/tests/*-test
-src/tests/*-test.exe
+tests/*-test
+tests/*-test.exe
 src/performance-tests/*-test
 src/performance-tests/*-test.exe
 src/cython-bindings/cython_debug
