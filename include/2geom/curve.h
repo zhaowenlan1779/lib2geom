@@ -337,7 +337,7 @@ public:
      * the same value. This means non-degenerate curves are not equal to their reverses.
      * Note that this tests for exact equality.
      * @return True if the curves are identical, false otherwise */
-    virtual bool operator==(Curve const &c) const = 0;
+    bool operator==(Curve const &c) const { return _equalTo(c); }
 
     /** @brief Test whether two curves are approximately the same. */
     virtual bool isNear(Curve const &c, Coord precision) const = 0;
@@ -345,6 +345,9 @@ public:
     /** @brief Feed the curve to a PathSink */
     virtual void feed(PathSink &sink, bool moveto_initial) const;
     /// @}
+
+protected:
+    virtual bool _equalTo(Curve const &c) const = 0;
 };
 
 inline

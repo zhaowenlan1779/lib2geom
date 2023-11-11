@@ -115,7 +115,7 @@ std::vector<CurveIntersection> Curve::intersectSelf(Coord eps) const
     };
 
     /// A closure to split the curve into portions at the prescribed split points.
-    auto const split_into_subcurves = [=](std::vector<Coord> const &splits) {
+    auto const split_into_subcurves = [this] (std::vector<Coord> const &splits) {
         std::vector<Subcurve> result;
         result.reserve(splits.size() + 1);
         Coord previous = 0;

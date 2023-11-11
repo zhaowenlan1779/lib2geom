@@ -457,7 +457,7 @@ class EllipticalArcToy: public Toy
             times = ea.roots(ph.pos[DIM], DIM);
             *notify << "winding: " << ea.winding(ph.pos);
         }
-        catch(Geom::Exception e)
+        catch (Geom::Exception const &e)
         {
             std::cerr << e.what() << std::endl;
         }

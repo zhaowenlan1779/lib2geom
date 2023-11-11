@@ -168,9 +168,11 @@ public:
     Coord valueAt(Coord t, Dim2 d) const override { return inner[d].valueAt(t); }
     D2<SBasis> toSBasis() const override {return inner.toSBasis(); }
     bool isNear(Curve const &c, Coord precision) const override;
-    bool operator==(Curve const &c) const override;
     void feed(PathSink &sink, bool) const override;
     std::vector<Coord> timesWithRadiusOfCurvature(double radius) const;
+
+protected:
+    bool _equalTo(Curve const &c) const override;
 };
 
 template <unsigned degree>

@@ -12,7 +12,7 @@ ${2GEOM_INCLUDE_DIR}/toys/lpe-framework.h
 
 SET(2GEOM_TOYS-2_SRC
 2dsb2d
-aa
+#aa
 arc-bez
 arc-length-param
 auto-cross
@@ -55,8 +55,8 @@ filet-minion
 find-derivative
 gear
 #hatches
-implicit-toy
-ineaa
+#implicit-toy
+#ineaa
 inner-product-clip
 intersect-data
 inverse-test

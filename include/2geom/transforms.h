@@ -230,7 +230,7 @@ inline bool are_near(Rotate const &a, Rotate const &b, Coord eps = EPSILON) {
  * @ingroup Transforms */
 template <typename S>
 class ShearBase
-    : public TransformOperations< S >
+    : public TransformOperations<S>
 {
 protected:
     Coord f = 0;
@@ -240,7 +240,7 @@ public:
     Coord factor() const { return f; }
     void setFactor(Coord nf) { f = nf; }
     S &operator*=(S const &s) { f += s.f; return static_cast<S &>(*this); }
-    bool operator==(S const &s) const { return f == s.f; }
+    bool operator==(ShearBase<S> const &s) const { return f == s.f; }
     S inverse() const { return S(-f); }
     static S identity() { return {}; }
 

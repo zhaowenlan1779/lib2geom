@@ -130,17 +130,20 @@ public:
         return new SBasisCurve(Geom::derivative(inner));
     }
     D2<SBasis> toSBasis() const override { return inner; }
-    bool operator==(Curve const &c) const override {
-        SBasisCurve const *other = dynamic_cast<SBasisCurve const *>(&c);
-        if (!other) return false;
-        return inner == other->inner;
-    }
     bool isNear(Curve const &/*c*/, Coord /*eps*/) const override {
         THROW_NOTIMPLEMENTED();
         return false;
     }
     int degreesOfFreedom() const override {
         return inner[0].degreesOfFreedom() + inner[1].degreesOfFreedom();
+    }
+
+protected:
+    bool _equalTo(Curve const &c) const override {
+        if (this == &c) return true;
+        auto other = dynamic_cast<SBasisCurve const *>(&c);
+        if (!other) return false;
+        return inner == other->inner;
     }
 };
 

@@ -882,9 +882,10 @@ void EllipticalArc::operator*=(Affine const& m)
     _angles.setFinal(_ellipse.timeAt(_final_point));
 }
 
-bool EllipticalArc::operator==(Curve const &c) const
+bool EllipticalArc::_equalTo(Curve const &c) const
 {
-    EllipticalArc const *other = dynamic_cast<EllipticalArc const *>(&c);
+    if (this == &c) return true;
+    auto other = dynamic_cast<EllipticalArc const *>(&c);
     if (!other) return false;
     if (_initial_point != other->_initial_point) return false;
     if (_final_point != other->_final_point) return false;

@@ -198,7 +198,7 @@ TEST_F(SBasisTest,Operators) {
     //std::cout << derivative(hump) <<std::endl;
     //std::cout << integral(hump) <<std::endl;
 
-    EXPECT_TRUE(are_equal(derivative(integral(wiggle)), wiggle));
+    EXPECT_TRUE(are_equal(derivative(Geom::integral(wiggle)), wiggle));
     //std::cout << derivative(integral(hump)) << std::endl;
     expect_array((const double []){0.5}, roots(derivative(hump)));
 

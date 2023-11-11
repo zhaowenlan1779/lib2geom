@@ -49,6 +49,14 @@
 
 namespace Geom {
 
+template<typename EdgeLabel>
+concept EdgeLabelConcept = requires(EdgeLabel el, EdgeLabel const &other) {
+    el.onReverse();
+    el.onMergeWith(other);
+    el.onDetach();
+    el = other;
+};
+
 /**
  * \class PlanarGraph
  * \brief Planar graph - a graph geometrically embedded in the plane.
@@ -115,14 +123,7 @@ namespace Geom {
  *     with copies of the original edge's label.
  */
 template<typename EdgeLabel>
-#if __cplusplus >= 202002L
-requires requires(EdgeLabel el, EdgeLabel const &other) {
-    el.onReverse();
-    el.onMergeWith(other);
-    el.onDetach();
-    el = other;
-}
-#endif
+requires EdgeLabelConcept<EdgeLabel>
 class PlanarGraph
 {
 public:
@@ -159,8 +160,8 @@ public:
             return index == other.index && sign == other.sign;
         }
     };
-    using IncIt = typename std::list<Incidence>::iterator;
-    using IncConstIt = typename std::list<Incidence>::const_iterator;
+    using IncIt = std::list<Incidence>::iterator;
+    using IncConstIt = std::list<Incidence>::const_iterator;
 
     /** Represents the vertex of a planar graph. */
     class Vertex
@@ -212,7 +213,7 @@ public:
         IncIt cyclicPrevIncidence(IncIt it) { return cyclic_prior(it, _incidences); }
 
         /** Insert an incidence; for internal use by the PlanarGraph class. */
-        Incidence &_addIncidence(unsigned edge_index, double azimuth, typename Incidence::Sign sign)
+        Incidence &_addIncidence(unsigned edge_index, double azimuth, Incidence::Sign sign)
         {
             auto where = std::find_if(_incidences.begin(), _incidences.end(), [=](auto &inc) -> bool {
                 return inc.azimuth >= azimuth;
@@ -231,7 +232,7 @@ public:
 
         friend class PlanarGraph<EdgeLabel>;
     };
-    using VertexIterator = typename std::list<Vertex>::iterator;
+    using VertexIterator = std::list<Vertex>::iterator;
 
     /** Represents an edge of the planar graph. */
     struct Edge
@@ -256,8 +257,8 @@ public:
             label.onDetach();
         }
     };
-    using EdgeIterator = typename std::vector<Edge>::iterator;
-    using EdgeConstIterator = typename std::vector<Edge>::const_iterator;
+    using EdgeIterator = std::vector<Edge>::iterator;
+    using EdgeConstIterator = std::vector<Edge>::const_iterator;
 
 private:
     double const _precision; ///< Numerical epsilon for vertex clumping.
@@ -317,7 +318,7 @@ public:
      *         If not found, both pointers will be null.
      */
     std::pair<Vertex *, Incidence *>
-    getIncidence(unsigned edge_index, typename Incidence::Sign sign) const
+    getIncidence(unsigned edge_index, Incidence::Sign sign) const
     {
         if (edge_index >= _edges.size() || _edges[edge_index].detached) {
             return {nullptr, nullptr};
@@ -403,7 +404,7 @@ public:
     }
 
 private:
-    inline Path _getPathImpl(Incidence const *incidence, typename Incidence::Sign origin) const
+    inline Path _getPathImpl(Incidence const *incidence, Incidence::Sign origin) const
     {
         return (incidence->sign == origin) ? _edges[incidence->index].path
                                            : _edges[incidence->index].path.reversed();
@@ -471,6 +472,7 @@ public:
  *         desired position.
  */
 template<typename EL>
+requires EdgeLabelConcept<EL>
 typename PlanarGraph<EL>::Vertex *PlanarGraph<EL>::_ensureVertexAt(Point const &pos)
 {
     auto const insert_at_front = [&, this]() -> Vertex* {
@@ -509,6 +511,7 @@ typename PlanarGraph<EL>::Vertex *PlanarGraph<EL>::_ensureVertexAt(Point const &
  * \return The index of the inserted edge.
  */
 template<typename EdgeLabel>
+requires EdgeLabelConcept<EdgeLabel>
 unsigned PlanarGraph<EdgeLabel>::insertEdge(Path &&path, EdgeLabel &&label)
 {
     unsigned edge_index = _edges.size();
@@ -548,6 +551,7 @@ unsigned PlanarGraph<EdgeLabel>::insertEdge(Path &&path, EdgeLabel &&label)
  * \return The index of the inserted edge.
  */
 template<typename EdgeLabel>
+requires EdgeLabelConcept<EdgeLabel>
 unsigned PlanarGraph<EdgeLabel>::insertDetached(Path &&path, EdgeLabel &&label)
 {
     unsigned edge_index = _edges.size();
@@ -560,6 +564,7 @@ unsigned PlanarGraph<EdgeLabel>::insertDetached(Path &&path, EdgeLabel &&label)
 
 /** Remove incidences previously marked as junk. */
 template<typename EdgeLabel>
+requires EdgeLabelConcept<EdgeLabel>
 void PlanarGraph<EdgeLabel>::_purgeJunkIncidences()
 {
     for (auto &[vertex, incidence] : _junk) {
@@ -592,6 +597,7 @@ void PlanarGraph<EdgeLabel>::_purgeJunkIncidences()
  *     to it.
  */
 template<typename EdgeLabel>
+requires EdgeLabelConcept<EdgeLabel>
 void PlanarGraph<EdgeLabel>::regularize(double angle_precision, bool remove_collapsed_loops)
 {
     for (auto it = _vertices.begin(); it != _vertices.end(); ++it) {
@@ -622,7 +628,8 @@ void PlanarGraph<EdgeLabel>::regularize(double angle_precision, bool remove_coll
  * \param deloop Whether loops that don't enclose any area should be detached.
  */
 template<typename EdgeLabel>
-void PlanarGraph<EdgeLabel>::_regularizeVertex(typename PlanarGraph<EdgeLabel>::Vertex &vertex,
+requires EdgeLabelConcept<EdgeLabel>
+void PlanarGraph<EdgeLabel>::_regularizeVertex(Vertex &vertex,
                                                double angle_precision, bool deloop)
 {
     auto &incidences = vertex._incidences;
@@ -712,9 +719,10 @@ void PlanarGraph<EdgeLabel>::_regularizeVertex(typename PlanarGraph<EdgeLabel>::
  * \param deloop Whether loops that don't enclose any area should be detached.
  */
 template<typename EL>
-void PlanarGraph<EL>::_reglueTangentFan(typename PlanarGraph<EL>::Vertex &vertex,
-                                        typename PlanarGraph<EL>::IncIt const &first,
-                                        typename PlanarGraph<EL>::IncIt const &last, bool deloop)
+requires EdgeLabelConcept<EL>
+void PlanarGraph<EL>::_reglueTangentFan(Vertex &vertex,
+                                        IncIt const &first,
+                                        IncIt const &last, bool deloop)
 {
     // Search all pairs (triangular pattern), skipping invalid incidences.
     for (auto it = first; it != last; it = vertex.cyclicNextIncidence(it)) {
@@ -749,9 +757,10 @@ void PlanarGraph<EL>::_reglueTangentFan(typename PlanarGraph<EL>::Vertex &vertex
  * \return Whether the incidences should be swapped.
  */
 template<typename EL>
-bool PlanarGraph<EL>::_compareAndReglue(typename PlanarGraph<EL>::Vertex &vertex,
-                                        typename PlanarGraph<EL>::Incidence *first,
-                                        typename PlanarGraph<EL>::Incidence *second, bool deloop)
+requires EdgeLabelConcept<EL>
+bool PlanarGraph<EL>::_compareAndReglue(Vertex &vertex,
+                                        Incidence *first,
+                                        Incidence *second, bool deloop)
 {
     if (first->index == second->index) {
         return _reglueTeardrop(vertex, first, second, deloop);
@@ -806,9 +815,10 @@ bool PlanarGraph<EL>::_compareAndReglue(typename PlanarGraph<EL>::Vertex &vertex
  * \return Whether the two incidences of the loop to the vertex should be swapped.
  */
 template<typename EL>
-bool PlanarGraph<EL>::_reglueTeardrop(typename PlanarGraph<EL>::Vertex &vertex,
-                                      typename PlanarGraph<EL>::Incidence *first,
-                                      typename PlanarGraph<EL>::Incidence *second, bool deloop)
+requires EdgeLabelConcept<EL>
+bool PlanarGraph<EL>::_reglueTeardrop(Vertex &vertex,
+                                      Incidence *first,
+                                      Incidence *second, bool deloop)
 {
     // Calculate the area enclosed by the teardrop.
     // The convention is that the unit circle (cos(t), sint(t)), t from 0 to 2pi,
@@ -859,9 +869,10 @@ bool PlanarGraph<EL>::_reglueTeardrop(typename PlanarGraph<EL>::Vertex &vertex,
  * \param split The point where the free rope of the lasso ends and the hoop begins.
  */
 template<typename EL>
-void PlanarGraph<EL>::_reglueLasso(typename PlanarGraph<EL>::Vertex &vertex,
-                                   typename PlanarGraph<EL>::Incidence *first,
-                                   typename PlanarGraph<EL>::Incidence *second,
+requires EdgeLabelConcept<EL>
+void PlanarGraph<EL>::_reglueLasso(Vertex &vertex,
+                                   Incidence *first,
+                                   Incidence *second,
                                    PathIntersection const &split)
 {
     unsigned lasso = first->index;
@@ -912,8 +923,9 @@ void PlanarGraph<EL>::_reglueLasso(typename PlanarGraph<EL>::Vertex &vertex,
  * \param second An iterator to the second edge's incidence to a common vertex.
  */
 template<typename EL>
-void PlanarGraph<EL>::_mergeCoincidingEdges(typename PlanarGraph<EL>::Incidence *first,
-                                            typename PlanarGraph<EL>::Incidence *second)
+requires EdgeLabelConcept<EL>
+void PlanarGraph<EL>::_mergeCoincidingEdges(Incidence *first,
+                                            Incidence *second)
 {
     auto &surviver = _edges[first->index];
     auto &casualty = _edges[second->index];
@@ -945,9 +957,10 @@ void PlanarGraph<EL>::_mergeCoincidingEdges(typename PlanarGraph<EL>::Incidence 
  *                       the endpoint of the shorter edge.
  */
 template<typename EL>
-void PlanarGraph<EL>::_mergeShorterLonger(typename PlanarGraph<EL>::Vertex &vertex,
-                                          typename PlanarGraph<EL>::Incidence *shorter,
-                                          typename PlanarGraph<EL>::Incidence *longer,
+requires EdgeLabelConcept<EL>
+void PlanarGraph<EL>::_mergeShorterLonger(Vertex &vertex,
+                                          Incidence *shorter,
+                                          Incidence *longer,
                                           PathTime const &time_on_longer)
 {
     auto &shorter_edge = _edges[shorter->index];
@@ -1007,9 +1020,10 @@ void PlanarGraph<EL>::_mergeShorterLonger(typename PlanarGraph<EL>::Vertex &vert
  * \param fork The splitting point of the two paths.
  */
 template<typename EL>
-void PlanarGraph<EL>::_mergeWyeConfiguration(typename PlanarGraph<EL>::Vertex &vertex,
-                                             typename PlanarGraph<EL>::Incidence *first,
-                                             typename PlanarGraph<EL>::Incidence *second,
+requires EdgeLabelConcept<EL>
+void PlanarGraph<EL>::_mergeWyeConfiguration(Vertex &vertex,
+                                             Incidence *first,
+                                             Incidence *second,
                                              PathIntersection const &fork)
 {
     bool const first_is_out = (first->sign == Incidence::START);
@@ -1082,8 +1096,9 @@ void PlanarGraph<EL>::_mergeWyeConfiguration(typename PlanarGraph<EL>::Vertex &v
 }
 
 template<typename EL>
-typename PlanarGraph<EL>::Incidence*
-PlanarGraph<EL>::nextIncidence(typename PlanarGraph<EL>::VertexIterator const &vertex,
+requires EdgeLabelConcept<EL>
+PlanarGraph<EL>::Incidence*
+PlanarGraph<EL>::nextIncidence(VertexIterator const &vertex,
                                double azimuth, bool clockwise) const
 {
     auto &incidences = vertex._incidences;
@@ -1121,6 +1136,7 @@ PlanarGraph<EL>::nextIncidence(typename PlanarGraph<EL>::VertexIterator const &v
 
 /** Return the signed area enclosed by a closed path. */
 template<typename EL>
+requires EdgeLabelConcept<EL>
 double PlanarGraph<EL>::closedPathArea(Path const &path)
 {
     double area;
@@ -1142,6 +1158,7 @@ double PlanarGraph<EL>::closedPathArea(Path const &path)
  *         False if the first path deviates towards the right of the second.
  */
 template<typename EL>
+requires EdgeLabelConcept<EL>
 bool PlanarGraph<EL>::deviatesLeft(Path const &first, Path const &second)
 {
     auto start = middle_point(first.initialPoint(), second.initialPoint());

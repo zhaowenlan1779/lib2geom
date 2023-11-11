@@ -258,17 +258,18 @@ Curve *BezierCurve::portion(Coord f, Coord t) const
     return new BezierCurve(Geom::portion(inner, f, t));
 }
 
-bool BezierCurve::operator==(Curve const &c) const
+bool BezierCurve::_equalTo(Curve const &c) const
 {
     if (this == &c) return true;
-
-    BezierCurve const *other = dynamic_cast<BezierCurve const *>(&c);
+    auto other = dynamic_cast<BezierCurve const *>(&c);
     if (!other) return false;
+
     if (size() != other->size()) return false;
 
     for (unsigned i = 0; i < size(); ++i) {
         if (controlPoint(i) != other->controlPoint(i)) return false;
     }
+
     return true;
 }
 
