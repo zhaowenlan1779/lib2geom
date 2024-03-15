@@ -145,6 +145,23 @@ bool BezierCurve::isLineSegment() const
     return true;
 }
 
+bool BezierCurve::isNearlyLineSegment(Coord precision) const
+{
+    auto const last_idx = size() - 1;
+    if (last_idx == 1) {
+        return true;
+    }
+    auto const start = controlPoint(0);
+    auto const end = controlPoint(last_idx);
+    for (unsigned i = 1; i < last_idx; ++i) {
+        auto const pi = controlPoint(i);
+        if (!are_collinear(start, end, pi, precision)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void BezierCurve::expandToTransformed(Rect &bbox, Affine const &transform) const
 {
     bbox |= bounds_exact(inner * transform);
@@ -213,6 +230,10 @@ bool BezierCurve::isNear(Curve const &c, Coord precision) const
 
     if (!are_near(inner.at0(), other->inner.at0(), precision)) return false;
     if (!are_near(inner.at1(), other->inner.at1(), precision)) return false;
+
+    if (isNearlyLineSegment(precision) && other->isNearlyLineSegment(precision)) {
+        return true;
+    }
 
     if (size() == other->size()) {
         for (unsigned i = 1; i < order(); ++i) {

@@ -106,6 +106,7 @@ public:
     Point finalPoint() const override { return inner.at1(); }
     bool isDegenerate() const override;
     bool isLineSegment() const override;
+    bool isNearlyLineSegment(Coord precision) const;
     void setInitial(Point const &v) override { setPoint(0, v); }
     void setFinal(Point const &v) override { setPoint(order(), v); }
     Rect boundsFast() const override { return *bounds_fast(inner); }

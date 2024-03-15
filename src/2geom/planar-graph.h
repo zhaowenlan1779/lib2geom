@@ -484,22 +484,21 @@ typename PlanarGraph<EL>::Vertex *PlanarGraph<EL>::_ensureVertexAt(Point const &
         return insert_at_front();
     }
 
-    // TODO: Use a heap?
     auto it = std::find_if(_vertices.begin(), _vertices.end(), [&](Vertex const &v) -> bool {
+        return are_near(pos, v._position, _precision);
+    });
+    if (it != _vertices.end()) {
+        return &(*it);
+    }
+
+    it = std::find_if(_vertices.begin(), _vertices.end(), [&](Vertex const &v) -> bool {
         return Vertex::_cmp(pos, v._position); // existing vertex position > pos.
     });
 
-    if (it != _vertices.end()) {
-        if (are_near(pos, it->_position, _precision)) {
-            return &(*it); // Reuse existing vertex.
-        }
-        if (it == _vertices.begin()) {
-            return insert_at_front();
-        }
+    if (it == _vertices.begin()) {
+        return insert_at_front();
     }
-    // Look at the previous element, reuse if near, insert before `it` otherwise.
-    return &(*(are_near(pos, std::prev(it)->_position, _precision) ? std::prev(it)
-                                                                   : _vertices.emplace(it, pos)));
+    return &(*(_vertices.emplace(it, pos)));
 }
 
 /**
