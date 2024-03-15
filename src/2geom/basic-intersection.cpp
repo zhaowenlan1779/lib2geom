@@ -232,11 +232,15 @@ void subdivide(D2<Bezier> const &a,
 #ifdef HAVE_GSL
 #include <gsl/gsl_multiroots.h>
 
+namespace {
+
 struct rparams
 {
     D2<SBasis> const &A;
     D2<SBasis> const &B;
 };
+
+}
 
 static int
 intersect_polish_f (const gsl_vector * x, void *params,

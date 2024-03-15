@@ -130,10 +130,12 @@ static double EpsilonOf(double value)
 #endif
 
 #ifdef HAVE_GSL
+namespace {
 struct rparams {
     Curve const &A;
     Curve const &B;
 };
+}
 
 static int
 intersect_polish_f (const gsl_vector * x, void *params,
