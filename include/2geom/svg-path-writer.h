@@ -53,8 +53,10 @@ public:
     void lineTo(Point const &p) override;
     void quadTo(Point const &c, Point const &p) override;
     void curveTo(Point const &c0, Point const &c1, Point const &p) override;
+#ifdef HAVE_GSL
     void arcTo(double rx, double ry, double angle,
                bool large_arc, bool sweep, Point const &p) override;
+#endif
     void closePath() override;
     void flush() override;
 

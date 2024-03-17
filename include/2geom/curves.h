@@ -37,7 +37,9 @@
 #include <2geom/curve.h>
 #include <2geom/sbasis-curve.h>
 #include <2geom/bezier-curve.h>
+#ifdef HAVE_GSL
 #include <2geom/elliptical-arc.h>
+#endif
 
 #endif // LIB2GEOM_SEEN_CURVES_H
 

@@ -144,6 +144,7 @@ void SVGPathWriter::curveTo(Point const &p1, Point const &p2, Point const &p3)
     }
 }
 
+#ifdef HAVE_GSL
 void SVGPathWriter::arcTo(double rx, double ry, double angle,
                           bool large_arc, bool sweep, Point const &p)
 {
@@ -161,6 +162,7 @@ void SVGPathWriter::arcTo(double rx, double ry, double angle,
         flush();
     }
 }
+#endif
 
 void SVGPathWriter::closePath()
 {

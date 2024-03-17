@@ -64,10 +64,13 @@ public:
     virtual void curveTo(Point const &c0, Point const &c1, Point const &p) = 0;
     /// Output a cubic Bezier segment.
     virtual void quadTo(Point const &c, Point const &p) = 0;
+
+#ifdef HAVE_GSL
     /** @brief Output an elliptical arc segment.
      * See the EllipticalArc class for the documentation of parameters. */
     virtual void arcTo(Coord rx, Coord ry, Coord angle,
                        bool large_arc, bool sweep, Point const &p) = 0;
+#endif
 
     /// Close the current path with a line segment.
     virtual void closePath() = 0;
@@ -102,10 +105,12 @@ public:
     virtual void feed(PathVector const &v);
     /// Output an axis-aligned rectangle, using moveTo, lineTo and closePath.
     virtual void feed(Rect const &);
+#ifdef HAVE_GSL
     /// Output a circle as two elliptical arcs.
     virtual void feed(Circle const &e);
     /// Output an ellipse as two elliptical arcs.
     virtual void feed(Ellipse const &e);
+#endif
 
     virtual ~PathSink() {}
 };
@@ -158,6 +163,7 @@ public:
         _path.template appendNew<CubicBezier>(c0, c1, p);
     }
 
+#ifdef HAVE_GSL
     void arcTo(Coord rx, Coord ry, Coord angle,
                bool large_arc, bool sweep, Point const &p) override
     {
@@ -168,6 +174,7 @@ public:
         _path.template appendNew<EllipticalArc>(rx, ry, angle,
                                                 large_arc, sweep, p);
     }
+#endif
 
     bool backspace() override
     {

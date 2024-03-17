@@ -35,8 +35,10 @@
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
 #include <2geom/transforms.h>
+#ifdef HAVE_GSL
 #include <2geom/circle.h>
 #include <2geom/ellipse.h>
+#endif
 #include <2geom/convex-hull.h>
 #include <2geom/svg-path-writer.h>
 #include <2geom/sweeper.h>
@@ -291,6 +293,8 @@ Path::Path(ConvexHull const &ch)
     _closed = true;
 }
 
+#ifdef HAVE_GSL
+
 Path::Path(Circle const &c)
     : _data(new PathData())
     , _closing_seg(NULL)
@@ -318,6 +322,8 @@ Path::Path(Ellipse const &e)
     _closing_seg = new ClosingSegment(p1, p1);
     _data->curves.push_back(_closing_seg);
 }
+
+#endif
 
 void Path::close(bool c)
 {

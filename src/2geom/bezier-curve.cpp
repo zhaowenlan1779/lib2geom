@@ -36,6 +36,7 @@
 #include <2geom/basic-intersection.h>
 #include <2geom/nearest-time.h>
 #include <2geom/polynomial.h>
+#include <2geom/line.h>
 
 namespace Geom
 {

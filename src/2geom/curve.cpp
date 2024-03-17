@@ -53,10 +53,12 @@ std::vector<Coord> Curve::allNearestTimes(Point const& p, Coord from, Coord to) 
     return all_nearest_times(p, toSBasis(), from, to);
 }
 
+#ifdef HAVE_GSL
 Coord Curve::length(Coord tolerance) const
 {
     return ::Geom::length(toSBasis(), tolerance);
 }
+#endif
 
 int Curve::winding(Point const &p) const
 {

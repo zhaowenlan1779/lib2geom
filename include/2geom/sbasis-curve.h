@@ -118,7 +118,9 @@ public:
     {
         return all_nearest_times(p, inner, from, to);
     }
+#ifdef HAVE_GSL
     Coord length(Coord tolerance) const override { return ::Geom::length(inner, tolerance); }
+#endif
     Curve *portion(Coord f, Coord t) const override {
         return new SBasisCurve(Geom::portion(inner, f, t));
     }

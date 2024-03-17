@@ -1096,7 +1096,7 @@ void PlanarGraph<EL>::_mergeWyeConfiguration(Vertex &vertex,
 
 template<typename EL>
 requires EdgeLabelConcept<EL>
-PlanarGraph<EL>::Incidence*
+typename PlanarGraph<EL>::Incidence*
 PlanarGraph<EL>::nextIncidence(VertexIterator const &vertex,
                                double azimuth, bool clockwise) const
 {

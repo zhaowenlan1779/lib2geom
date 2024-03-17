@@ -441,6 +441,7 @@ Geom::arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
     return result;
 }
 
+#ifdef HAVE_GSL
 #include <gsl/gsl_integration.h>
 static double sb_length_integrating(double t, void* param) {
     SBasis* pc = (SBasis*)param;
@@ -504,6 +505,7 @@ Geom::length(Piecewise<D2<SBasis> > const &s,
     }
     return result;
 }
+#endif
 
 /**
  * Centroid using sbasis integration.

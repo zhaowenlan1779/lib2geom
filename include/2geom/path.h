@@ -410,10 +410,12 @@ public:
     explicit Path(Rect const &r);
     /// Create a path from a convex hull.
     explicit Path(ConvexHull const &);
+#ifdef HAVE_GSL
     /// Create a path from a circle, using two elliptical arcs.
     explicit Path(Circle const &c);
     /// Create a path from an ellipse, using two elliptical arcs.
     explicit Path(Ellipse const &e);
+#endif
 
     virtual ~Path() {}
 

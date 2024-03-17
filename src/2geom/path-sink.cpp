@@ -31,8 +31,10 @@
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/path-sink.h>
 #include <2geom/exception.h>
+#ifdef HAVE_GSL
 #include <2geom/circle.h>
 #include <2geom/ellipse.h>
+#endif
 
 namespace Geom {
 
@@ -70,6 +72,7 @@ void PathSink::feed(Rect const &r) {
     closePath();
 }
 
+#ifdef HAVE_GSL
 void PathSink::feed(Circle const &e) {
     Coord r = e.radius();
     Point c = e.center();
@@ -89,6 +92,7 @@ void PathSink::feed(Ellipse const &e) {
     arcTo(e.ray(X), e.ray(Y), e.rotationAngle(), false, false, s);
     closePath();
 }
+#endif
 
 }
 

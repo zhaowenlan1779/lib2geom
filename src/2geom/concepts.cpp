@@ -32,8 +32,10 @@
 #include <2geom/concepts.h>
 
 #include <2geom/line.h>
+#ifdef HAVE_GSL
 #include <2geom/circle.h>
 #include <2geom/ellipse.h>
+#endif
 #include <2geom/curves.h>
 #include <2geom/convex-hull.h>
 #include <2geom/path.h>
@@ -52,7 +54,9 @@ void concept_checks()
     //BOOST_CONCEPT_ASSERT((ShapeConcept<Circle>));
     //BOOST_CONCEPT_ASSERT((ShapeConcept<Ellipse>));
     BOOST_CONCEPT_ASSERT((ShapeConcept<BezierCurve>));
+#ifdef HAVE_GSL
     BOOST_CONCEPT_ASSERT((ShapeConcept<EllipticalArc>));
+#endif
     //BOOST_CONCEPT_ASSERT((ShapeConcept<SBasisCurve>));
     //BOOST_CONCEPT_ASSERT((ShapeConcept<ConvexHull>));
     //BOOST_CONCEPT_ASSERT((ShapeConcept<Path>));

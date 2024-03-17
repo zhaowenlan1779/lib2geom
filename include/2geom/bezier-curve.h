@@ -160,7 +160,7 @@ public:
         return (inner[d] - v).roots();
     }
     Coord nearestTime(Point const &p, Coord from = 0, Coord to = 1) const override;
-    Coord length(Coord tolerance) const override;
+    Coord length(Coord tolerance) const;
     std::vector<CurveIntersection> intersect(Curve const &other, Coord eps = EPSILON) const override;
     Point pointAt(Coord t) const override { return inner.pointAt(t); }
     std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const override {

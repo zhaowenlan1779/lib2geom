@@ -271,6 +271,7 @@ public:
         return allNearestTimes(p, i.min(), i.max());
     }
 
+#ifdef HAVE_GSL
     /** @brief Compute the arc length of this curve.
      * For a curve \f$\mathbf{C}(t) = (C_x(t), C_y(t))\f$, arc length is defined for 2D curves as
      * \f[ \ell = \int_{0}^{1} \sqrt { [C_x'(t)]^2 + [C_y'(t)]^2 }\, \text{d}t \f]
@@ -282,6 +283,7 @@ public:
      * @param tolerance Maximum allowed error
      * @return Total distance the curve's value travels on the plane when going from 0 to 1 */
     virtual Coord length(Coord tolerance=0.01) const;
+#endif
 
     /** @brief Computes time values at which the curve intersects an axis-aligned line.
      * @param v The coordinate of the line

@@ -85,10 +85,12 @@ Piecewise<SBasis> curvature(Piecewise<D2<SBasis> > const &M, double tol=.01);
 Piecewise<SBasis> arcLengthSb(          D2<SBasis>   const &M, double tol=.01);
 Piecewise<SBasis> arcLengthSb(Piecewise<D2<SBasis> > const &M, double tol=.01);
 
+#ifdef HAVE_GSL
 double length(          D2<SBasis>   const &M, double tol=.01);
 double length(Piecewise<D2<SBasis> > const &M, double tol=.01);
 
 void length_integrating(D2<SBasis> const &B, double &result, double &abs_error, double tol);
+#endif
 
 Piecewise<D2<SBasis> >
 arc_length_parametrization(D2<SBasis> const &M, 

@@ -39,7 +39,6 @@
 #include <2geom/point.h>
 #include <2geom/interval.h>
 #include <2geom/bezier.h>
-#include <2geom/numeric/matrix.h>
 #include <2geom/convex-hull.h>
 #include <2geom/line.h>
 
@@ -561,14 +560,18 @@ void distance_control_points (std::vector<Point> & D,
     {
         dB.push_back (B[k+1] - B[k]);
     }
-    NL::Matrix dBB(n,B.size());
-    for (size_t i = 0; i < n; ++i)
+    std::vector<std::vector<Geom::Coord>> dBB(n);
+    for (size_t i = 0; i < n; ++i) {
+        dBB[i].resize(B.size());
         for (size_t j = 0; j < B.size(); ++j)
-            dBB(i,j) = dot (dB[i], B[j]);
-    NL::Matrix dBF(n, F.size());
-    for (size_t i = 0; i < n; ++i)
+            dBB[i][j] = dot (dB[i], B[j]);
+    }
+    std::vector<std::vector<Geom::Coord>> dBF(n);
+    for (size_t i = 0; i < n; ++i) {
+        dBF[i].resize(F.size());
         for (size_t j = 0; j < F.size(); ++j)
-            dBF(i,j) = dot (dB[i], F[j]);
+            dBF[i][j] = dot (dB[i], F[j]);
+    }
 
     size_t l;
     double bc;
@@ -606,7 +609,7 @@ void distance_control_points (std::vector<Point> & D,
             for (size_t j = 0; j <= m; ++j)
             {
                 //d[j] += bc * dot(dB[k], B[l] - F[j]);
-                d[j] += bc * (dBB(k,l) - dBF(k,j));
+                d[j] += bc * (dBB[k][l] - dBF[k][j]);
             }
         }
 
